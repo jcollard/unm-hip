@@ -38,10 +38,13 @@ toPPM :: (Imageable img,
 toPPM img@(dimensions -> (rows, cols)) = "P3 " ++ (show cols) ++ " " ++ (show rows) ++ " 255 " ++ px where
   px = intercalate " " rgbs
   max = maxIntensity img
-  (mr, mg, mb) = rgb max
-  max' = 255/(maximum [mr, mg, mb])
+  min = minIntensity img
+  (maxr, maxg, maxb) = rgb max
+  (minr, ming, minb) = rgb min
+  max' = 255/(maximum [maxr, maxg, maxb] - min')
+  min' = minimum [minr, ming, minb]
   rgbs = map (showRGB . scale . rgb) . pixelList $ img
-  scale (r, g, b) = (max'*r, max'*g, max'*b)
+  scale (r, g, b) = (max'*(r-min'), max'*(g-min'), max'*(b-min'))
   showRGB (r, g, b) = (show . floor $ r) ++ " " ++ (show . floor $ g) ++ " " ++ (show . floor $ b)
 
 -- Displays an image using ImageMagick's display command

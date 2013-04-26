@@ -1,4 +1,5 @@
 {-# LANGUAGE TypeFamilies, ViewPatterns, FlexibleContexts, FlexibleInstances #-}
+{-# OPTIONS_GHC -O2 #-}
 module Data.Image.Boxed(module Data.Image.Imageable,
                         GrayImage, 
                         GrayPixel,
@@ -66,11 +67,14 @@ instance DisplayFormat (Image RGBPixel) where
 instance Zero RGBPixel where
   zero = RGB 0.0 0.0 0.0
 
-instance Maximal RGBPixel where
-  maximal = maximal' zero where
-    maximal' acc [] = acc
-    maximal' (RGB r g b) ((RGB r' g' b'):xs) = maximal' acc' xs where
-      acc' = RGB (max r r') (max g g') (max b b')
+instance MaxMin RGBPixel where
+  maximal = helper max zero
+  minimal = helper min zero
+  
+helper :: (Double -> Double -> Double) -> RGBPixel -> [RGBPixel] -> RGBPixel
+helper _ acc [] = acc
+helper compare (RGB r g b) ((RGB r' g' b'):xs) = helper compare acc' xs where
+  acc' = RGB (compare r r') (compare g g') (compare b b')
 
 instance RGB RGBPixel where
   rgb (RGB r g b) = (r, g, b)
