@@ -10,7 +10,8 @@ module Data.Image.Boxed(module Data.Image.Imageable,
                         colorImageGreen,
                         colorImageBlue,
                         rgbToColorImage,
-                        colorImageToRGB)
+                        colorImageToRGB,
+                        shrink)
                         where
 
 import Data.Image.IO
@@ -71,6 +72,11 @@ instance MaxMin RGBPixel where
   maximal = helper max zero
   minimal = helper min zero
   
+instance Divisible RGBPixel where
+  divide f (RGB r g b) = RGB r' g' b' where
+    f' = fromIntegral f
+    (r', g', b') = (f'/r, f'/g, f'/b)
+
 helper :: (Double -> Double -> Double) -> RGBPixel -> [RGBPixel] -> RGBPixel
 helper _ acc [] = acc
 helper compare (RGB r g b) ((RGB r' g' b'):xs) = helper compare acc' xs where
@@ -113,6 +119,13 @@ rgbToColorImage red green blue@(dimensions -> (rows, cols)) = makeImage rows col
 colorImageToRGB :: RGBImage -> [GrayImage]
 colorImageToRGB img= [colorImageRed img, colorImageGreen img, colorImageBlue img]
 
+shrink :: (Integral a) => a -> GrayImage -> GrayImage
+shrink (fromIntegral -> x) img@(dimensions -> (rows, cols)) = makeImage rows cols shrink' where
+  shrink' r c = let z = abs (ref img r c) in helper z where
+    helper z 
+      | z < x = zero
+      | z > 0 = z - x 
+      | otherwise = z  + x
 
 readRGBImage :: FilePath -> IO RGBImage
 readRGBImage fileName =

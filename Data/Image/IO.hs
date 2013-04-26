@@ -1,5 +1,6 @@
 {-# LANGUAGE ViewPatterns, FlexibleContexts, FlexibleInstances #-}
 module Data.Image.IO(display,
+                     writeImage,
                      toPGM,
                      toPPM,
                      module System.Process)  where
@@ -24,30 +25,29 @@ runCommandWithStdIn cmd stdin =
 -- Converts an image into a PGM string
 toPGM :: (Imageable img, 
           RealFrac (Pixel img),
+          Divisible (Pixel img),
           MaxMin (Pixel img),
           Show (Pixel img)) => img -> [Char]
 toPGM img@(dimensions -> (rows, cols)) = "P2 " ++ (show cols) ++ " " ++ (show rows) ++ " 255 " ++ px where
-  px = intercalate " " . map (show . floor . (* scale) . (flip (-) min)) . pixelList $ img
-  max = maxIntensity img
-  min = minIntensity img
-  scale = 255/(max - min)
+  px = intercalate " " . map (show . floor . (* 255)) . pixelList $ norm
+  norm = normalize img
 
 toPPM :: (Imageable img,
           MaxMin (Pixel img),
+          Divisible (Pixel img),
+          Num (Pixel img),
           RGB (Pixel img)) => img -> [Char]
 toPPM img@(dimensions -> (rows, cols)) = "P3 " ++ (show cols) ++ " " ++ (show rows) ++ " 255 " ++ px where
   px = intercalate " " rgbs
-  max = maxIntensity img
-  min = minIntensity img
-  (maxr, maxg, maxb) = rgb max
-  (minr, ming, minb) = rgb min
-  max' = 255/(maximum [maxr, maxg, maxb] - min')
-  min' = minimum [minr, ming, minb]
-  rgbs = map (showRGB . scale . rgb) . pixelList $ img
-  scale (r, g, b) = (max'*(r-min'), max'*(g-min'), max'*(b-min'))
+  norm = normalize img
+  rgbs = map (showRGB . scale . rgb) . pixelList $ norm
+  scale (r, g, b) = (255*r, 255*g, 255*b)
   showRGB (r, g, b) = (show . floor $ r) ++ " " ++ (show . floor $ g) ++ " " ++ (show . floor $ b)
 
 -- Displays an image using ImageMagick's display command
 -- System must have ImageMagick installed for this to work
 display :: (DisplayFormat df) => df -> IO (Handle, Handle, Handle, ProcessHandle)
 display img = runCommandWithStdIn "display" . format $ img
+
+writeImage :: (DisplayFormat df) => FilePath -> df -> IO ()
+writeImage file = writeFile file . format 

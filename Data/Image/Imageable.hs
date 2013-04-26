@@ -9,6 +9,7 @@ module Data.Image.Imageable(Imageable(..),
                             Zero(..),
                             MaxMin(..),
                             RGB(..),
+                            Divisible(..),
                             Kernel,
                             Kernel2D,
                             imageOp, 
@@ -31,7 +32,11 @@ module Data.Image.Imageable(Imageable(..),
                             kernel2d,
                             convolveRows,
                             convolveCols,
-                            convolve) where
+                            convolve,
+                            normalize,
+                            imageFold,
+                            arrayToImage,
+                            imageToArray) where
 
 import Data.Array.IArray
 
@@ -39,15 +44,21 @@ type PixelOp px = (Int -> Int -> px)
 
 class Imageable i where
   type Pixel i :: *
+  makeImage :: Int -> Int -> PixelOp (Pixel i) -> i
+  ref  :: i -> Int -> Int -> (Pixel i)
   rows :: i -> Int
   cols :: i -> Int
-  ref  :: i -> Int -> Int -> (Pixel i)
-  makeImage :: Int -> Int -> PixelOp (Pixel i) -> i
   pixelList :: i -> [Pixel i]
   pixelList i = [ ref i r c | r <- [0..(rows i - 1)], c <- [0..(cols i - 1)]]
   
 class RGB px where
   rgb :: px -> (Double, Double, Double)
+
+class Divisible d where
+  divide :: (Integral a) => a -> d -> d 
+
+instance Divisible Double where
+  divide f d = fromIntegral f / d
 
 class MaxMin m where
   maximal :: [m] -> m
@@ -186,3 +197,33 @@ convolve' k img@(dimensions -> (rows, cols)) = makeImage rows cols conv where
 
 periodRef :: (Imageable img) => img -> Int -> Int -> (Pixel img)
 periodRef img@(dimensions -> (rows, cols)) r c = ref img (r `mod` rows) (c `mod` cols)
+
+transpose :: (Imageable img) => img -> img
+transpose img@(dimensions -> (rows, cols)) = makeImage rows cols trans where
+  trans r c = ref img c r
+
+normalize :: (Imageable img,
+              Divisible (Pixel img),
+              MaxMin (Pixel img),
+              Num (Pixel img)) => img -> img
+normalize img@(dimensions -> (rows, cols)) = makeImage rows cols map where
+  map r c = ((ref img r c) - min)*scale
+  (min, max) = (minimal px, maximal px)
+  scale = 1 `divide` (max - min)
+  px = pixelList img
+
+imageFold :: Imageable img => (Pixel img -> b -> b) -> b -> img -> b
+imageFold f init img = foldr f init (pixelList img)
+
+arrayToImage :: (Imageable img) => Array (Int, Int) (Pixel img) -> img
+arrayToImage arr = makeImage rows cols ref where
+  ((rmin,cmin), (rmax, cmax)) = bounds arr
+  rows = rmax - rmin + 1
+  cols = cmax - cmin + 1
+  ref r c = arr ! (r, c)
+  
+imageToArray :: (Imageable img) => img -> Array (Int, Int) (Pixel img)
+imageToArray img@(dimensions -> (rows, cols)) = listArray bounds elems where
+  bounds = ((0,0), (rows-1,cols-1))
+  elems = pixelList img
+  
