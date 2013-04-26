@@ -25,8 +25,8 @@ module Data.Image.Imageable(Imageable(..),
                             upsampleRows,
                             upsampleCols,
                             upsample,
-                            imagePad,
-                            imageCrop,
+                            pad,
+                            crop,
                             kernel,
                             kernel2d,
                             convolveRows,
@@ -100,14 +100,14 @@ upsample img@(dimensions -> (rows, cols)) = makeImage (rows*2) (cols*2) upsample
     | even r && even c = ref img (r `div` 2) (c `div` 2)
     | otherwise = zero
       
-imagePad :: (Imageable img, Zero (Pixel img)) => Int -> Int -> img -> img    
-imagePad rs cs img@(dimensions -> (rows, cols)) = makeImage rs cs pad where
+pad :: (Imageable img, Zero (Pixel img)) => Int -> Int -> img -> img    
+pad rs cs img@(dimensions -> (rows, cols)) = makeImage rs cs pad where
   pad r c 
     | r < rows && c < cols = ref img r c
     | otherwise = zero
   
-imageCrop :: (Imageable img) => Int -> Int -> Int -> Int -> img -> img
-imageCrop r0 c0 w h img = makeImage w h crop where
+crop :: (Imageable img) => Int -> Int -> Int -> Int -> img -> img
+crop r0 c0 w h img = makeImage w h crop where
   crop r c = ref img (r+r0) (c+c0)
                   
 maxIntensity :: (Imageable img, MaxMin (Pixel img)) => img -> Pixel img
@@ -139,32 +139,44 @@ topToBottom' = foldr1 topToBottom
 type Kernel a = Array Int a
 
 kernel :: [a] -> Kernel a
-kernel ls = listArray (0, (length ls) - 1) ls
+kernel ls = listArray (0, (length ls) - 1) (reverse ls)
 
 type Kernel2D a = Array (Int, Int) a
 kernel2d :: [[a]] -> Kernel2D a
-kernel2d ls = listArray ((0,0), (length ls-1, length (head ls) - 1)) (concat ls)
+kernel2d ls = listArray ((0,0), (length ls-1, length (head ls) - 1)) (reverse . concat $ ls)
   
-convolveRows :: (Imageable img, 
+convolveRows :: (Imageable img,
+                 Num (Pixel img)) => [Pixel img] -> img -> img
+convolveRows = convolveRows' . kernel
+
+convolveRows' :: (Imageable img, 
                  Num (Pixel img)) => Kernel (Pixel img) -> img -> img
-convolveRows k = convolve k' where
+convolveRows' k = convolve' k' where
   k' = listArray ((0,0), (0,cols-1)) ls where
     ls = elems k
     cols = length ls
+    
+convolveCols :: (Imageable img,
+                 Num (Pixel img)) => [Pixel img] -> img -> img
+convolveCols = convolveCols' . kernel
 
-convolveCols :: (Imageable img, 
+convolveCols' :: (Imageable img, 
                  Num (Pixel img)) => Kernel (Pixel img) -> img -> img
-convolveCols k = convolve k' where
+convolveCols' k = convolve' k' where
   k' = listArray ((0,0), (rows-1,0)) ls where
     ls = elems k
     rows = length ls
 
 convolve :: (Imageable img,
+             Num (Pixel img)) => [[Pixel img]] -> img -> img
+convolve = convolve' . kernel2d
+
+convolve' :: (Imageable img,
              Num (Pixel img)) => Kernel2D (Pixel img) -> img -> img            
-convolve k img@(dimensions -> (rows, cols)) = makeImage rows cols conv where
+convolve' k img@(dimensions -> (rows, cols)) = makeImage rows cols conv where
   conv r c = px where
     imgVal = map (uncurry (periodRef img) . (\ (r', c') -> (r+r', c+c'))) imgIx
-    imgIx = map (\ (r, c) -> (r-cR, c - cC)) . indices $ k
+    imgIx = map (\ (r, c) -> (r - cR, c - cC)) . indices $ k
     kVal = elems k
     px = sum . map (\ (p,k') -> p*k') . zip imgVal $ kVal
   ((minR, minC), (maxR, maxC)) = bounds k
