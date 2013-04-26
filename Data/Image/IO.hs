@@ -24,14 +24,16 @@ runCommandWithStdIn cmd stdin =
 -- Converts an image into a PGM string
 toPGM :: (Imageable img, 
           RealFrac (Pixel img),
-          Maximal (Pixel img),
+          MaxMin (Pixel img),
           Show (Pixel img)) => img -> [Char]
 toPGM img@(dimensions -> (rows, cols)) = "P2 " ++ (show cols) ++ " " ++ (show rows) ++ " 255 " ++ px where
-  px = intercalate " " . map (show . floor . (* (255/max))) . pixelList $ img
-  max = maxIntensity $ img
+  px = intercalate " " . map (show . floor . (* scale) . (flip (-) min)) . pixelList $ img
+  max = maxIntensity img
+  min = minIntensity img
+  scale = 255/(max - min)
 
 toPPM :: (Imageable img,
-          Maximal (Pixel img),
+          MaxMin (Pixel img),
           RGB (Pixel img)) => img -> [Char]
 toPPM img@(dimensions -> (rows, cols)) = "P3 " ++ (show cols) ++ " " ++ (show rows) ++ " 255 " ++ px where
   px = intercalate " " rgbs

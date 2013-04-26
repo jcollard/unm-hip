@@ -3,14 +3,18 @@
    FlexibleContexts, 
    FlexibleInstances, 
    ViewPatterns #-}
+{-# OPTIONS_GHC -O2 #-}
 module Data.Image.Imageable(Imageable(..), 
                             PixelOp,
                             Zero(..),
-                            Maximal(..),
+                            MaxMin(..),
                             RGB(..),
+                            Kernel,
+                            Kernel2D,
                             imageOp, 
                             dimensions, 
                             maxIntensity,
+                            minIntensity,
                             leftToRight,
                             leftToRight',
                             topToBottom,
@@ -22,9 +26,14 @@ module Data.Image.Imageable(Imageable(..),
                             upsampleCols,
                             upsample,
                             imagePad,
-                            imageCrop) where
+                            imageCrop,
+                            kernel,
+                            kernel2d,
+                            convolveRows,
+                            convolveCols,
+                            convolve) where
 
-import Data.List(intercalate)
+import Data.Array.IArray
 
 type PixelOp px = (Int -> Int -> px)
 
@@ -40,11 +49,13 @@ class Imageable i where
 class RGB px where
   rgb :: px -> (Double, Double, Double)
 
-class Maximal m where
+class MaxMin m where
   maximal :: [m] -> m
+  minimal :: [m] -> m
 
-instance Maximal Double where
+instance MaxMin Double where
   maximal = maximum
+  minimal = minimum
   
 class Zero z where
   zero :: z
@@ -99,8 +110,11 @@ imageCrop :: (Imageable img) => Int -> Int -> Int -> Int -> img -> img
 imageCrop r0 c0 w h img = makeImage w h crop where
   crop r c = ref img (r+r0) (c+c0)
                   
-maxIntensity :: (Imageable img, Maximal (Pixel img)) => img -> Pixel img
+maxIntensity :: (Imageable img, MaxMin (Pixel img)) => img -> Pixel img
 maxIntensity = maximal . pixelList
+
+minIntensity :: (Imageable img, MaxMin (Pixel img)) => img -> Pixel img
+minIntensity = minimal . pixelList
 
 leftToRight :: (Imageable img) => img -> img -> img
 leftToRight i0 i1 = makeImage (rows i0) cols' concat where
@@ -121,3 +135,42 @@ topToBottom i0 i1 = makeImage rows' (cols i0) concat where
 
 topToBottom' :: (Imageable img) => [img] -> img
 topToBottom' = foldr1 topToBottom
+
+type Kernel a = Array Int a
+
+kernel :: [a] -> Kernel a
+kernel ls = listArray (0, (length ls) - 1) ls
+
+type Kernel2D a = Array (Int, Int) a
+kernel2d :: [[a]] -> Kernel2D a
+kernel2d ls = listArray ((0,0), (length ls-1, length (head ls) - 1)) (concat ls)
+  
+convolveRows :: (Imageable img, 
+                 Num (Pixel img)) => Kernel (Pixel img) -> img -> img
+convolveRows k = convolve k' where
+  k' = listArray ((0,0), (0,cols-1)) ls where
+    ls = elems k
+    cols = length ls
+
+convolveCols :: (Imageable img, 
+                 Num (Pixel img)) => Kernel (Pixel img) -> img -> img
+convolveCols k = convolve k' where
+  k' = listArray ((0,0), (rows-1,0)) ls where
+    ls = elems k
+    rows = length ls
+
+convolve :: (Imageable img,
+             Num (Pixel img)) => Kernel2D (Pixel img) -> img -> img            
+convolve k img@(dimensions -> (rows, cols)) = makeImage rows cols conv where
+  conv r c = px where
+    imgVal = map (uncurry (periodRef img) . (\ (r', c') -> (r+r', c+c'))) imgIx
+    imgIx = map (\ (r, c) -> (r-cR, c - cC)) . indices $ k
+    kVal = elems k
+    px = sum . map (\ (p,k') -> p*k') . zip imgVal $ kVal
+  ((minR, minC), (maxR, maxC)) = bounds k
+  cR = (maxR - minR) `div` 2
+  cC = (maxC - minC) `div` 2
+  recenter = map (\ (r, c) -> ((r-cR), (c-cC))) . indices $ k
+
+periodRef :: (Imageable img) => img -> Int -> Int -> (Pixel img)
+periodRef img@(dimensions -> (rows, cols)) r c = ref img (r `mod` rows) (c `mod` cols)
