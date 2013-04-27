@@ -32,11 +32,25 @@ module Data.Image.Imageable(Imageable(..),
                             kernel2d,
                             convolveRows,
                             convolveCols,
-                            convolve,
+                            convolve, convolve',
+                            erode, erode', erode'',
+                            dilate, dilate', dilate'',
+                            open, open', open'',
+                            close, close', close'',
                             normalize,
                             imageFold,
                             arrayToImage,
-                            imageToArray) where
+                            imageToArray,
+                            binary,
+                            (<.), (.<), (.<.),
+                            (>.), (.>), (.>.),
+                            (==.), (.==), (.==.),
+                            (+.), (.+), (.+.),
+                            (.-), (-.), (.-.),
+                            (/.), (./), (./.),
+                            (*.), (.*), (.*.),
+                            imageMap,
+                            compareImage) where
 
 import Data.Array.IArray
 
@@ -74,10 +88,22 @@ class Zero z where
 instance Zero Double where
   zero = 0.0
 
+class Binary b where
+  false :: b
+  true  :: b
+
+instance Binary Double where
+  false = zero
+  true = 1.0
+
 imageOp :: (Imageable img) => 
            (Pixel img -> Pixel img -> Pixel img) -> img -> img -> img
 imageOp op i0 i1 = makeImage (rows i0) (cols i0) operate where
   operate r c = op (ref i0 r c) (ref i1 r c)
+
+transpose :: (Imageable img) => img -> img
+transpose img@(dimensions -> (rows, cols)) = makeImage rows cols trans where
+  trans r c = ref img c r
 
 dimensions :: Imageable i => i -> (Int, Int)
 dimensions i = (rows i, cols i)
@@ -198,9 +224,78 @@ convolve' k img@(dimensions -> (rows, cols)) = makeImage rows cols conv where
 periodRef :: (Imageable img) => img -> Int -> Int -> (Pixel img)
 periodRef img@(dimensions -> (rows, cols)) r c = ref img (r `mod` rows) (c `mod` cols)
 
-transpose :: (Imageable img) => img -> img
-transpose img@(dimensions -> (rows, cols)) = makeImage rows cols trans where
-  trans r c = ref img c r
+erode :: (Imageable img,
+          Binary (Pixel img),
+          Num (Pixel img),
+          Eq (Pixel img)) => img -> img
+erode img = (convolve [[1,1],[1,1]] img) .== 4
+
+erode' :: (Imageable img,
+           Binary (Pixel img),
+           Num (Pixel img),
+           Eq (Pixel img)) => [[Pixel img]] -> img -> img
+erode' ls img = (convolve ls img) .== (sum . concat $ ls)
+
+erode'' :: (Imageable img,
+            Binary (Pixel img),
+            Num (Pixel img),
+            Eq (Pixel img)) => Kernel2D (Pixel img) -> img -> img
+erode'' k img = (convolve' k img) .== (sum . elems $ k)
+
+dilate :: (Imageable img,
+           Binary (Pixel img),
+           Num (Pixel img),
+           Ord (Pixel img)) => img -> img
+dilate img = (convolve [[1,1],[1,1]] img) .> 0
+
+dilate' :: (Imageable img,
+           Binary (Pixel img),
+           Num (Pixel img),
+           Ord (Pixel img)) => [[Pixel img]] -> img -> img
+dilate' ls img = (convolve ls img) .> 0
+
+dilate'' :: (Imageable img,
+             Binary (Pixel img),
+             Num (Pixel img),
+             Ord (Pixel img)) => Kernel2D (Pixel img) -> img -> img
+dilate'' k img = (convolve' k img) .> 0
+
+open :: (Imageable img,
+         Binary (Pixel img),
+         Num (Pixel img),
+         Ord (Pixel img)) => img -> img
+open = dilate . erode
+
+open' :: (Imageable img,
+          Binary (Pixel img),
+          Num (Pixel img),
+          Ord (Pixel img)) => [[Pixel img]] -> img -> img
+open' ls = dilate' ls . erode' ls
+
+open'' :: (Imageable img,
+           Binary (Pixel img),
+           Num (Pixel img),
+           Ord (Pixel img)) => Kernel2D (Pixel img) -> img -> img
+open'' k = dilate'' k . erode'' k
+
+close :: (Imageable img,
+          Binary (Pixel img),
+          Num (Pixel img),
+          Ord (Pixel img)) => img -> img
+close = erode . dilate
+
+close' :: (Imageable img,
+           Binary (Pixel img),
+           Num (Pixel img),
+           Ord (Pixel img)) => [[Pixel img]] -> img -> img
+close' ls = erode' ls . dilate' ls
+
+
+close'' :: (Imageable img,
+            Binary (Pixel img),
+            Num (Pixel img),
+            Ord (Pixel img)) => Kernel2D (Pixel img) -> img -> img
+close'' k img = erode'' k . dilate'' k $ img
 
 normalize :: (Imageable img,
               Divisible (Pixel img),
@@ -227,3 +322,133 @@ imageToArray img@(dimensions -> (rows, cols)) = listArray bounds elems where
   bounds = ((0,0), (rows-1,cols-1))
   elems = pixelList img
   
+binary :: (Imageable img,
+             Binary (Pixel img)) => (Pixel img -> Bool) -> img -> img
+binary pred img@(dimensions -> (rows, cols)) = makeImage rows cols bin where
+  bin r c = if pred (ref img r c) then true else false
+  
+compareImage :: (Imageable img,
+                 Binary (Pixel img),
+                 Ord (Pixel img)) => ((Pixel img) -> (Pixel img) -> Bool) -> img -> img -> img
+compareImage comp img0@(dimensions -> (rows, cols)) img1 = makeImage rows cols bin where
+  bin r c = if p0 `comp` p1 then true else false where
+    p0 = ref img0 r c
+    p1 = ref img1 r c
+
+
+(.<) :: (Imageable img, 
+         Binary (Pixel img),
+         Ord (Pixel img),
+         Pixel img ~ a) => img -> a -> img
+(.<) img num = binary pred img where
+  pred p = p < num
+
+(<.) :: (Imageable img,
+         Binary (Pixel img),
+         Ord (Pixel img),
+         Pixel img ~ a) => a -> img -> img
+(<.) = flip (.>)
+
+(.<.) :: (Imageable img,
+          Binary (Pixel img),
+          Ord (Pixel img)) => img -> img -> img
+(.<.) = compareImage (<)
+
+(.>) :: (Imageable img,
+         Binary (Pixel img),
+         Ord (Pixel img),
+         Pixel img ~ a) => img -> a -> img
+(.>) img num = binary pred img where
+  pred p = p >  num
+  
+(>.) :: (Imageable img,
+         Binary (Pixel img),
+         Ord (Pixel img),
+         Pixel img ~ a) => a -> img -> img
+(>.) = flip (.<)
+
+(.>.) :: (Imageable img,
+          Binary (Pixel img),
+          Ord (Pixel img)) => img -> img -> img
+(.>.) = compareImage (>)
+
+(.==) :: (Imageable img,
+          Binary (Pixel img),
+          Eq (Pixel img),
+          Pixel img ~ a) => img -> a -> img
+(.==) img num = binary pred img where
+  pred p = p == num
+
+(==.) :: (Imageable img,
+          Binary (Pixel img),
+          Eq (Pixel img),
+          Pixel img ~ a) => a -> img -> img
+(==.) = flip (.==)
+  
+(.==.) :: (Imageable img,
+           Zero (Pixel img),
+           Eq (Pixel img)) => img -> img -> img
+(.==.) img0@(dimensions -> (rows, cols)) img1 = makeImage rows cols img where
+  img r c = if p0 == p1 then p0 else zero where
+    p0 = ref img0 r c
+    p1 = ref img1 r c
+        
+(.+) :: (Imageable img,
+         Num (Pixel img),
+         Pixel img ~ a) => img -> a -> img
+(.+) img a = imageMap (+ a) img
+
+(+.) :: (Imageable img,
+         Num (Pixel img),
+         Pixel img ~ a) => a -> img -> img
+(+.) = flip (.+)
+
+(.+.) :: (Imageable img,
+          Num (Pixel img)) => img -> img -> img
+(.+.) = imageOp (+)
+
+(.-) :: (Imageable img,
+         Num (Pixel img),
+         Pixel img ~ a) => img -> a -> img
+(.-) img a = imageMap (flip (-) a) img
+
+(-.) :: (Imageable img,
+         Num (Pixel img),
+         Pixel img ~ a) => a -> img -> img
+(-.) a img = imageMap ((-) a) img
+
+(.-.) :: (Imageable img,
+          Num (Pixel img)) => img -> img -> img
+(.-.) = imageOp (-)
+
+(./) :: (Imageable img,
+         Fractional (Pixel img),
+         Pixel img ~ a) => img -> a -> img
+(./) img a = imageMap (/ a) img
+
+(/.) :: (Imageable img,
+         Fractional (Pixel img),
+         Pixel img ~ a) => a -> img -> img
+(/.) num img = imageMap (num /) img
+
+(./.) :: (Imageable img,
+          Fractional (Pixel img)) => img -> img -> img
+(./.) = imageOp (/)
+
+(.*) :: (Imageable img,
+         Num (Pixel img),
+         Pixel img ~ a) => img -> a -> img
+(.*) img a = imageMap (* a) img
+
+(*.) :: (Imageable img,
+         Num (Pixel img),
+         Pixel img ~ a) => a -> img -> img
+(*.) = flip (.*)
+
+(.*.) :: (Imageable img,
+          Num (Pixel img)) => img -> img -> img
+(.*.) = imageOp (*)
+  
+imageMap :: (Imageable a, Imageable b) => (Pixel a -> Pixel b) -> a -> b
+imageMap f img@(dimensions -> (rows, cols)) = makeImage rows cols map where
+  map r c = f (ref img r c)
