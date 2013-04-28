@@ -1,5 +1,5 @@
+label => label
 make-hot-image => TODO
-areas => TODO
 perimeters => TODO
 centers-of-mass => TODO
 bounding-boxes => TODO
@@ -67,6 +67,6 @@ fft => fft -- purely functional, ST version should be implemented
 ifft => ifft -- purely functional, ST version should be implemented
 distance-transform => distanceTransform
 outline => outline
-label => label
 median-filter => medianFilter
 matrix-product => matrixProduct
+areas => areas
