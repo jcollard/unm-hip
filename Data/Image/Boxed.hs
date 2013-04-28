@@ -3,6 +3,7 @@
 module Data.Image.Boxed(module Data.Image.Imageable,
                         GrayImage, 
                         GrayPixel,
+                        ComplexImage,
                         RGBPixel,
                         HSIPixel,
                         readImage,
@@ -19,10 +20,19 @@ module Data.Image.Boxed(module Data.Image.Imageable,
                         hsiList,
                         shrink,
                         hsiToRGB,
-                        rgbToHSI)
+                        rgbToHSI,
+                        complexToRGB,
+                        realPart',
+                        imagPart',
+                        magnitude',
+                        angle',
+                        polar',
+                        complexImageToRectangular',
+                        fft, ifft)
                         where
 
 import qualified Data.Complex as C
+import qualified Data.Image.FFT as FFT
 import Data.Image.IO
 import Data.Image.DisplayFormat
 import Data.Image.Imageable
@@ -38,6 +48,8 @@ data Image a = Image { rs :: Int,
 
 instance Functor Image where
   fmap f i = Image (rows i) (cols i) (fmap f . pixels $ i)
+
+type HSIImage = Image HSIPixel
 
 type ComplexImage = Image (C.Complex Double)
 
@@ -108,6 +120,39 @@ rgbOp :: (Double -> Double -> Double) -> RGBPixel -> RGBPixel -> RGBPixel
 rgbOp op (RGB a b c) (RGB d e f) = RGB (op a d) (op b e) (op c f)
 
 data HSIPixel = HSI Double Double Double
+
+instance DisplayFormat ComplexImage where
+  format (complexToRGB -> rgb) = toPPM rgb
+
+complexToRGB :: ComplexImage -> RGBImage
+complexToRGB img@(dimensions -> (rows, cols)) = makeImage rows cols rgb where
+  scale = complexScale img
+  rgb row col = if radius < 1 then RGB red' grn' blu' else RGB red grn blu where
+    [red, grn, blu] = map (+d') [r',g',b']
+    [red', grn', blu'] = map (flip (-) d')  [r',g',b']
+    comp = ref img row col
+    [x, y] = map (*scale) [C.realPart comp, C.imagPart comp]
+    radius = sqrt((x*x) + (y*y))
+    a = onedivsqrtsix*x
+    b = sqrttwodivtwo*y
+    d = 1.0/(1.0 + (radius*radius))
+    d' = 0.5 - radius*d
+    r' = 0.5 + (twodivsqrtsix * x * d)
+    b' = 0.5 - (d * (a - b))
+    g' = 0.5 - (d * (a + b))
+    
+complexScale :: ComplexImage -> Double
+complexScale (complexImageToRectangular -> [real, imag]) = 2.0/(maxv - minv) where
+    maxr = maximum . pixelList $ (real :: GrayImage)
+    maxi = maximum . pixelList $ imag
+    minr = minimum . pixelList $ real
+    mini = minimum . pixelList $ imag
+    maxv = max maxr maxi
+    minv = min minr mini
+    
+twodivsqrtsix = 0.81649658092772603273 --2.0/sqrt(6)
+onedivsqrtsix = 0.40824829046386301636 --1.0/sqrt(6)
+sqrttwodivtwo = 0.70710678118654752440 --sqrt(2)/2.0
 
 instance Num HSIPixel where
   (+) = hsiOp (+)
@@ -196,6 +241,24 @@ shrink (fromIntegral -> x) img@(dimensions -> (rows, cols)) = makeImage rows col
       | z > 0 = z - x 
       | otherwise = z  + x
 
+realPart' :: ComplexImage -> GrayImage
+realPart' = realPart
+
+imagPart' :: ComplexImage -> GrayImage
+imagPart' = imagPart
+
+magnitude' :: ComplexImage -> GrayImage
+magnitude' = magnitude
+
+angle' :: ComplexImage -> GrayImage
+angle' = angle
+
+polar' :: ComplexImage -> [GrayImage]
+polar' = polar
+
+complexImageToRectangular' :: ComplexImage -> [GrayImage]
+complexImageToRectangular' = complexImageToRectangular
+
 readRGBImage :: FilePath -> IO RGBImage
 readRGBImage fileName =
   do
@@ -219,27 +282,20 @@ colors xs = helper xs [] [] []
   where helper [] red green blue = map (map fromIntegral) $ map reverse [red, green, blue]
         helper (r:g:b:cs) red green blue = helper cs (r:red) (g:green) (b:blue)
 
-realPart :: ComplexImage -> GrayImage
-realPart = imageMap C.realPart
+toRGB :: GrayImage -> RGBImage
+toRGB img@(dimensions -> (rows, cols)) = makeImage rows cols rgb where
+  rgb r c = RGB p p p where
+    p = ref img r c
 
-imagPart :: ComplexImage -> GrayImage
-imagPart = imageMap C.imagPart 
+toComplex :: GrayImage -> ComplexImage
+toComplex img@(dimensions -> (rows, cols)) = makeImage rows cols toComp where
+  toComp r c = (ref img r c ) C.:+ 0.0
 
-magnitude :: ComplexImage -> GrayImage
-magnitude = imageMap C.magnitude
+fft :: ComplexImage -> ComplexImage
+fft (Image rows cols vec) = Image rows cols (FFT.fft rows cols vec)
 
-polar :: ComplexImage -> [GrayImage]
-polar img@(dimensions -> (rows, cols)) = [mkImg mag, mkImg phs] where
-  mkImg = makeImage rows cols
-  ref' r c = C.polar $ (ref img r c)
-  mag r c = fst (ref' r c)
-  phs r c = snd (ref' r c)
-  
-complexImageToRectangular :: ComplexImage -> [GrayImage]
-complexImageToRectangular img = [realPart img, imagPart img]
-
-angle :: ComplexImage -> GrayImage
-angle = imageMap C.phase
+ifft :: ComplexImage -> ComplexImage
+ifft (Image rows cols vec) = Image rows cols (FFT.ifft rows cols vec) 
 
 -- Reads in a PGM image located at fileName
 readImage :: FilePath -> IO GrayImage

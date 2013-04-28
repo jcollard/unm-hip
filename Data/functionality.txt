@@ -1,6 +1,3 @@
-make-filter => TODO
-fft => TODO
-ifft => TODO
 set-image-display-scale! => TODO
 median-filter => TODO
 matrix-product => TODO
@@ -71,3 +68,6 @@ complex-image->polar => polar
 complex-image->rectangular => complexImageRectangular
 magnitude => magnitude
 angle => angle
+make-filter => makeFilter
+fft => fft -- purely functional, ST version should be implemented 
+ifft => ifft -- purely functional, ST version should be implemented
