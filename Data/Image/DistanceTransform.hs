@@ -4,10 +4,11 @@ module Data.Image.DistanceTransform(distanceTransform) where
 
 import Control.Monad
 import Control.Monad.ST
-import Data.Array.Unboxed
-import Data.Array.ST
 
 import Data.Image.Imageable
+
+import qualified Data.Vector.Unboxed as V
+import qualified Data.Vector.Unboxed.Mutable as VM
 
 
 -- Performs a distance transform on the provided image. The provided
@@ -19,15 +20,15 @@ distanceTransform :: (Imageable img,
                       Pixel img ~ Double) => img -> img
 distanceTransform img@(dimensions -> (rows, cols)) = makeImage rows cols func
   where arr  = getDistanceTransformArray img
-        func r c = arr ! ((cols*r) + c)
+        func r c = arr V.! ((cols*r) + c)
 
 
 -- Begin support code for distance transform
 getDistanceTransformArray :: (Imageable img, 
-                              Pixel img ~ Double) => img -> UArray Int Double
-getDistanceTransformArray img@(dimensions -> (rows, cols)) = runSTUArray $ do
+                              Pixel img ~ Double) => img -> V.Vector Double
+getDistanceTransformArray img@(dimensions -> (rows, cols)) = runST $ do
   let size = rows * cols
-      imgdata = listArray (0,size-1) (pixelList img) :: UArray Int Double
+      imgdata = V.fromList (pixelList img) :: V.Vector Double
       on   = 10000
   {- 
     Mask of distances to center pixel. The pixel being
@@ -50,10 +51,10 @@ getDistanceTransformArray img@(dimensions -> (rows, cols)) = runSTUArray $ do
   -}
   let maskRight = [on, 11, on, 11, on, 11, 7, 5, 7, 11, on, 5, 0, on, on]
   let maskLeft  = reverse maskRight
-  dtImg <- newArray_ (0, size-1) :: ST s (STUArray s Int Double)
+  dtImg <- VM.replicate size 0 :: ST s (VM.STVector s Double)
   forM_ [0..size-1] $ \ i -> do
-    let val = if ((imgdata ! i) == 0) then 0 else on
-    writeArray dtImg i val
+    let val = if ((imgdata V.! i) == 0) then 0 else on
+    VM.write dtImg i val
   
   let pass rs cs tr br mask = do
         forM_ rs $ \ r -> do 
@@ -63,16 +64,16 @@ getDistanceTransformArray img@(dimensions -> (rows, cols)) = runSTUArray $ do
                         if (i < 0 || i > (rows-1) || j < 0 || j > (cols-1))
                           then return on
                           else do
-                            val <- readArray dtImg ((i*cols)+j)
+                            val <- VM.read dtImg ((i*cols)+j)
                             return val
             let sums = map (\ (x, y) -> x+y) $ zip pxVals mask
             let min = minimum sums
-            writeArray dtImg ((r*cols) + c) min
+            VM.write dtImg ((r*cols) + c) min
   -- Pass from from left to right and top to bottom
   pass [0..rows-1] [0..cols-1] (-2) 0 maskRight
   -- Pass from right to left and bottom to top  
   pass [rows-1,rows-2..0] [cols-1,cols-2..0] 0 2 maskLeft
   
-  return dtImg
+  V.freeze dtImg
 
 -- End Distance Transform Support code

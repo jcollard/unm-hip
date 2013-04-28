@@ -25,7 +25,7 @@ fft :: Int -> Int -> Vector -> Vector
 fft = fft' fftRange
 
 ifft :: Int -> Int -> Vector -> Vector
-ifft rows cols vec = fmap (/fromIntegral (rows*cols)) . fft' ifftRange rows cols $ vec
+ifft rows cols vec = V.map (/fromIntegral (rows*cols)) . fft' ifftRange rows cols $ vec
 
 fromColumns :: [[Complex Double]] -> V.Vector (Complex Double)
 fromColumns = fromRows . transpose

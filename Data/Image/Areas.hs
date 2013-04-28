@@ -6,17 +6,17 @@ module Data.Image.Areas(areas) where
 import Control.Monad
 import Control.Monad.ST
 
-import Data.Array.IArray
-import Data.Array.ST
-
 import Data.Image.Imageable
+
+import qualified Data.Vector.Unboxed as V
+import qualified Data.Vector.Unboxed.Mutable as VM
 
 areas :: (Imageable img,
          MaxMin (Pixel img),
-         RealFrac (Pixel img)) => img -> Array Int Double
+         RealFrac (Pixel img)) => img -> V.Vector Double
 areas img@(dimensions -> (rows, cols)) = runST $ do 
-  histogram <- newArray (0, (floor $ maxIntensity img)) 0 :: ST s (STUArray s Int Double)
+  histogram <- VM.replicate ((floor $ maxIntensity img)+1) 0 :: ST s (VM.STVector s Double)
   forM_ (pixelList img) (\ (floor -> p) -> do
-                            currVal <- readArray histogram p
-                            writeArray histogram p (currVal + 1))
-  freeze histogram
+                            currVal <- VM.read histogram p
+                            VM.write histogram p (currVal + 1))
+  V.freeze histogram

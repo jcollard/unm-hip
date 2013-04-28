@@ -7,34 +7,18 @@ module Data.Image.Boxed(module Data.Image.Imageable,
                         module Data.Image.MedianFilter,
                         module Data.Image.MatrixProduct,
                         module Data.Image.Areas,
-                        GrayImage, 
-                        GrayPixel,
-                        ComplexImage,
-                        RGBPixel,
-                        HSIPixel,
-                        readImage,
-                        readRGBImage,
-                        colorImageRed,
-                        colorImageGreen,
-                        colorImageBlue,
-                        colorImageHue,
-                        colorImageSaturation,
-                        colorImageIntensity,
-                        rgbToColorImage,
-                        hsiToColorImage,
-                        rgbList,
-                        hsiList,
-                        shrink,
-                        hsiToRGB,
-                        rgbToHSI,
+                        GrayImage, GrayPixel, readImage, 
+                        shrink, grayToComplex,
+                        RGBImage, RGBPixel, readColorImage,
+                        colorImageRed, colorImageGreen, colorImageBlue,
+                        colorImageToRGB, rgbToColorImage, rgbToHSI,
+                        HSIImage, HSIPixel,
+                        colorImageHue, colorImageSaturation, colorImageIntensity,
+                        hsiToColorImage, colorImageToHSI, hsiToRGB,
+                        ComplexImage, ComplexPixel,
                         complexToRGB,
-                        realPart',
-                        imagPart',
-                        magnitude',
-                        angle',
-                        polar',
-                        complexImageToRectangular',
-                        grayToComplex,
+                        realPart', imagPart', magnitude',
+                        angle', polar', complexImageToRectangular',
                         fft', ifft')
                         where
 
@@ -64,7 +48,9 @@ instance Functor Image where
 
 type HSIImage = Image HSIPixel
 
-type ComplexImage = Image (C.Complex Double)
+type ComplexImage = Image ComplexPixel
+
+type ComplexPixel = C.Complex Double
 
 type GrayImage = Image GrayPixel
 
@@ -240,11 +226,11 @@ hsiToColorImage h s i@(dimensions -> (rows, cols)) = makeImage rows cols colors 
     s' = ref s r c
     i' = ref i r c
 
-hsiList :: Image HSIPixel -> [GrayImage]
-hsiList img = [colorImageHue img, colorImageSaturation img, colorImageIntensity img]
+colorImageToHSI :: Image HSIPixel -> [GrayImage]
+colorImageToHSI img = [colorImageHue img, colorImageSaturation img, colorImageIntensity img]
 
-rgbList :: RGBImage -> [GrayImage]
-rgbList img= [colorImageRed img, colorImageGreen img, colorImageBlue img]
+colorImageToRGB :: RGBImage -> [GrayImage]
+colorImageToRGB img= [colorImageRed img, colorImageGreen img, colorImageBlue img]
 
 shrink :: (Integral a) => a -> GrayImage -> GrayImage
 shrink (fromIntegral -> x) img@(dimensions -> (rows, cols)) = makeImage rows cols shrink' where
@@ -272,8 +258,8 @@ polar' = polar
 complexImageToRectangular' :: ComplexImage -> [GrayImage]
 complexImageToRectangular' = complexImageToRectangular
 
-readRGBImage :: FilePath -> IO RGBImage
-readRGBImage fileName =
+readColorImage :: FilePath -> IO RGBImage
+readColorImage fileName =
   do
     y <- B.readFile fileName
     return $ parseRGBImage . B.intercalate (B.pack " ") . stripComments . B.lines $ y
