@@ -7,6 +7,8 @@ module Data.Image.Boxed(module Data.Image.Imageable,
                         module Data.Image.MedianFilter,
                         module Data.Image.MatrixProduct,
                         module Data.Image.Areas,
+                        module Data.Image.Complex,
+                        module Data.Image.Math,
                         GrayImage, GrayPixel, readImage, 
                         shrink, grayToComplex,
                         RGBImage, RGBPixel, readColorImage,
@@ -28,6 +30,8 @@ import Data.Image.Label
 import Data.Image.MedianFilter
 import Data.Image.MatrixProduct
 import Data.Image.Areas
+import Data.Image.Complex
+import Data.Image.Math
 
 import qualified Data.Complex as C
 import Data.Image.IO
