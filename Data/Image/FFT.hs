@@ -3,6 +3,7 @@
 module Data.Image.FFT(fft, ifft,
                       Vector) where
 
+import Data.Bits
 import Data.Complex(Complex((:+)))
 import Data.List(transpose)
 import qualified Data.Vector as V
@@ -10,8 +11,13 @@ import qualified Data.Vector as V
 type Vector = V.Vector (Complex Double)
 type FFT = [Int] -> Vector -> Int -> Int -> [Complex Double]
 
+isPowerOfTwo :: Int -> Bool
+isPowerOfTwo n = n /= 0 && (n .&. (n-1)) == 0
+
 fft' :: FFT -> Int -> Int -> Vector -> Vector
-fft' range rows cols orig = fromRows rows' where 
+fft' range rows cols orig = if check then fromRows rows' else err where 
+  check = and . map isPowerOfTwo $ [rows, cols]
+  err = error "FFT can only be applied to images with dimensions 2^k x 2^j where k and j are integers."
   (fromColumns -> cols') = map (fftc range rows cols 0 (rows-1) orig) [0..cols-1] -- FFT on each col
   rows' = map (fftr range cols 0 (cols-1) cols') [0..rows-1] -- FFT on each row
 

@@ -1,10 +1,6 @@
-set-image-display-scale! => TODO
 median-filter => TODO
 matrix-product => TODO
 make-hot-image => TODO
-outline => TODO
-label => TODO
-distance-transform => TODO
 areas => TODO
 perimeters => TODO
 centers-of-mass => TODO
@@ -71,3 +67,6 @@ angle => angle
 make-filter => makeFilter
 fft => fft -- purely functional, ST version should be implemented 
 ifft => ifft -- purely functional, ST version should be implemented
+distance-transform => distanceTransform
+outline => outline
+label => label

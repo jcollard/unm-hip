@@ -10,6 +10,7 @@ module Data.Image.Imageable(Imageable(..),
                             MaxMin(..),
                             RGB(..),
                             Divisible(..),
+                            Complexable(..),
                             Kernel,
                             Kernel2D,
                             imageOp, 
@@ -57,10 +58,14 @@ module Data.Image.Imageable(Imageable(..),
                             angle,
                             polar,
                             complexImageToRectangular,
-                            makeFilter) where
+                            makeFilter,
+                            fft, ifft) where
 
 import Data.Array.IArray
 import qualified Data.Complex as C
+
+import qualified Data.Image.FFT as FFT
+import qualified Data.Vector as V
 
 type PixelOp px = (Int -> Int -> px)
 
@@ -508,4 +513,27 @@ makeFilter rows cols func = makeImage rows cols func' where
   mC = cols `div` 2
   func' r c = func ((r+mR) `mod` rows) ((c+mC) `mod` cols)
 
-    
+class Complexable c where
+  toComplex :: c -> C.Complex Double
+
+instance Complexable (C.Complex Double) where
+  toComplex = id
+
+instance Complexable Double where
+  toComplex = (C.:+ 0)
+
+fft :: (Imageable img,
+        Imageable img',
+        Complexable (Pixel img),
+        Pixel img' ~ C.Complex Double) => img -> img'
+fft img@(dimensions -> (rows, cols)) = makeImage rows cols fftimg where
+  fftimg r c = fft' V.! (r*cols + c)
+  vector = V.map toComplex . V.fromList . pixelList $ img
+  fft' = FFT.fft rows cols vector
+
+ifft :: (Imageable img,
+        Pixel img ~ C.Complex Double) => img -> img
+ifft img@(dimensions -> (rows, cols)) = makeImage rows cols fftimg where
+  fftimg r c = fft' V.! (r*cols + c)
+  vector = V.fromList . pixelList $ img
+  fft' = FFT.ifft rows cols vector

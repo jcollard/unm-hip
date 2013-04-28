@@ -1,6 +1,9 @@
 {-# LANGUAGE TypeFamilies, ViewPatterns, FlexibleContexts, FlexibleInstances #-}
 {-# OPTIONS_GHC -O2 #-}
 module Data.Image.Boxed(module Data.Image.Imageable,
+                        module Data.Image.DistanceTransform,
+                        module Data.Image.Outline,
+                        module Data.Image.Label,
                         GrayImage, 
                         GrayPixel,
                         ComplexImage,
@@ -28,12 +31,15 @@ module Data.Image.Boxed(module Data.Image.Imageable,
                         angle',
                         polar',
                         complexImageToRectangular',
-                        fft, fft', ifft,
-                        toComplex)
+                        grayToComplex,
+                        fft', ifft')
                         where
 
+import Data.Image.DistanceTransform
+import Data.Image.Outline
+import Data.Image.Label
+
 import qualified Data.Complex as C
-import qualified Data.Image.FFT as FFT
 import Data.Image.IO
 import Data.Image.DisplayFormat
 import Data.Image.Imageable
@@ -288,18 +294,16 @@ toRGB img@(dimensions -> (rows, cols)) = makeImage rows cols rgb where
   rgb r c = RGB p p p where
     p = ref img r c
 
-toComplex :: GrayImage -> ComplexImage
-toComplex img@(dimensions -> (rows, cols)) = makeImage rows cols toComp where
+grayToComplex :: GrayImage -> ComplexImage
+grayToComplex img@(dimensions -> (rows, cols)) = makeImage rows cols toComp where
   toComp r c = (ref img r c ) C.:+ 0.0
 
-fft :: ComplexImage -> ComplexImage
-fft (Image rows cols vec) = Image rows cols (FFT.fft rows cols vec)
+fft' :: ComplexImage -> ComplexImage
+fft' = fft
 
-fft' :: GrayImage -> ComplexImage
-fft' = fft . toComplex
+ifft' :: ComplexImage -> ComplexImage
+ifft' = ifft
 
-ifft :: ComplexImage -> ComplexImage
-ifft (Image rows cols vec) = Image rows cols (FFT.ifft rows cols vec) 
 
 -- Reads in a PGM image located at fileName
 readImage :: FilePath -> IO GrayImage
