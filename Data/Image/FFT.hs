@@ -1,4 +1,5 @@
 {-# LANGUAGE ViewPatterns #-}
+{-# OPTIONS_GHC -O2 #-}
 module Data.Image.FFT(fft, ifft,
                       Vector) where
 

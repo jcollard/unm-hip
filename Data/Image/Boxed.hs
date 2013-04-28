@@ -28,7 +28,8 @@ module Data.Image.Boxed(module Data.Image.Imageable,
                         angle',
                         polar',
                         complexImageToRectangular',
-                        fft, ifft)
+                        fft, fft', ifft,
+                        toComplex)
                         where
 
 import qualified Data.Complex as C
@@ -293,6 +294,9 @@ toComplex img@(dimensions -> (rows, cols)) = makeImage rows cols toComp where
 
 fft :: ComplexImage -> ComplexImage
 fft (Image rows cols vec) = Image rows cols (FFT.fft rows cols vec)
+
+fft' :: GrayImage -> ComplexImage
+fft' = fft . toComplex
 
 ifft :: ComplexImage -> ComplexImage
 ifft (Image rows cols vec) = Image rows cols (FFT.ifft rows cols vec) 
