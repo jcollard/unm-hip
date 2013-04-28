@@ -4,6 +4,8 @@ module Data.Image.Boxed(module Data.Image.Imageable,
                         module Data.Image.DistanceTransform,
                         module Data.Image.Outline,
                         module Data.Image.Label,
+                        module Data.Image.MedianFilter,
+                        module Data.Image.MatrixProduct,
                         GrayImage, 
                         GrayPixel,
                         ComplexImage,
@@ -38,6 +40,8 @@ module Data.Image.Boxed(module Data.Image.Imageable,
 import Data.Image.DistanceTransform
 import Data.Image.Outline
 import Data.Image.Label
+import Data.Image.MedianFilter
+import Data.Image.MatrixProduct
 
 import qualified Data.Complex as C
 import Data.Image.IO
