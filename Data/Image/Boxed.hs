@@ -6,13 +6,12 @@ module Data.Image.Boxed(module Data.Image.Areas,
                         module Data.Image.DistanceTransform,
                         module Data.Image.Internal,
                         module Data.Image.IO,
-                        module Data.Image.Label,
                         module Data.Image.Math,
                         module Data.Image.MatrixProduct,
                         module Data.Image.MedianFilter,
                         module Data.Image.Outline,
                         GrayImage, GrayPixel, readImage, 
-                        shrink, grayToComplex,
+                        shrink, grayToComplex, makeHotImage,
                         RGBImage, RGBPixel, readColorImage,
                         colorImageRed, colorImageGreen, colorImageBlue,
                         colorImageToRGB, rgbToColorImage, rgbToHSI,
@@ -33,7 +32,6 @@ import Data.Image.DisplayFormat
 import Data.Image.DistanceTransform
 import Data.Image.Internal
 import Data.Image.IO
-import Data.Image.Label
 import Data.Image.Math
 import Data.Image.MatrixProduct
 import Data.Image.MedianFilter
@@ -42,6 +40,7 @@ import Data.Image.Outline
 import qualified Data.Complex as C
 import qualified Data.ByteString.Char8 as B
 import Data.Maybe(fromJust)
+import Data.Monoid
 import qualified Data.Vector as V
 
 type Vector = V.Vector
@@ -94,12 +93,13 @@ data RGBPixel = RGB Double Double Double deriving (Eq, Show)
 instance DisplayFormat RGBImage where
   format = toPPM
 
-instance Zero RGBPixel where
-  zero = RGB 0.0 0.0 0.0
-
+instance Monoid RGBPixel where
+  mempty = RGB 0.0 0.0 0.0
+  mappend (RGB a b c) (RGB d e f) = RGB (a+d) (b+e) (c+f)
+  
 instance MaxMin RGBPixel where
-  maximal = helper max zero
-  minimal = helper min zero
+  maximal = helper max mempty
+  minimal = helper min mempty
   
 instance Divisible RGBPixel where
   divide f (RGB r g b) = RGB r' g' b' where
@@ -148,7 +148,7 @@ complexToRGB img@(dimensions -> (rows, cols)) = makeImage rows cols rgb where
     g' = 0.5 - (d * (a + b))
     
 complexScale :: ComplexImage -> Double
-complexScale (complexImageToRectangular -> [real, imag]) = 2.0/(maxv - minv) where
+complexScale (complexImageToRectangular -> (real, imag)) = 2.0/(maxv - minv) where
     maxr = maximum . pixelList $ (real :: GrayImage)
     maxi = maximum . pixelList $ imag
     minr = minimum . pixelList $ real
@@ -233,17 +233,17 @@ hsiToColorImage h s i@(dimensions -> (rows, cols)) = makeImage rows cols colors 
     s' = ref s r c
     i' = ref i r c
 
-colorImageToHSI :: HSIImage -> [GrayImage]
-colorImageToHSI img = [colorImageHue img, colorImageSaturation img, colorImageIntensity img]
+colorImageToHSI :: HSIImage -> (GrayImage, GrayImage, GrayImage)
+colorImageToHSI img = (colorImageHue img, colorImageSaturation img, colorImageIntensity img)
 
-colorImageToRGB :: RGBImage -> [GrayImage]
-colorImageToRGB img= [colorImageRed img, colorImageGreen img, colorImageBlue img]
+colorImageToRGB :: RGBImage -> (GrayImage, GrayImage, GrayImage)
+colorImageToRGB img= (colorImageRed img, colorImageGreen img, colorImageBlue img)
 
 shrink :: (Integral a) => a -> GrayImage -> GrayImage
 shrink (fromIntegral -> x) img@(dimensions -> (rows, cols)) = makeImage rows cols shrink' where
   shrink' r c = let z = abs (ref img r c) in helper z where
     helper z 
-      | z < x = zero
+      | z < x = mempty
       | z > 0 = z - x 
       | otherwise = z  + x
 
@@ -259,10 +259,10 @@ magnitude' = magnitude
 angle' :: ComplexImage -> GrayImage
 angle' = angle
 
-polar' :: ComplexImage -> [GrayImage]
+polar' :: ComplexImage -> (GrayImage, GrayImage)
 polar' = polar
 
-complexImageToRectangular' :: ComplexImage -> [GrayImage]
+complexImageToRectangular' :: ComplexImage -> (GrayImage, GrayImage) 
 complexImageToRectangular' = complexImageToRectangular
 
 readColorImage :: FilePath -> IO RGBImage
@@ -303,6 +303,17 @@ fft' = fft
 ifft' :: ComplexImage -> ComplexImage
 ifft' = ifft
 
+makeHotImage :: GrayImage -> RGBImage
+makeHotImage img@(dimensions -> (rows, cols)) = makeImage rows cols hot where
+  min = minIntensity img
+  max = maxIntensity img
+  hot r c = RGB r' g' b' where
+    px = ((ref img r c) - min)/(max-min)
+    r' = if px < 0.333333333 then (px*3.0) else 1.0
+    g' = if px < 0.333333333 then 0.0 else
+          if px < 0.666666667 then (px - 0.333333333)*3 else 1.0
+    b' = if px < 0.666666667 then 0.0 else (px - 0.666666667)*3
+  
 
 -- Reads in a PGM image located at fileName
 readImage :: FilePath -> IO GrayImage

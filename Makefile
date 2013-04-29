@@ -5,4 +5,4 @@ default:
 	$(CC) $(flags) Data/Image.hs
 
 clean:
-	rm Data/*.o Data/*.hi rm Data/*.hs~ Data/Image/*.o Data/Image/*.hi rm Data/Image/*.hs~
+	rm Data/*.o Data/*.hi Data/Image/*.o Data/Image/*.hi

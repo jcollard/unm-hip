@@ -1,8 +1,3 @@
-make-hot-image => TODO
-perimeters => TODO
-centers-of-mass => TODO
-bounding-boxes => TODO
-
 make-image => makeImage
 read-image => readImage
 image? => Haskell has types
@@ -70,3 +65,7 @@ median-filter => medianFilter
 matrix-product => matrixProduct
 areas => areas
 label => label
+perimeters => perimeters
+bounding-boxes => boundingBoxes
+make-hot-image => makeHotImage
+centers-of-mass => centersOfMass

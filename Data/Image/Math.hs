@@ -1,6 +1,6 @@
-{-# LANGUAGE ViewPatterns, TypeFamilies, FlexibleContexts #-}
+{-# LANGUAGE ViewPatterns, TypeFamilies, FlexibleContexts, FlexibleInstances #-}
 module Data.Image.Math(Binary,
-                       binary, compareImage,
+                       toBinary, compareImage,
                        (<.), (.<), (.<.),
                        (>.), (.>), (.>.),
                        (==.), (.==), (.==.),
@@ -16,12 +16,16 @@ class Binary b where
   true  :: b
 
 instance Binary Double where
-  false = zero
-  true = 1.0
+  false = 0
+  true = 1
 
-binary :: (Image img,
+instance Binary (Double, Double, Double) where
+  false = (0,0,0)
+  true = (1,1,1)
+
+toBinary :: (Image img,
              Binary (Pixel img)) => (Pixel img -> Bool) -> img -> img
-binary pred img@(dimensions -> (rows, cols)) = makeImage rows cols bin where
+toBinary pred img@(dimensions -> (rows, cols)) = makeImage rows cols bin where
   bin r c = if pred (ref img r c) then true else false
   
 compareImage :: (Image img,
@@ -37,7 +41,7 @@ compareImage comp img0@(dimensions -> (rows, cols)) img1 = makeImage rows cols b
          Binary (Pixel img),
          Ord (Pixel img),
          Pixel img ~ a) => img -> a -> img
-(.<) img num = binary pred img where
+(.<) img num = toBinary pred img where
   pred p = p < num
 
 (<.) :: (Image img,
@@ -55,7 +59,7 @@ compareImage comp img0@(dimensions -> (rows, cols)) img1 = makeImage rows cols b
          Binary (Pixel img),
          Ord (Pixel img),
          Pixel img ~ a) => img -> a -> img
-(.>) img num = binary pred img where
+(.>) img num = toBinary pred img where
   pred p = p >  num
   
 (>.) :: (Image img,
@@ -73,7 +77,7 @@ compareImage comp img0@(dimensions -> (rows, cols)) img1 = makeImage rows cols b
           Binary (Pixel img),
           Eq (Pixel img),
           Pixel img ~ a) => img -> a -> img
-(.==) img num = binary pred img where
+(.==) img num = toBinary pred img where
   pred p = p == num
 
 (==.) :: (Image img,
@@ -83,10 +87,10 @@ compareImage comp img0@(dimensions -> (rows, cols)) img1 = makeImage rows cols b
 (==.) = flip (.==)
   
 (.==.) :: (Image img,
-           Zero (Pixel img),
+           Binary (Pixel img),
            Eq (Pixel img)) => img -> img -> img
 (.==.) img0@(dimensions -> (rows, cols)) img1 = makeImage rows cols img where
-  img r c = if p0 == p1 then p0 else zero where
+  img r c = if p0 == p1 then p0 else false where
     p0 = ref img0 r c
     p1 = ref img1 r c
         

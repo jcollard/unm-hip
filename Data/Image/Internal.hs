@@ -6,10 +6,10 @@
 {-# OPTIONS_GHC -O2 #-}
 module Data.Image.Internal(Image(..), 
                            PixelOp,
-                           Zero(..),
                            MaxMin(..),
                            RGB(..),
                            Divisible(..),
+                           Listable(..),
                            imageOp, 
                            dimensions, 
                            maxIntensity,
@@ -33,6 +33,7 @@ module Data.Image.Internal(Image(..),
                            imageMap) where
 
 import Data.Array.IArray
+import Data.Monoid
 
 type PixelOp px = (Int -> Int -> px)
 
@@ -44,6 +45,22 @@ class Image i where
   cols :: i -> Int
   pixelList :: i -> [Pixel i]
   pixelList i = [ ref i r c | r <- [0..(rows i - 1)], c <- [0..(cols i - 1)]]
+  
+class Listable a where
+  type Elem a :: *
+  toList :: a -> [Elem a]
+  
+instance Listable [a] where
+  type Elem [a] = a
+  toList = id
+
+instance Listable (a,a) where
+  type Elem (a,a) = a
+  toList (a,b) = [a,b]
+  
+instance Listable (a,a,a) where
+  type Elem (a,a,a) = a
+  toList (a,b,c) = [a,b,c]
   
 class RGB px where
   rgb :: px -> (Double, Double, Double)
@@ -62,16 +79,9 @@ instance MaxMin Double where
   maximal = maximum
   minimal = minimum
   
-class Zero z where
-  zero :: z
-
-instance Zero Double where
-  zero = 0.0
-
-imageOp :: (Image img) => 
-           (Pixel img -> Pixel img -> Pixel img) -> img -> img -> img
-imageOp op i0 i1 = makeImage (rows i0) (cols i0) operate where
-  operate r c = op (ref i0 r c) (ref i1 r c)
+instance Monoid Double where
+  mempty = 0.0
+  mappend = (+)
 
 transpose :: (Image img) => img -> img
 transpose img@(dimensions -> (rows, cols)) = makeImage rows cols trans where
@@ -91,29 +101,29 @@ downsampleCols img@(dimensions -> (rows, cols)) = makeImage rows (cols `div` 2) 
 downsample :: (Image img) => img -> img
 downsample = downsampleRows . downsampleCols
 
-upsampleRows :: (Image img, Zero (Pixel img)) => img -> img
+upsampleRows :: (Image img, Monoid (Pixel img)) => img -> img
 upsampleRows img@(dimensions -> (rows, cols)) = makeImage (rows*2) cols upsample where
   upsample r c 
     | even r = ref img (r `div` 2) c
-    | otherwise = zero
+    | otherwise = mempty
 
-upsampleCols :: (Image img, Zero (Pixel img)) => img -> img
+upsampleCols :: (Image img, Monoid (Pixel img)) => img -> img
 upsampleCols img@(dimensions -> (rows, cols)) = makeImage rows (cols*2) upsample where
   upsample r c 
     | even r = ref img r (c `div` 2)
-    | otherwise = zero
+    | otherwise = mempty
 
-upsample :: (Image img, Zero (Pixel img)) => img -> img
+upsample :: (Image img, Monoid (Pixel img)) => img -> img
 upsample img@(dimensions -> (rows, cols)) = makeImage (rows*2) (cols*2) upsample where
   upsample r c
     | even r && even c = ref img (r `div` 2) (c `div` 2)
-    | otherwise = zero
+    | otherwise = mempty
       
-pad :: (Image img, Zero (Pixel img)) => Int -> Int -> img -> img    
+pad :: (Image img, Monoid (Pixel img)) => Int -> Int -> img -> img    
 pad rs cs img@(dimensions -> (rows, cols)) = makeImage rs cs pad where
   pad r c 
     | r < rows && c < cols = ref img r c
-    | otherwise = zero
+    | otherwise = mempty
   
 crop :: (Image img) => Int -> Int -> Int -> Int -> img -> img
 crop r0 c0 w h img = makeImage w h crop where
@@ -132,8 +142,8 @@ leftToRight i0 i1 = makeImage (rows i0) cols' concat where
     | c < (cols i0) = ref i0 r c
     | otherwise = ref i1 r (c - (cols i0))
                   
-leftToRight' :: (Image img) => [img] -> img
-leftToRight' = foldr1 leftToRight
+leftToRight' :: (Image (Elem a), Listable a) => a -> Elem a
+leftToRight' (toList -> imgs) = foldr1 leftToRight imgs
 
 topToBottom :: (Image img) => img -> img -> img
 topToBottom i0 i1 = makeImage rows' (cols i0) concat where
@@ -142,9 +152,8 @@ topToBottom i0 i1 = makeImage rows' (cols i0) concat where
     | r < (rows i0) = ref i0 r c
     | otherwise = ref i1 (r - (rows i0)) c
 
-topToBottom' :: (Image img) => [img] -> img
-topToBottom' = foldr1 topToBottom
-
+topToBottom' :: (Image (Elem a), Listable a) => a -> Elem a
+topToBottom' (toList -> imgs) = foldr1 topToBottom imgs
 
 normalize :: (Image img,
               Divisible (Pixel img),
@@ -174,3 +183,8 @@ imageToArray img@(dimensions -> (rows, cols)) = listArray bounds elems where
 imageMap :: (Image a, Image b) => (Pixel a -> Pixel b) -> a -> b
 imageMap f img@(dimensions -> (rows, cols)) = makeImage rows cols map where
   map r c = f (ref img r c)
+
+imageOp :: (Image img) => 
+           (Pixel img -> Pixel img -> Pixel img) -> img -> img -> img
+imageOp op i0 i1 = makeImage (rows i0) (cols i0) operate where
+  operate r c = op (ref i0 r c) (ref i1 r c)
