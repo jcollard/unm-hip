@@ -2,12 +2,12 @@
 {-# OPTIONS -O2 #-}
 module Data.Image.MatrixProduct(matrixProduct) where
 
-import Data.Image.Imageable
+import Data.Image.Internal
 
-{-matrixProduct :: (Imageable img,
+{-matrixProduct :: (Image img,
                   Pixel img ~ Double)-}
 
-matrixProduct :: (Imageable img,
+matrixProduct :: (Image img,
                   Num (Pixel img)) => img -> img -> img
 matrixProduct 
   a@(dimensions -> (arows, acols)) 

@@ -10,37 +10,37 @@ module Data.Image.Complex(Complexable(..),
                           makeFilter,
                           fft, ifft) where
 
-import Data.Image.Imageable
+import Data.Image.Internal
 import qualified Data.Complex as C
 import qualified Data.Image.FFT as FFT
 import qualified Data.Vector as V
 
-realPart :: (Imageable img,
-             Imageable img',
+realPart :: (Image img,
+             Image img',
              RealFloat (Pixel img'),
              Pixel img ~ C.Complex (Pixel img')) => img -> img'
 realPart = imageMap C.realPart
 
-imagPart :: (Imageable img,
-             Imageable img',
+imagPart :: (Image img,
+             Image img',
              RealFloat (Pixel img'),
              Pixel img ~ C.Complex (Pixel img')) => img -> img'
 imagPart = imageMap C.imagPart
 
-magnitude :: (Imageable img,
-             Imageable img',
+magnitude :: (Image img,
+             Image img',
              RealFloat (Pixel img'),
              Pixel img ~ C.Complex (Pixel img')) => img -> img'
 magnitude = imageMap C.magnitude
 
-angle :: (Imageable img,
-          Imageable img',
+angle :: (Image img,
+          Image img',
           RealFloat (Pixel img'),
           Pixel img ~ C.Complex (Pixel img')) => img -> img'
 angle = imageMap C.phase
 
-polar :: (Imageable img,
-          Imageable img',
+polar :: (Image img,
+          Image img',
           RealFloat (Pixel img'),
           Pixel img ~ C.Complex (Pixel img')) => img -> [img']
 polar img@(dimensions -> (rows, cols)) = [mkImg mag, mkImg phs] where
@@ -49,14 +49,14 @@ polar img@(dimensions -> (rows, cols)) = [mkImg mag, mkImg phs] where
   mag r c = fst (ref' r c)
   phs r c = snd (ref' r c)
 
-complexImageToRectangular :: (Imageable img,
-                              Imageable img',
+complexImageToRectangular :: (Image img,
+                              Image img',
                               RealFloat (Pixel img'),
                               Pixel img ~ C.Complex (Pixel img')) => img -> [img']
 complexImageToRectangular img = [realPart img, imagPart img]
 
 
-makeFilter :: (Imageable img) => Int -> Int -> (PixelOp (Pixel img)) -> img
+makeFilter :: (Image img) => Int -> Int -> (PixelOp (Pixel img)) -> img
 makeFilter rows cols func = makeImage rows cols func' where
   mR = rows `div` 2
   mC = cols `div` 2
@@ -71,8 +71,8 @@ instance Complexable (C.Complex Double) where
 instance Complexable Double where
   toComplex = (C.:+ 0)
 
-fft :: (Imageable img,
-        Imageable img',
+fft :: (Image img,
+        Image img',
         Complexable (Pixel img),
         Pixel img' ~ C.Complex Double) => img -> img'
 fft img@(dimensions -> (rows, cols)) = makeImage rows cols fftimg where
@@ -80,7 +80,7 @@ fft img@(dimensions -> (rows, cols)) = makeImage rows cols fftimg where
   vector = V.map toComplex . V.fromList . pixelList $ img
   fft' = FFT.fft rows cols vector
 
-ifft :: (Imageable img,
+ifft :: (Image img,
         Pixel img ~ C.Complex Double) => img -> img
 ifft img@(dimensions -> (rows, cols)) = makeImage rows cols fftimg where
   fftimg r c = fft' V.! (r*cols + c)

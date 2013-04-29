@@ -5,7 +5,7 @@ module Data.Image.DistanceTransform(distanceTransform) where
 import Control.Monad
 import Control.Monad.ST
 
-import Data.Image.Imageable
+import Data.Image.Internal
 
 import qualified Data.Vector.Unboxed as V
 import qualified Data.Vector.Unboxed.Mutable as VM
@@ -16,7 +16,7 @@ import qualified Data.Vector.Unboxed.Mutable as VM
 -- are of equal foreground and all pixel values of 0 are background.
 -- The distance transform is accurate to within a 2% error for euclidean
 -- distance.
-distanceTransform :: (Imageable img,
+distanceTransform :: (Image img,
                       Pixel img ~ Double) => img -> img
 distanceTransform img@(dimensions -> (rows, cols)) = makeImage rows cols func
   where arr  = getDistanceTransformArray img
@@ -24,7 +24,7 @@ distanceTransform img@(dimensions -> (rows, cols)) = makeImage rows cols func
 
 
 -- Begin support code for distance transform
-getDistanceTransformArray :: (Imageable img, 
+getDistanceTransformArray :: (Image img, 
                               Pixel img ~ Double) => img -> V.Vector Double
 getDistanceTransformArray img@(dimensions -> (rows, cols)) = runST $ do
   let size = rows * cols

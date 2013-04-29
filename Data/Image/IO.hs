@@ -5,7 +5,7 @@ module Data.Image.IO(display,
                      toPPM,
                      module System.Process)  where
 
-import Data.Image.Imageable
+import Data.Image.Internal
 import Data.Image.DisplayFormat
 import Data.List(intercalate)
 import System.IO
@@ -23,7 +23,7 @@ runCommandWithStdIn cmd stdin =
     return ioval
 
 -- Converts an image into a PGM string
-toPGM :: (Imageable img, 
+toPGM :: (Image img, 
           RealFrac (Pixel img),
           Divisible (Pixel img),
           MaxMin (Pixel img),
@@ -32,7 +32,7 @@ toPGM img@(dimensions -> (rows, cols)) = "P2 " ++ (show cols) ++ " " ++ (show ro
   px = intercalate " " . map (show . floor . (* 255)) . pixelList $ norm
   norm = normalize img
 
-toPPM :: (Imageable img,
+toPPM :: (Image img,
           MaxMin (Pixel img),
           Divisible (Pixel img),
           Num (Pixel img),

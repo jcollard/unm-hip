@@ -4,14 +4,14 @@ module Data.Image.Label(label) where
 
 import Control.Monad
 import Control.Monad.ST
-import Data.Image.Imageable
+import Data.Image.Internal
 import qualified Data.Map as M
 import Data.STRef
 
 import qualified Data.Vector.Unboxed as V
 import qualified Data.Vector.Unboxed.Mutable as VM
 
-label :: (Imageable img,
+label :: (Image img,
           Pixel img ~ Double) => img -> img
 label img@(dimensions -> (rows, cols)) = makeImage rows cols labels where
   labels r c = arr V.! (r*cols+c)

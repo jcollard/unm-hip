@@ -1,5 +1,4 @@
 {-# LANGUAGE TypeFamilies, FlexibleContexts #-}
-module Data.Image(module Data.Image.Boxed,
-                  module Data.Image.IO) where
+module Data.Image(module Data.Image.Boxed) where
 import Data.Image.Boxed
-import Data.Image.IO
+

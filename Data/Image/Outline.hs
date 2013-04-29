@@ -5,23 +5,23 @@ module Data.Image.Outline(outline) where
 import Control.Monad
 import Control.Monad.ST
 
-import Data.Image.Imageable
+import Data.Image.Internal
 
 import qualified Data.Vector.Unboxed as V
 import qualified Data.Vector.Unboxed.Mutable as VM
 
-outline :: (Imageable img,
+outline :: (Image img,
             Pixel img ~ Double) => img -> img
 outline img = outline' img 0.0 1.0
 
 -- Outline support code
-outline' :: (Imageable img,
+outline' :: (Image img,
              Pixel img ~ Double) => img -> Double -> Double -> img
 outline' img@(dimensions -> (rows, cols)) nonEdge edge = makeImage rows cols func
   where arr = getOutlineArray img edge nonEdge
         func r c = arr V.! ((cols*r)+c)
 
-getOutlineArray :: (Imageable img,
+getOutlineArray :: (Image img,
                     Pixel img ~ Double) => img -> Double -> Double -> V.Vector Double
 getOutlineArray img@(dimensions -> (rows, cols)) edge nonEdge = runST $ do
   let data1 = V.fromList (pixelList img) :: V.Vector Double

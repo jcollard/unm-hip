@@ -9,7 +9,7 @@ module Data.Image.Math(Binary,
                        (/.), (./), (./.),
                        (*.), (.*), (.*.))  where
 
-import Data.Image.Imageable
+import Data.Image.Internal
 
 class Binary b where
   false :: b
@@ -19,12 +19,12 @@ instance Binary Double where
   false = zero
   true = 1.0
 
-binary :: (Imageable img,
+binary :: (Image img,
              Binary (Pixel img)) => (Pixel img -> Bool) -> img -> img
 binary pred img@(dimensions -> (rows, cols)) = makeImage rows cols bin where
   bin r c = if pred (ref img r c) then true else false
   
-compareImage :: (Imageable img,
+compareImage :: (Image img,
                  Binary (Pixel img),
                  Ord (Pixel img)) => ((Pixel img) -> (Pixel img) -> Bool) -> img -> img -> img
 compareImage comp img0@(dimensions -> (rows, cols)) img1 = makeImage rows cols bin where
@@ -33,56 +33,56 @@ compareImage comp img0@(dimensions -> (rows, cols)) img1 = makeImage rows cols b
     p1 = ref img1 r c
 
 
-(.<) :: (Imageable img, 
+(.<) :: (Image img, 
          Binary (Pixel img),
          Ord (Pixel img),
          Pixel img ~ a) => img -> a -> img
 (.<) img num = binary pred img where
   pred p = p < num
 
-(<.) :: (Imageable img,
+(<.) :: (Image img,
          Binary (Pixel img),
          Ord (Pixel img),
          Pixel img ~ a) => a -> img -> img
 (<.) = flip (.>)
 
-(.<.) :: (Imageable img,
+(.<.) :: (Image img,
           Binary (Pixel img),
           Ord (Pixel img)) => img -> img -> img
 (.<.) = compareImage (<)
 
-(.>) :: (Imageable img,
+(.>) :: (Image img,
          Binary (Pixel img),
          Ord (Pixel img),
          Pixel img ~ a) => img -> a -> img
 (.>) img num = binary pred img where
   pred p = p >  num
   
-(>.) :: (Imageable img,
+(>.) :: (Image img,
          Binary (Pixel img),
          Ord (Pixel img),
          Pixel img ~ a) => a -> img -> img
 (>.) = flip (.<)
 
-(.>.) :: (Imageable img,
+(.>.) :: (Image img,
           Binary (Pixel img),
           Ord (Pixel img)) => img -> img -> img
 (.>.) = compareImage (>)
 
-(.==) :: (Imageable img,
+(.==) :: (Image img,
           Binary (Pixel img),
           Eq (Pixel img),
           Pixel img ~ a) => img -> a -> img
 (.==) img num = binary pred img where
   pred p = p == num
 
-(==.) :: (Imageable img,
+(==.) :: (Image img,
           Binary (Pixel img),
           Eq (Pixel img),
           Pixel img ~ a) => a -> img -> img
 (==.) = flip (.==)
   
-(.==.) :: (Imageable img,
+(.==.) :: (Image img,
            Zero (Pixel img),
            Eq (Pixel img)) => img -> img -> img
 (.==.) img0@(dimensions -> (rows, cols)) img1 = makeImage rows cols img where
@@ -90,59 +90,59 @@ compareImage comp img0@(dimensions -> (rows, cols)) img1 = makeImage rows cols b
     p0 = ref img0 r c
     p1 = ref img1 r c
         
-(.+) :: (Imageable img,
+(.+) :: (Image img,
          Num (Pixel img),
          Pixel img ~ a) => img -> a -> img
 (.+) img a = imageMap (+ a) img
 
-(+.) :: (Imageable img,
+(+.) :: (Image img,
          Num (Pixel img),
          Pixel img ~ a) => a -> img -> img
 (+.) = flip (.+)
 
-(.+.) :: (Imageable img,
+(.+.) :: (Image img,
           Num (Pixel img)) => img -> img -> img
 (.+.) = imageOp (+)
 
-(.-) :: (Imageable img,
+(.-) :: (Image img,
          Num (Pixel img),
          Pixel img ~ a) => img -> a -> img
 (.-) img a = imageMap (flip (-) a) img
 
-(-.) :: (Imageable img,
+(-.) :: (Image img,
          Num (Pixel img),
          Pixel img ~ a) => a -> img -> img
 (-.) a img = imageMap ((-) a) img
 
-(.-.) :: (Imageable img,
+(.-.) :: (Image img,
           Num (Pixel img)) => img -> img -> img
 (.-.) = imageOp (-)
 
-(./) :: (Imageable img,
+(./) :: (Image img,
          Fractional (Pixel img),
          Pixel img ~ a) => img -> a -> img
 (./) img a = imageMap (/ a) img
 
-(/.) :: (Imageable img,
+(/.) :: (Image img,
          Fractional (Pixel img),
          Pixel img ~ a) => a -> img -> img
 (/.) num img = imageMap (num /) img
 
-(./.) :: (Imageable img,
+(./.) :: (Image img,
           Fractional (Pixel img)) => img -> img -> img
 (./.) = imageOp (/)
 
-(.*) :: (Imageable img,
+(.*) :: (Image img,
          Num (Pixel img),
          Pixel img ~ a) => img -> a -> img
 (.*) img a = imageMap (* a) img
 
-(*.) :: (Imageable img,
+(*.) :: (Image img,
          Num (Pixel img),
          Pixel img ~ a) => a -> img -> img
 (*.) = flip (.*)
 
-(.*.) :: (Imageable img,
+(.*.) :: (Image img,
           Num (Pixel img)) => img -> img -> img
 (.*.) = imageOp (*)
 

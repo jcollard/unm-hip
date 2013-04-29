@@ -2,9 +2,9 @@
 {-# OPTIONS -O2 #-}
 module Data.Image.MedianFilter(medianFilter) where
 
-import Data.Image.Imageable
+import Data.Image.Internal
 
-medianFilter :: (Imageable img,
+medianFilter :: (Image img,
                  Pixel img ~ Double) => Int -> Int -> img -> img
 medianFilter m n img@(dimensions -> (rows, cols)) = makeImage rows cols avg where
   [moff, noff] = map (`div` 2) [m,n]

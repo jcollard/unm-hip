@@ -1,14 +1,16 @@
 {-# LANGUAGE TypeFamilies, ViewPatterns, FlexibleContexts, FlexibleInstances #-}
 {-# OPTIONS_GHC -O2 #-}
-module Data.Image.Boxed(module Data.Image.Imageable,
-                        module Data.Image.DistanceTransform,
-                        module Data.Image.Outline,
-                        module Data.Image.Label,
-                        module Data.Image.MedianFilter,
-                        module Data.Image.MatrixProduct,
-                        module Data.Image.Areas,
+module Data.Image.Boxed(module Data.Image.Areas,
                         module Data.Image.Complex,
+                        module Data.Image.Convolution,
+                        module Data.Image.DistanceTransform,
+                        module Data.Image.Internal,
+                        module Data.Image.IO,
+                        module Data.Image.Label,
                         module Data.Image.Math,
+                        module Data.Image.MatrixProduct,
+                        module Data.Image.MedianFilter,
+                        module Data.Image.Outline,
                         GrayImage, GrayPixel, readImage, 
                         shrink, grayToComplex,
                         RGBImage, RGBPixel, readColorImage,
@@ -24,44 +26,45 @@ module Data.Image.Boxed(module Data.Image.Imageable,
                         fft', ifft')
                         where
 
-import Data.Image.DistanceTransform
-import Data.Image.Outline
-import Data.Image.Label
-import Data.Image.MedianFilter
-import Data.Image.MatrixProduct
 import Data.Image.Areas
 import Data.Image.Complex
+import Data.Image.Convolution
+import Data.Image.DisplayFormat
+import Data.Image.DistanceTransform
+import Data.Image.Internal
+import Data.Image.IO
+import Data.Image.Label
 import Data.Image.Math
+import Data.Image.MatrixProduct
+import Data.Image.MedianFilter
+import Data.Image.Outline
 
 import qualified Data.Complex as C
-import Data.Image.IO
-import Data.Image.DisplayFormat
-import Data.Image.Imageable
 import qualified Data.ByteString.Char8 as B
 import Data.Maybe(fromJust)
 import qualified Data.Vector as V
 
 type Vector = V.Vector
 
-data Image a = Image { rs :: Int,
+data BoxedImage a = Image { rs :: Int,
                         cs :: Int,
                         pixels :: Vector a} 
 
-instance Functor Image where
+instance Functor BoxedImage where
   fmap f i = Image (rows i) (cols i) (fmap f . pixels $ i)
 
-type HSIImage = Image HSIPixel
+type HSIImage = BoxedImage HSIPixel
 
-type ComplexImage = Image ComplexPixel
+type ComplexImage = BoxedImage ComplexPixel
 
 type ComplexPixel = C.Complex Double
 
-type GrayImage = Image GrayPixel
+type GrayImage = BoxedImage GrayPixel
 
 type GrayPixel = Double
 
-instance Imageable (Image a) where
-  type Pixel (Image a) = a
+instance Image (BoxedImage a) where
+  type Pixel (BoxedImage a) = a
   rows = rs
   cols = cs
   ref i r c = (pixels i) V.! (r * (cols i) + c)
@@ -69,14 +72,14 @@ instance Imageable (Image a) where
     px = [ f r c | r <- [0..rows-1], c <- [0..cols-1]]
   pixelList = V.toList . pixels
 
-instance DisplayFormat (Image GrayPixel) where
+instance DisplayFormat GrayImage where
   format = toPGM
 
-instance Show (Image a) where
+instance Show (BoxedImage a) where
   show (Image rows cols _) = "< Image " ++ (show rows) ++ "x" ++ (show cols) ++ " >"
 
 instance (Num a, 
-          Ord a) => Num (Image a) where
+          Ord a) => Num (BoxedImage a) where
   (+) = imageOp (+)
   (-) = imageOp (-)
   (*) = imageOp (*)
@@ -84,11 +87,11 @@ instance (Num a,
   signum i = Image (rows i) (cols i) (V.map signum . pixels $ i)
   fromInteger = undefined
 
-type RGBImage = Image RGBPixel
+type RGBImage = BoxedImage RGBPixel
 
 data RGBPixel = RGB Double Double Double deriving (Eq, Show)
 
-instance DisplayFormat (Image RGBPixel) where
+instance DisplayFormat RGBImage where
   format = toPPM
 
 instance Zero RGBPixel where
@@ -168,7 +171,7 @@ instance Num HSIPixel where
 hsiOp :: (Double -> Double -> Double) -> HSIPixel -> HSIPixel -> HSIPixel
 hsiOp op (HSI a b c) (HSI d e f) = HSI (op a d) (op b e) (op c f)
 
-hsiToRGB :: Image HSIPixel -> Image RGBPixel
+hsiToRGB :: HSIImage -> RGBImage
 hsiToRGB img@(dimensions -> (rows, cols)) = makeImage rows cols rgb where
   rgb r c = RGB red grn blu where
     (HSI h s i) = (ref img r c)
@@ -179,7 +182,7 @@ hsiToRGB img@(dimensions -> (rows, cols)) = makeImage rows cols rgb where
     v2 = const*s*(sin h)/2
     const = 2.44948974278318
 
-rgbToHSI :: Image RGBPixel -> Image HSIPixel
+rgbToHSI :: RGBImage -> HSIImage
 rgbToHSI img@(dimensions -> (rows, cols)) = makeImage rows cols hsi where
   hsi r c = HSI h s i where
     h = if (v1 /= 0.0) then atan2 v2 v1 else 0
@@ -194,7 +197,7 @@ getColor :: ((Double, Double, Double) -> Double) -> RGBImage -> GrayImage
 getColor color img@(dimensions -> (rows,cols)) = makeImage rows cols get where
   get r c = color . rgb $ ref img r c
   
-getColor' :: ((Double, Double, Double) -> Double) -> Image HSIPixel -> GrayImage
+getColor' :: ((Double, Double, Double) -> Double) -> HSIImage -> GrayImage
 getColor' color img@(dimensions -> (rows,cols)) = makeImage rows cols get where
   get r c = color . (\ (HSI h s i) -> (h, s, i)) $ ref img r c
   
@@ -207,13 +210,13 @@ colorImageGreen = getColor (\ (_,g,_) -> g)
 colorImageBlue :: RGBImage -> GrayImage
 colorImageBlue = getColor (\ (_,_,b) -> b)
 
-colorImageHue :: Image HSIPixel -> GrayImage
+colorImageHue :: HSIImage -> GrayImage
 colorImageHue = getColor' (\ (h,_,_) -> h)
 
-colorImageSaturation :: Image HSIPixel -> GrayImage
+colorImageSaturation :: HSIImage -> GrayImage
 colorImageSaturation = getColor' (\ (_,s,_) -> s)
 
-colorImageIntensity :: Image HSIPixel -> GrayImage
+colorImageIntensity :: HSIImage -> GrayImage
 colorImageIntensity = getColor' (\ (_,_,i) -> i)
 
 rgbToColorImage :: GrayImage -> GrayImage -> GrayImage -> RGBImage
@@ -223,14 +226,14 @@ rgbToColorImage red green blue@(dimensions -> (rows, cols)) = makeImage rows col
     g = ref green row col
     b = ref blue row col
 
-hsiToColorImage :: GrayImage -> GrayImage -> GrayImage -> Image HSIPixel
+hsiToColorImage :: GrayImage -> GrayImage -> GrayImage -> HSIImage
 hsiToColorImage h s i@(dimensions -> (rows, cols)) = makeImage rows cols colors where
   colors r c = HSI h' s' i' where
     h' = ref h r c
     s' = ref s r c
     i' = ref i r c
 
-colorImageToHSI :: Image HSIPixel -> [GrayImage]
+colorImageToHSI :: HSIImage -> [GrayImage]
 colorImageToHSI img = [colorImageHue img, colorImageSaturation img, colorImageIntensity img]
 
 colorImageToRGB :: RGBImage -> [GrayImage]
