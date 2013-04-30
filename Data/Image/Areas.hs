@@ -92,6 +92,7 @@ neighbor labels rows cols r c
   | otherwise = return 0.0
 
 perimeters :: (Image img,
+               MaxMin (Pixel img),
                Pixel img ~ Double) => img -> V.Vector Double
 perimeters img@(dimensions -> (rows, cols)) = runST $ do
   vector <- VM.replicate ((floor $ maxIntensity img)+1) 0 :: ST s (VM.STVector s Double)
@@ -114,6 +115,7 @@ neighborList img@(dimensions -> (rows, cols)) r c =
     r' /= r && c' /= c, r' >= 0, r' < rows, c' >= 0, c' < cols]
 
 boundingBoxes :: (Image img,
+                  MaxMin (Pixel img),
                   Pixel img ~ Double) => img -> [(Int, Int, Int, Int)]
 boundingBoxes img@(dimensions -> (rows, cols)) = runST $ do 
   let n = floor . maxIntensity $ img
@@ -158,6 +160,7 @@ toQuads = toQuads' [] where
   toQuads' acc (a:b:c:d:xs) = toQuads' ((a,b,c,d):acc) xs
   
 centersOfMass :: (Image img,
+                  MaxMin (Pixel img),
                   Pixel img ~ Double) => img -> [(Double, Double)]
 centersOfMass img@(dimensions -> (rows, cols)) = runST $ do
   let n = floor . maxIntensity $ img

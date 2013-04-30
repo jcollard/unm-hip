@@ -1,3 +1,3 @@
-{-# LANGUAGE TypeFamilies, FlexibleContexts #-}
 module Data.Image(module Data.Image.Boxed) where
-import Data.Image.Boxed
+import Data.Image.Boxed 
+

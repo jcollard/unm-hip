@@ -10,16 +10,16 @@ module Data.Image.Boxed(module Data.Image.Areas,
                         module Data.Image.MatrixProduct,
                         module Data.Image.MedianFilter,
                         module Data.Image.Outline,
-                        GrayImage, GrayPixel, readImage, 
+                        GrayImage, readImage, 
                         shrink, grayToComplex, makeHotImage,
-                        RGBImage, RGBPixel, readColorImage,
+                        ColorImage, readColorImage,
                         colorImageRed, colorImageGreen, colorImageBlue,
-                        colorImageToRGB, rgbToColorImage, rgbToHSI,
-                        HSIImage, HSIPixel,
-                        colorImageHue, colorImageSaturation, colorImageIntensity,
-                        hsiToColorImage, colorImageToHSI, hsiToRGB,
-                        ComplexImage, ComplexPixel,
-                        complexToRGB,
+                        colorImageToRGB, 
+                        colorImageToHSI,
+                        rgbToColorImage, 
+                        hsiToColorImage, 
+                        ComplexImage,
+                        complexImageToColorImage,
                         realPart', imagPart', magnitude',
                         angle', polar', complexImageToRectangular',
                         fft', ifft')
@@ -45,22 +45,10 @@ import qualified Data.Vector as V
 
 type Vector = V.Vector
 
+-- BoxedImage
 data BoxedImage a = Image { rs :: Int,
                         cs :: Int,
                         pixels :: Vector a} 
-
-instance Functor BoxedImage where
-  fmap f i = Image (rows i) (cols i) (fmap f . pixels $ i)
-
-type HSIImage = BoxedImage HSIPixel
-
-type ComplexImage = BoxedImage ComplexPixel
-
-type ComplexPixel = C.Complex Double
-
-type GrayImage = BoxedImage GrayPixel
-
-type GrayPixel = Double
 
 instance Image (BoxedImage a) where
   type Pixel (BoxedImage a) = a
@@ -71,69 +59,128 @@ instance Image (BoxedImage a) where
     px = [ f r c | r <- [0..rows-1], c <- [0..cols-1]]
   pixelList = V.toList . pixels
 
-instance DisplayFormat GrayImage where
-  format = toPGM
+instance Functor BoxedImage where
+  fmap f i = Image (rows i) (cols i) (fmap f . pixels $ i)
 
 instance Show (BoxedImage a) where
   show (Image rows cols _) = "< Image " ++ (show rows) ++ "x" ++ (show cols) ++ " >"
 
-instance (Num a, 
-          Ord a) => Num (BoxedImage a) where
-  (+) = imageOp (+)
-  (-) = imageOp (-)
-  (*) = imageOp (*)
-  abs i = Image (rows i) (cols i) (V.map abs . pixels $ i)
-  signum i = Image (rows i) (cols i) (V.map signum . pixels $ i)
-  fromInteger = undefined
+-- GrayImage
+type GrayImage = BoxedImage Gray
+type Gray = Double
 
-type RGBImage = BoxedImage RGBPixel
+instance DisplayFormat GrayImage where
+  format = toPGM
 
-data RGBPixel = RGB Double Double Double deriving (Eq, Show)
+instance GrayPixel Gray where
+  toGray = id
 
-instance DisplayFormat RGBImage where
+instance RGBPixel Gray where
+  toRGB px = (px, px, px)
+
+instance HSIPixel Gray where
+  toHSI = toHSI . RGB . toRGB
+  
+instance BinaryPixel Gray where
+  on = 1.0
+  off = 0.0
+  
+instance ComplexPixel Gray where
+  toComplex i =  i C.:+ 0.0
+
+instance Monoid Gray where
+  mempty = 0.0
+  mappend = (+)
+  
+instance MaxMin Gray where
+  maximal = maximum
+  minimal = minimum
+
+instance Scaleable Gray where
+  divide = (/)
+  mult = (*)
+  
+-- ColorImage
+
+type ColorImage = BoxedImage Color
+
+instance DisplayFormat ColorImage where
   format = toPPM
 
-instance Monoid RGBPixel where
-  mempty = RGB 0.0 0.0 0.0
-  mappend (RGB a b c) (RGB d e f) = RGB (a+d) (b+e) (c+f)
+data Color = RGB (Double, Double, Double)
+           | HSI (Double, Double, Double) deriving (Show, Eq)
+
+instance GrayPixel Color where
+  toGray (RGB (r, g, b)) = (r + g + b) / 3.0
+  toGray (toRGB -> (r, g, b)) = (r + g + b) / 3.0
+
+instance RGBPixel Color where
+  toRGB (RGB px) = px
+  toRGB (HSI (h, s, i)) = (r, g, b) where
+    r = i + v1
+    g = i - (v1/2) + v2
+    b = i - (v1/2) - v2
+    v1 = const*s*(cos h)/3
+    v2 = const*s*(sin h)/2
+    const = 2.44948974278318
   
-instance MaxMin RGBPixel where
-  maximal = helper max mempty
-  minimal = helper min mempty
+instance HSIPixel Color where
+  toHSI (RGB (r, g, b)) = (h, s, i) where
+    h = if (v1 /= 0.0) then atan2 v2 v1 else 0
+    s = sqrt( (v1*v1) + (v2*v2) )
+    i = (r+g+b)/3
+    v1 = (2.0*r-g-b) / const
+    v2 = (g - b) / const
+    const = 2.44948974278318    
+  toHSI (HSI px) = px
+    
+--Requires the image to be scaled 
+--instance ComplexPixel Color where
+--  toComplex = undefined 
+
+instance BinaryPixel Color where
+  on = RGB (1.0, 1.0, 1.0)
+  off = RGB (0.0, 0.0, 0.0)
+
+instance Monoid Color where
+  mempty = RGB (0.0, 0.0, 0.0)
+  mappend (toRGB -> (a,b,c)) (toRGB -> (d,e,f)) = RGB (a+d,b+e,c+f)
+
+instance MaxMin Color where
+  maximal = helper max mempty . map toRGB
+  minimal = helper min (RGB (10e10, 10e10, 10e10)) . map toRGB
   
-instance Divisible RGBPixel where
-  divide f (RGB r g b) = RGB r' g' b' where
-    f' = fromIntegral f
-    (r', g', b') = (f'/r, f'/g, f'/b)
-
-helper :: (Double -> Double -> Double) -> RGBPixel -> [RGBPixel] -> RGBPixel
-helper _ acc [] = acc
-helper compare (RGB r g b) ((RGB r' g' b'):xs) = helper compare acc' xs where
-  acc' = RGB (compare r r') (compare g g') (compare b b')
-
-instance RGB RGBPixel where
-  rgb (RGB r g b) = (r, g, b)
+instance Scaleable Color where
+  divide f (toRGB -> (r, g, b)) = maximum [f/r, f/g, f/b]
+  mult f (toRGB -> (r, g, b)) = RGB (r*f, g*f, b*f)
   
-instance Num RGBPixel where 
-  (+) = rgbOp (+)
-  (-) = rgbOp (-)
-  (*) = rgbOp (*)
-  abs (RGB r g b) = RGB (abs r) (abs g) (abs b)
-  signum (RGB r g b) = RGB (signum r) (signum g) (signum b)
-  fromInteger = undefined
+helper :: (Double -> Double -> Double) -> Color -> [(Double, Double, Double)] -> Color
+helper compare (RGB (r,g,b)) [] = let i = foldr1 compare [r, g, b] in RGB (i,i,i)
+helper compare (RGB (r, g, b)) ((r', g', b'):xs) = helper compare acc' xs where
+  acc' = (RGB (compare r r', compare g g', compare b b'))
 
-rgbOp :: (Double -> Double -> Double) -> RGBPixel -> RGBPixel -> RGBPixel
-rgbOp op (RGB a b c) (RGB d e f) = RGB (op a d) (op b e) (op c f)
+instance Num Color where 
+  (+) = colorOp (+)
+  (-) = colorOp (-)
+  (*) = colorOp (*)
+  abs (toRGB -> (r, g, b)) = RGB (abs r, abs g, abs b)
+  signum (toRGB -> (r, g, b)) = RGB (signum r, signum g, signum b)
+  fromInteger (fromIntegral -> i) = RGB (i,i,i)
 
-data HSIPixel = HSI Double Double Double
+colorOp :: (Double -> Double -> Double) -> Color -> Color -> Color
+colorOp op (toRGB -> (a, b, c)) (toRGB -> (d, e, f)) = RGB (op a d, op b e, op c f)
+
+-- ComplexImage
+type ComplexImage = BoxedImage CPixel
+type CPixel = C.Complex Double
 
 instance DisplayFormat ComplexImage where
-  format (complexToRGB -> rgb) = toPPM rgb
+  format (complexImageToColorImage -> rgb) = toPPM rgb
 
-complexToRGB :: ComplexImage -> RGBImage
-complexToRGB img@(dimensions -> (rows, cols)) = makeImage rows cols rgb where
+complexImageToColorImage :: ComplexImage -> ColorImage
+complexImageToColorImage img@(dimensions -> (rows, cols)) = makeImage rows cols rgb where
   scale = complexScale img
-  rgb row col = if radius < 1 then RGB red' grn' blu' else RGB red grn blu where
+  rgb row col = if radius < 1 then RGB (red', grn', blu') else RGB (red, grn, blu) where
     [red, grn, blu] = map (+d') [r',g',b']
     [red', grn', blu'] = map (flip (-) d')  [r',g',b']
     comp = ref img row col
@@ -160,83 +207,55 @@ twodivsqrtsix = 0.81649658092772603273 --2.0/sqrt(6)
 onedivsqrtsix = 0.40824829046386301636 --1.0/sqrt(6)
 sqrttwodivtwo = 0.70710678118654752440 --sqrt(2)/2.0
 
-instance Num HSIPixel where
-  (+) = hsiOp (+)
-  (-) = hsiOp (-)
-  (*) = hsiOp (*)
-  abs (HSI r g b) = HSI (abs r) (abs g) (abs b)
-  signum (HSI r g b) = HSI (signum r) (signum g) (signum b)
-  fromInteger = undefined
+hsiToColorImage :: (GrayImage, GrayImage, GrayImage) -> ColorImage
+hsiToColorImage (h@(dimensions -> (rows, cols)), s, i) = makeImage rows cols hsi where
+  hsi r c = HSI (h', s', i') where
+    ref' img = ref img r c
+    h' = ref h r c
+    s' = ref' s
+    i' = ref' i
 
-hsiOp :: (Double -> Double -> Double) -> HSIPixel -> HSIPixel -> HSIPixel
-hsiOp op (HSI a b c) (HSI d e f) = HSI (op a d) (op b e) (op c f)
-
-hsiToRGB :: HSIImage -> RGBImage
-hsiToRGB img@(dimensions -> (rows, cols)) = makeImage rows cols rgb where
-  rgb r c = RGB red grn blu where
-    (HSI h s i) = (ref img r c)
-    red = i + v1
-    grn = i - (v1/2) + v2
-    blu = i - (v1/2) - v2
-    v1 = const*s*(cos h)/3
-    v2 = const*s*(sin h)/2
-    const = 2.44948974278318
-
-rgbToHSI :: RGBImage -> HSIImage
-rgbToHSI img@(dimensions -> (rows, cols)) = makeImage rows cols hsi where
-  hsi r c = HSI h s i where
-    h = if (v1 /= 0.0) then atan2 v2 v1 else 0
-    s = sqrt( (v1*v1) + (v2*v2) )
-    i = (r'+g'+b')/3
-    (RGB r' g' b') = (ref img r c)
-    v1 = (2.0*r'-g'-b') / const
-    v2 = (g' - b') / const
-    const = 2.44948974278318
+colorImageToHSI :: ColorImage -> (GrayImage, GrayImage, GrayImage)
+colorImageToHSI img@(dimensions -> (rows, cols)) = (mkImg himg, mkImg simg, mkImg iimg) where
+  himg r c = (\(h,_,_) -> h) (toHSI (ref img r c)) -- This feels dumb...
+  simg r c = (\(_,s,_) -> s) (toHSI (ref img r c)) -- This feels dumb...
+  iimg r c = (\(_,_,i) -> i) (toHSI (ref img r c)) -- This feels dumb...
+  mkImg = makeImage rows cols
   
-getColor :: ((Double, Double, Double) -> Double) -> RGBImage -> GrayImage
-getColor color img@(dimensions -> (rows,cols)) = makeImage rows cols get where
-  get r c = color . rgb $ ref img r c
+--getColor :: ((Double, Double, Double) -> Double) -> ColorImage -> GrayImage
+getColor to color img@(dimensions -> (rows,cols)) = makeImage rows cols get where
+  get r c = color . to . ref img r $ c
   
-getColor' :: ((Double, Double, Double) -> Double) -> HSIImage -> GrayImage
-getColor' color img@(dimensions -> (rows,cols)) = makeImage rows cols get where
-  get r c = color . (\ (HSI h s i) -> (h, s, i)) $ ref img r c
-  
-colorImageRed :: RGBImage -> GrayImage
-colorImageRed = getColor (\ (r, _, _) -> r)
+getRGB = getColor toRGB
 
-colorImageGreen :: RGBImage -> GrayImage
-colorImageGreen = getColor (\ (_,g,_) -> g)
+colorImageRed :: ColorImage -> GrayImage
+colorImageRed = getRGB (\ (r, _, _) -> r)
 
-colorImageBlue :: RGBImage -> GrayImage
-colorImageBlue = getColor (\ (_,_,b) -> b)
+colorImageGreen :: ColorImage -> GrayImage
+colorImageGreen = getRGB (\ (_,g,_) -> g)
 
-colorImageHue :: HSIImage -> GrayImage
-colorImageHue = getColor' (\ (h,_,_) -> h)
+colorImageBlue :: ColorImage -> GrayImage
+colorImageBlue = getRGB (\ (_,_,b) -> b)
 
-colorImageSaturation :: HSIImage -> GrayImage
-colorImageSaturation = getColor' (\ (_,s,_) -> s)
+getHSI = getColor toHSI
 
-colorImageIntensity :: HSIImage -> GrayImage
-colorImageIntensity = getColor' (\ (_,_,i) -> i)
+colorImageHue :: ColorImage -> GrayImage
+colorImageHue = getHSI (\ (h, _, _) -> h)
 
-rgbToColorImage :: GrayImage -> GrayImage -> GrayImage -> RGBImage
-rgbToColorImage red green blue@(dimensions -> (rows, cols)) = makeImage rows cols colors where
-  colors row col = RGB r g b where
+colorImageSaturation :: ColorImage -> GrayImage
+colorImageSaturation = getHSI (\ (_,s,_) -> s)
+
+colorImageIntensity :: ColorImage -> GrayImage
+colorImageIntensity = getHSI (\ (_,_,i) -> i)
+
+rgbToColorImage :: (GrayImage, GrayImage, GrayImage) -> ColorImage
+rgbToColorImage (red, green, blue@(dimensions -> (rows, cols))) = makeImage rows cols colors where
+  colors row col = RGB (r, g, b) where
     r = ref red row col
     g = ref green row col
     b = ref blue row col
 
-hsiToColorImage :: GrayImage -> GrayImage -> GrayImage -> HSIImage
-hsiToColorImage h s i@(dimensions -> (rows, cols)) = makeImage rows cols colors where
-  colors r c = HSI h' s' i' where
-    h' = ref h r c
-    s' = ref s r c
-    i' = ref i r c
-
-colorImageToHSI :: HSIImage -> (GrayImage, GrayImage, GrayImage)
-colorImageToHSI img = (colorImageHue img, colorImageSaturation img, colorImageIntensity img)
-
-colorImageToRGB :: RGBImage -> (GrayImage, GrayImage, GrayImage)
+colorImageToRGB :: ColorImage -> (GrayImage, GrayImage, GrayImage)
 colorImageToRGB img= (colorImageRed img, colorImageGreen img, colorImageBlue img)
 
 shrink :: (Integral a) => a -> GrayImage -> GrayImage
@@ -265,14 +284,14 @@ polar' = polar
 complexImageToRectangular' :: ComplexImage -> (GrayImage, GrayImage) 
 complexImageToRectangular' = complexImageToRectangular
 
-readColorImage :: FilePath -> IO RGBImage
+readColorImage :: FilePath -> IO ColorImage
 readColorImage fileName =
   do
     y <- B.readFile fileName
-    return $ parseRGBImage . B.intercalate (B.pack " ") . stripComments . B.lines $ y
+    return $ parseRGBPixelImage . B.intercalate (B.pack " ") . stripComments . B.lines $ y
     
-parseRGBImage :: B.ByteString -> RGBImage
-parseRGBImage string = Image rows cols (V.fromList rgbs)
+parseRGBPixelImage :: B.ByteString -> ColorImage
+parseRGBPixelImage string = Image rows cols (V.fromList rgbs)
   where ws = B.words string
         getInt = fst. fromJust . B.readInt
         px = map (fromIntegral . getInt) $ drop 4 ws
@@ -281,33 +300,28 @@ parseRGBImage string = Image rows cols (V.fromList rgbs)
         maxi = fromIntegral . getInt $ ws !! 3
         [r, g, b] = colors px
         rgbs = map rgb3 . zip3 r g $ b
-        rgb3 (r, g, b) = RGB r g b
+        rgb3 (r, g, b) = RGB (r, g, b)
 
-colors :: [Int] -> [[GrayPixel]]
+colors :: [Int] -> [[Gray]]
 colors xs = helper xs [] [] []
   where helper [] red green blue = map (map fromIntegral) $ map reverse [red, green, blue]
         helper (r:g:b:cs) red green blue = helper cs (r:red) (g:green) (b:blue)
-
-toRGB :: GrayImage -> RGBImage
-toRGB img@(dimensions -> (rows, cols)) = makeImage rows cols rgb where
-  rgb r c = RGB p p p where
-    p = ref img r c
 
 grayToComplex :: GrayImage -> ComplexImage
 grayToComplex img@(dimensions -> (rows, cols)) = makeImage rows cols toComp where
   toComp r c = (ref img r c ) C.:+ 0.0
 
 fft' :: ComplexImage -> ComplexImage
-fft' = fft
+fft' = undefined
 
 ifft' :: ComplexImage -> ComplexImage
-ifft' = ifft
+ifft' = undefined
 
-makeHotImage :: GrayImage -> RGBImage
+makeHotImage :: GrayImage -> ColorImage
 makeHotImage img@(dimensions -> (rows, cols)) = makeImage rows cols hot where
   min = minIntensity img
   max = maxIntensity img
-  hot r c = RGB r' g' b' where
+  hot r c = RGB (r', g', b') where
     px = ((ref img r c) - min)/(max-min)
     r' = if px < 0.333333333 then (px*3.0) else 1.0
     g' = if px < 0.333333333 then 0.0 else

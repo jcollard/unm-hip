@@ -69,74 +69,74 @@ periodRef :: (Image img) => img -> Int -> Int -> (Pixel img)
 periodRef img@(dimensions -> (rows, cols)) r c = ref img (r `mod` rows) (c `mod` cols)
 
 erode :: (Image img,
-          Binary (Pixel img),
+          BinaryPixel (Pixel img),
           Num (Pixel img),
           Eq (Pixel img)) => img -> img
 erode img = (convolve [[1,1],[1,1]] img) .== 4
 
 erode' :: (Image img,
-           Binary (Pixel img),
+           BinaryPixel (Pixel img),
            Num (Pixel img),
            Eq (Pixel img)) => [[Pixel img]] -> img -> img
 erode' ls img = (convolve ls img) .== (sum . concat $ ls)
 
 erode'' :: (Image img,
-            Binary (Pixel img),
+            BinaryPixel (Pixel img),
             Num (Pixel img),
             Eq (Pixel img)) => Kernel2D (Pixel img) -> img -> img
 erode'' k img = (convolve' k img) .== (sum . elems $ k)
 
 dilate :: (Image img,
-           Binary (Pixel img),
+           BinaryPixel (Pixel img),
            Num (Pixel img),
            Ord (Pixel img)) => img -> img
 dilate img = (convolve [[1,1],[1,1]] img) .> 0
 
 dilate' :: (Image img,
-           Binary (Pixel img),
+           BinaryPixel (Pixel img),
            Num (Pixel img),
            Ord (Pixel img)) => [[Pixel img]] -> img -> img
 dilate' ls img = (convolve ls img) .> 0
 
 dilate'' :: (Image img,
-             Binary (Pixel img),
+             BinaryPixel (Pixel img),
              Num (Pixel img),
              Ord (Pixel img)) => Kernel2D (Pixel img) -> img -> img
 dilate'' k img = (convolve' k img) .> 0
 
 open :: (Image img,
-         Binary (Pixel img),
+         BinaryPixel (Pixel img),
          Num (Pixel img),
          Ord (Pixel img)) => img -> img
 open = dilate . erode
 
 open' :: (Image img,
-          Binary (Pixel img),
+          BinaryPixel (Pixel img),
           Num (Pixel img),
           Ord (Pixel img)) => [[Pixel img]] -> img -> img
 open' ls = dilate' ls . erode' ls
 
 open'' :: (Image img,
-           Binary (Pixel img),
+           BinaryPixel (Pixel img),
            Num (Pixel img),
            Ord (Pixel img)) => Kernel2D (Pixel img) -> img -> img
 open'' k = dilate'' k . erode'' k
 
 close :: (Image img,
-          Binary (Pixel img),
+          BinaryPixel (Pixel img),
           Num (Pixel img),
           Ord (Pixel img)) => img -> img
 close = erode . dilate
 
 close' :: (Image img,
-           Binary (Pixel img),
+           BinaryPixel (Pixel img),
            Num (Pixel img),
            Ord (Pixel img)) => [[Pixel img]] -> img -> img
 close' ls = erode' ls . dilate' ls
 
 
 close'' :: (Image img,
-            Binary (Pixel img),
+            BinaryPixel (Pixel img),
             Num (Pixel img),
             Ord (Pixel img)) => Kernel2D (Pixel img) -> img -> img
 close'' k img = erode'' k . dilate'' k $ img

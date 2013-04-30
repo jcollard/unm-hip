@@ -1,6 +1,6 @@
 {-# LANGUAGE ViewPatterns, FlexibleInstances, TypeFamilies, FlexibleContexts #-}
 {-# OPTIONS -O2 #-}
-module Data.Image.Complex(Complexable(..),
+module Data.Image.Complex(ComplexPixel(..),
                           realPart,
                           imagPart,
                           magnitude,
@@ -16,10 +16,9 @@ import qualified Data.Complex as C
 import qualified Data.Image.FFT as FFT
 import qualified Data.Vector as V
 
-instance Monoid (C.Complex Double) where
-  mempty = 0 C.:+ 0
-  mappend = (+)
-  
+class ComplexPixel px where
+  toComplex :: px -> C.Complex Double
+
 realPart :: (Image img,
              Image img',
              RealFloat (Pixel img'),
@@ -67,18 +66,9 @@ makeFilter rows cols func = makeImage rows cols func' where
   mC = cols `div` 2
   func' r c = func ((r+mR) `mod` rows) ((c+mC) `mod` cols)
 
-class Complexable c where
-  toComplex :: c -> C.Complex Double
-
-instance Complexable (C.Complex Double) where
-  toComplex = id
-
-instance Complexable Double where
-  toComplex = (C.:+ 0)
-
 fft :: (Image img,
         Image img',
-        Complexable (Pixel img),
+        ComplexPixel (Pixel img),
         Pixel img' ~ C.Complex Double) => img -> img'
 fft img@(dimensions -> (rows, cols)) = makeImage rows cols fftimg where
   fftimg r c = fft' V.! (r*cols + c)
@@ -91,3 +81,4 @@ ifft img@(dimensions -> (rows, cols)) = makeImage rows cols fftimg where
   fftimg r c = fft' V.! (r*cols + c)
   vector = V.fromList . pixelList $ img
   fft' = FFT.ifft rows cols vector
+

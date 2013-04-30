@@ -7,8 +7,10 @@
 module Data.Image.Internal(Image(..), 
                            PixelOp,
                            MaxMin(..),
-                           RGB(..),
-                           Divisible(..),
+                           GrayPixel(..),
+                           RGBPixel(..),
+                           HSIPixel(..),
+                           Scaleable(..),
                            Listable(..),
                            imageOp, 
                            dimensions, 
@@ -62,26 +64,22 @@ instance Listable (a,a,a) where
   type Elem (a,a,a) = a
   toList (a,b,c) = [a,b,c]
   
-class RGB px where
-  rgb :: px -> (Double, Double, Double)
+class GrayPixel px where
+  toGray :: px -> Double
 
-class Divisible d where
-  divide :: (Integral a) => a -> d -> d 
+class RGBPixel px where
+  toRGB :: px -> (Double, Double, Double)
 
-instance Divisible Double where
-  divide f d = fromIntegral f / d
+class HSIPixel px where
+  toHSI :: px -> (Double, Double, Double)
+
+class Scaleable d where
+  divide :: Double -> d -> Double
+  mult   :: Double -> d -> d
 
 class MaxMin m where
   maximal :: [m] -> m
   minimal :: [m] -> m
-
-instance MaxMin Double where
-  maximal = maximum
-  minimal = minimum
-  
-instance Monoid Double where
-  mempty = 0.0
-  mappend = (+)
 
 transpose :: (Image img) => img -> img
 transpose img@(dimensions -> (rows, cols)) = makeImage rows cols trans where
@@ -156,11 +154,11 @@ topToBottom' :: (Image (Elem a), Listable a) => a -> Elem a
 topToBottom' (toList -> imgs) = foldr1 topToBottom imgs
 
 normalize :: (Image img,
-              Divisible (Pixel img),
+              Scaleable (Pixel img),
               MaxMin (Pixel img),
               Num (Pixel img)) => img -> img
 normalize img@(dimensions -> (rows, cols)) = makeImage rows cols map where
-  map r c = ((ref img r c) - min)*scale
+  map r c = scale `mult` ((ref img r c) - min)
   (min, max) = (minimal px, maximal px)
   scale = 1 `divide` (max - min)
   px = pixelList img
