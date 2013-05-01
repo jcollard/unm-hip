@@ -37,6 +37,7 @@ import Data.Image.MatrixProduct
 import Data.Image.MedianFilter
 import Data.Image.Outline
 
+import Control.Applicative
 import qualified Data.Complex as C
 import qualified Data.ByteString.Char8 as B
 import Data.Maybe(fromJust)
@@ -58,25 +59,42 @@ instance Image (BoxedImage a) where
   makeImage rows cols f = Image rows cols (V.fromList px) where
     px = [ f r c | r <- [0..rows-1], c <- [0..cols-1]]
   pixelList = V.toList . pixels
+  imageOp = liftA2
+
+instance Monoid (BoxedImage a) where
+  mempty = Image 0 0 (V.fromList [])
+  mappend i0@(Image rows cols px) i1@(Image rows' cols' px')
+   | rows /= rows' = error "Images must have the same number of rows" 
+   | otherwise = leftToRight i0 i1
 
 instance Functor BoxedImage where
-  fmap f i = Image (rows i) (cols i) (fmap f . pixels $ i)
+  fmap f (Image rows cols pixels) = Image rows cols (fmap f pixels)
+
+instance Applicative BoxedImage where
+  pure a = Image 1 1 (V.fromList [a])
+  (<*>) (Image rows cols partial) (Image rows' cols' toApply)
+    | rows /= rows' && cols /= cols' = error "Cannot apply images of unequal dimensions."
+    | otherwise = Image rows cols (V.fromList applied) where
+       indices = [ r*cols + c | r <- [0..rows-1], c <- [0..cols-1]]
+       partials = map (partial V.!) indices
+       values = map (toApply V.!) indices
+       applied = zipWith ($) partials values
 
 instance Show (BoxedImage a) where
   show (Image rows cols _) = "< Image " ++ (show rows) ++ "x" ++ (show cols) ++ " >"
 
 instance Num a => Num (BoxedImage a) where
-  (+) = imageOp (+)
-  (-) = imageOp (-)
-  (*) = imageOp (*)
+  (+) = liftA2 (+)
+  (-) = liftA2 (-)
+  (*) = liftA2 (*)
   abs = fmap abs
   signum = fmap signum
-  fromInteger _ = error "Cannot create image from Integer"
+  fromInteger i = pure $ fromInteger i
 
 instance Fractional a => Fractional (BoxedImage a) where
-  (/) = imageOp (/)
+  (/) = liftA2 (/)
   recip = fmap recip
-  fromRational _ = error "Cannot create image from Rational."
+  fromRational i = pure $ fromRational i
 
 -- GrayImage
 type GrayImage = BoxedImage Gray

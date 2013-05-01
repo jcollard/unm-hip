@@ -747,7 +747,7 @@ representing the matrix product of <i>X<sub>1</sub></i> and
 Given a &#60;function&#62 of a pixel values of type 'a' to a pixel values of type 'b', and 
 an image containing pixel values of type 'a', returns an
 image that for each (i,j) the pixel value is applied to the pixel in the 
-provided image. Note: Boxed images are Functor and imageMap = fmap for Boxed images.
+provided image. Note: Boxed images are Functors which means that fmap may be used on them ans is actually more powerful than imageMap as you don't need a concrete type for the resulting image as fmap will use the type of whatever was being used.
 
 <xmp>
 *Main> let img = imageMap (\ p -> if (p > 0) then (-1 * p * (log p)) else 0) frog :: GrayImage

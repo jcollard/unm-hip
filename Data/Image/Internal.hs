@@ -12,7 +12,6 @@ module Data.Image.Internal(Image(..),
                            HSIPixel(..),
                            Scaleable(..),
                            Listable(..),
-                           imageOp, 
                            dimensions, 
                            maxIntensity,
                            minIntensity,
@@ -32,8 +31,7 @@ module Data.Image.Internal(Image(..),
                            normalize,
                            imageFold,
                            arrayToImage,
-                           imageToArray,
-                           imageMap) where
+                           imageToArray) where
 
 import Data.Array.IArray
 import Data.Monoid
@@ -46,8 +44,17 @@ class Image i where
   ref  :: i -> Int -> Int -> (Pixel i)
   rows :: i -> Int
   cols :: i -> Int
+  
+  imageMap :: (Image b) => (Pixel i -> Pixel b) -> i -> b
+  imageMap f img@(dimensions -> (rows, cols)) = makeImage rows cols map where
+    map r c = f (ref img r c)
+  
   pixelList :: i -> [Pixel i]
   pixelList i = [ ref i r c | r <- [0..(rows i - 1)], c <- [0..(cols i - 1)]]
+  
+  imageOp :: (Pixel i -> Pixel i -> Pixel i) -> i -> i -> i
+  imageOp op i0 i1 = makeImage (rows i0) (cols i0) operate where
+    operate r c = op (ref i0 r c) (ref i1 r c)
   
 class Listable a where
   type Elem a :: *
@@ -176,11 +183,3 @@ imageToArray img@(dimensions -> (rows, cols)) = listArray bounds elems where
   bounds = ((0,0), (rows-1,cols-1))
   elems = pixelList img
     
-imageMap :: (Image a, Image b) => (Pixel a -> Pixel b) -> a -> b
-imageMap f img@(dimensions -> (rows, cols)) = makeImage rows cols map where
-  map r c = f (ref img r c)
-
-imageOp :: (Image img) => 
-           (Pixel img -> Pixel img -> Pixel img) -> img -> img -> img
-imageOp op i0 i1 = makeImage (rows i0) (cols i0) operate where
-  operate r c = op (ref i0 r c) (ref i1 r c)
