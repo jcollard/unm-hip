@@ -63,9 +63,8 @@ instance Applicative BoxedImage where
     | rows /= rows' && cols /= cols' = error "Cannot apply images of unequal dimensions."
     | otherwise = Image rows cols (V.fromList applied) where
        indices = [ r*cols + c | r <- [0..rows-1], c <- [0..cols-1]]
-       partials = map (partial V.!) indices
-       values = map (toApply V.!) indices
-       applied = zipWith ($) partials values
+       applied = map func indices
+       func i = (partial V.! i) (toApply V.! i)
 
 instance Show (BoxedImage a) where
   show (Image rows cols _) = "< Image " ++ (show rows) ++ "x" ++ (show cols) ++ " >"
@@ -203,12 +202,11 @@ instance ComplexPixel CPixel where
   toComplex = id
 
 complexImageToColorImage :: ComplexImage -> ColorImage
-complexImageToColorImage img@(dimensions -> (rows, cols)) = makeImage rows cols rgb where
+complexImageToColorImage img = fmap rgb img where
   scale = complexScale img
-  rgb row col = if radius < 1 then RGB (red', grn', blu') else RGB (red, grn, blu) where
+  rgb comp = if radius < 1 then RGB (red', grn', blu') else RGB (red, grn, blu) where
     [red, grn, blu] = map (+d') [r',g',b']
     [red', grn', blu'] = map (flip (-) d')  [r',g',b']
-    comp = ref img row col
     [x, y] = map (*scale) [C.realPart comp, C.imagPart comp]
     radius = sqrt((x*x) + (y*y))
     a = onedivsqrtsix*x
@@ -233,21 +231,16 @@ onedivsqrtsix = 0.40824829046386301636 --1.0/sqrt(6)
 sqrttwodivtwo = 0.70710678118654752440 --sqrt(2)/2.0
 
 hsiToColorImage :: (GrayImage, GrayImage, GrayImage) -> ColorImage
-hsiToColorImage (h@(dimensions -> (rows, cols)), s, i) = makeImage rows cols hsi where
-  hsi r c = HSI (h', s', i') where
-    ref' img = ref img r c
-    h' = ref h r c
-    s' = ref' s
-    i' = ref' i
+hsiToColorImage (h, s, i) = toHSI <$> h <*> s <*> i where
+  toHSI h s i = HSI (h, s, i)
 
 colorImageToHSI :: ColorImage -> (GrayImage, GrayImage, GrayImage)
 colorImageToHSI img = (colorImageHue img, colorImageSaturation img, colorImageIntensity img) 
   
-getColor to color img@(dimensions -> (rows,cols)) = makeImage rows cols get where
-  get r c = color . to . ref img r $ c
+getColor to color img = fmap (color . to) img
   
 getRGB = getColor toRGB
-
+ 
 colorImageRed :: ColorImage -> GrayImage
 colorImageRed = getRGB (\ (r, _, _) -> r)
 
@@ -269,18 +262,15 @@ colorImageIntensity :: ColorImage -> GrayImage
 colorImageIntensity = getHSI (\ (_,_,i) -> i)
 
 rgbToColorImage :: (GrayImage, GrayImage, GrayImage) -> ColorImage
-rgbToColorImage (red, green, blue@(dimensions -> (rows, cols))) = makeImage rows cols colors where
-  colors row col = RGB (r, g, b) where
-    r = ref red row col
-    g = ref green row col
-    b = ref blue row col
+rgbToColorImage (red, green, blue) = createRGB <$> red <*> green <*> blue where
+  createRGB r g b = RGB (r, g, b)
 
 colorImageToRGB :: ColorImage -> (GrayImage, GrayImage, GrayImage)
 colorImageToRGB img = (colorImageRed img, colorImageGreen img, colorImageBlue img)
 
 shrink :: (Integral a) => a -> GrayImage -> GrayImage
-shrink (fromIntegral -> x) img@(dimensions -> (rows, cols)) = makeImage rows cols shrink' where
-  shrink' r c = let z = abs (ref img r c) in helper z where
+shrink (fromIntegral -> x) img@(dimensions -> (rows, cols)) = fmap shrink' img where
+  shrink' (abs -> px) = helper px where
     helper z 
       | z < x = mempty
       | z > 0 = z - x 
@@ -328,20 +318,18 @@ colors xs = helper xs [] [] []
         helper (r:g:b:cs) red green blue = helper cs (r:red) (g:green) (b:blue)
 
 grayToComplex :: GrayImage -> ComplexImage
-grayToComplex img@(dimensions -> (rows, cols)) = makeImage rows cols toComp where
-  toComp r c = (ref img r c ) C.:+ 0.0
+grayToComplex img = fmap (C.:+ 0.0) img
 
 makeHotImage :: GrayImage -> ColorImage
-makeHotImage img@(dimensions -> (rows, cols)) = makeImage rows cols hot where
-  min = minIntensity img
+makeHotImage img = fmap (toHot max min) img where
   max = maxIntensity img
-  hot r c = RGB (r', g', b') where
-    px = ((ref img r c) - min)/(max-min)
-    r' = if px < 0.333333333 then (px*3.0) else 1.0
-    g' = if px < 0.333333333 then 0.0 else
+  min = minIntensity img
+  toHot max min pixel = RGB (r, g, b) where
+    px = (pixel - min)/(max-min)
+    r = if px < 0.333333333 then (px*3.0) else 1.0
+    g = if px < 0.333333333 then 0.0 else
           if px < 0.666666667 then (px - 0.333333333)*3 else 1.0
-    b' = if px < 0.666666667 then 0.0 else (px - 0.666666667)*3
-  
+    b = if px < 0.666666667 then 0.0 else (px - 0.666666667)*3
 
 -- Reads in a PGM image located at fileName
 readImage :: FilePath -> IO GrayImage

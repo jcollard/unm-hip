@@ -2,11 +2,9 @@
 module Data.Image.IO(DisplayFormat(..),
                      GrayPixel(..),
                      RGBPixel(..),
-                     display,
                      writeImage,
                      toPGM,
                      toPPM,
-                     setDisplayProgram,
                      module System.Process)  where
 
 import Data.Image.Internal
@@ -14,7 +12,6 @@ import Data.List(intercalate)
 import System.IO
 import System.Process
 
-import System.IO.Unsafe
 import Data.IORef
 
 class DisplayFormat df where
@@ -26,29 +23,6 @@ class GrayPixel px where
 class RGBPixel px where
   toRGB :: px -> (Double, Double, Double)
 
-displayProgram :: IORef String
-displayProgram = unsafePerformIO $ do
-  dp <- newIORef "display"
-  return dp
-
-useStdin :: IORef Bool
-useStdin = unsafePerformIO $ do
-  usestdin <- newIORef True
-  return usestdin
-
-setDisplayProgram :: String -> Bool -> IO ()
-setDisplayProgram program stdin = writeIORef displayProgram program >> writeIORef useStdin stdin
-
--- Run a command via the shell with the input given as stdin
-runCommandWithStdIn :: String -> String -> IO (Handle, Handle, Handle, ProcessHandle)
-runCommandWithStdIn cmd stdin =
-  do
-    ioval <- runInteractiveCommand cmd
-    let stdInput = (\ (x, _, _, _) -> x) ioval
-    hPutStr stdInput stdin
-    hFlush stdInput
-    hClose stdInput
-    return ioval
 
 -- Converts an image into a PGM string
 toPGM :: (Image img, 
@@ -70,17 +44,6 @@ toPPM img@(dimensions -> (rows, cols)) = "P3 " ++ (show cols) ++ " " ++ (show ro
   rgbs = map (showRGB . scale . toRGB) . pixelList $ norm
   scale (r, g, b) = (255*r, 255*g, 255*b)
   showRGB (r, g, b) = (show . round $ r) ++ " " ++ (show . floor $ g) ++ " " ++ (show . floor $ b)
-
--- Displays an image using ImageMagick's display command
--- System must have ImageMagick installed for this to work
-display :: (DisplayFormat df) => df -> IO (Handle, Handle, Handle, ProcessHandle)
-display img = do
-  usestdin <- readIORef useStdin
-  display <- readIORef displayProgram
-  if usestdin then runCommandWithStdIn display . format $ img
-              else do
-    writeImage ".tmp-img" img
-    runInteractiveCommand (display ++ " .tmp-img")
 
 writeImage :: (DisplayFormat df) => FilePath -> df -> IO ()
 writeImage file = writeFile file . format 
