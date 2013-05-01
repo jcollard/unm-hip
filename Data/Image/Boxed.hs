@@ -30,7 +30,6 @@ import Data.Image.Complex
 import Data.Image.Convolution
 import Data.Image.Internal
 import Data.Image.IO
-import Data.Image.Math
 
 import Control.Applicative
 import qualified Data.Complex as C
