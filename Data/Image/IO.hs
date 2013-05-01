@@ -3,6 +3,7 @@ module Data.Image.IO(display,
                      writeImage,
                      toPGM,
                      toPPM,
+                     setDisplayProgram,
                      module System.Process)  where
 
 import Data.Image.Internal
@@ -10,6 +11,22 @@ import Data.Image.DisplayFormat
 import Data.List(intercalate)
 import System.IO
 import System.Process
+
+import System.IO.Unsafe
+import Data.IORef
+
+displayProgram :: IORef String
+displayProgram = unsafePerformIO $ do
+  dp <- newIORef "display"
+  return dp
+
+useStdin :: IORef Bool
+useStdin = unsafePerformIO $ do
+  usestdin <- newIORef True
+  return usestdin
+
+setDisplayProgram :: String -> Bool -> IO ()
+setDisplayProgram program stdin = writeIORef displayProgram program >> writeIORef useStdin stdin
 
 -- Run a command via the shell with the input given as stdin
 runCommandWithStdIn :: String -> String -> IO (Handle, Handle, Handle, ProcessHandle)
@@ -48,7 +65,13 @@ toPPM img@(dimensions -> (rows, cols)) = "P3 " ++ (show cols) ++ " " ++ (show ro
 -- Displays an image using ImageMagick's display command
 -- System must have ImageMagick installed for this to work
 display :: (DisplayFormat df) => df -> IO (Handle, Handle, Handle, ProcessHandle)
-display img = runCommandWithStdIn "display" . format $ img
+display img = do
+  usestdin <- readIORef useStdin
+  display <- readIORef displayProgram
+  if usestdin then runCommandWithStdIn display . format $ img
+              else do
+    writeImage ".tmp-img" img
+    runInteractiveCommand (display ++ " .tmp-img")
 
 writeImage :: (DisplayFormat df) => FilePath -> df -> IO ()
 writeImage file = writeFile file . format 

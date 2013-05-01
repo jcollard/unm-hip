@@ -350,17 +350,18 @@ result of applying &#60;function&#62 to -1 and -1.
 <IMG SRC="images/ramp2.gif">
 <p>
 <xmp>
+laplacianOfGaussian :: Double -> Int -> Int -> Double
 laplacianOfGaussian stddev i j =
   let r = fromIntegral (i*i + j*j)
-      x = (r / 2.0) / stddev 
-  in (((-pi) / stddev) / stddev) * (1 - x) * (exp (-x))
+      x = (r / 2.0) / stddev
+  in (((-pi) / stddev) / stddev) * (1.0 - x) * (exp (-x))
 
-*Main Data.Complex> let d2g = makeFilter 128 128 (laplacianOfGaussian 8) :: ComplexImage
+*Main Data.Complex> let d2g = makeFilter 128 128 (laplacianOfGaussian 8) :: GrayImage
 *Main Data.Complex> d2g
 < Image 128x128 >
 *Main Data.Complex> display d2g
 </xmp>
-<IMG SRC="images/fdf_log.gif"> <-- THIS IMAGE IS NOT CORRECT
+<IMG SRC="images/fdf_log.gif">
 <p>
 <li><xmp>fft :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Complex Double) => img -> img' </xmp>
 
