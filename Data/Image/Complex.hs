@@ -1,12 +1,14 @@
 {-# LANGUAGE ViewPatterns, FlexibleInstances, TypeFamilies, FlexibleContexts #-}
 {-# OPTIONS -O2 #-}
 module Data.Image.Complex(ComplexPixel(..),
+                          complex,
                           realPart,
                           imagPart,
                           magnitude,
                           angle,
                           polar,
                           complexImageToRectangular,
+                          complexImageToPolar,
                           makeFilter,
                           fft, ifft) where
 
@@ -21,15 +23,15 @@ class ComplexPixel px where
 
 realPart :: (Image img,
              Image img',
-             RealFloat (Pixel img'),
-             Pixel img ~ C.Complex (Pixel img')) => img -> img'
-realPart = imageMap C.realPart
+             Pixel img' ~ Double,
+             ComplexPixel (Pixel img)) => img -> img'
+realPart = imageMap (C.realPart . toComplex)
 
 imagPart :: (Image img,
              Image img',
-             RealFloat (Pixel img'),
-             Pixel img ~ C.Complex (Pixel img')) => img -> img'
-imagPart = imageMap C.imagPart
+             Pixel img' ~ Double,
+             ComplexPixel (Pixel img)) => img -> img'
+imagPart = imageMap (C.imagPart . toComplex)
 
 magnitude :: (Image img,
              Image img',
@@ -53,18 +55,29 @@ polar img@(dimensions -> (rows, cols)) = (mkImg mag, mkImg phs) where
   mag r c = fst (ref' r c)
   phs r c = snd (ref' r c)
 
+complex :: (Image img,
+            Image img',
+            Pixel img' ~ C.Complex (Pixel img)) => img -> img -> img'
+complex real imag@(dimensions -> (rows, cols)) = makeImage rows cols ri where
+  ri r c = (ref real r c) C.:+ (ref imag r c)
+
 complexImageToRectangular :: (Image img,
                               Image img',
-                              RealFloat (Pixel img'),
-                              Pixel img ~ C.Complex (Pixel img')) => img -> (img', img')
+                              Pixel img' ~ Double,
+                              ComplexPixel (Pixel img)) => img -> (img', img')
 complexImageToRectangular img = (realPart img, imagPart img)
 
+complexImageToPolar
+  :: (RealFloat (Pixel img'), Image img, Image img',
+      Pixel img ~ C.Complex (Pixel img')) =>
+     img -> (img', img')
+complexImageToPolar img = (magnitude img, angle img)
 
 makeFilter :: (Image img) => Int -> Int -> (PixelOp (Pixel img)) -> img
 makeFilter rows cols func = makeImage rows cols func' where
-  mR = rows `div` 2
-  mC = cols `div` 2
-  func' r c = func ((r+mR) `mod` rows) ((c+mC) `mod` cols)
+  func' r c = let x = if r < (rows `div` 2) then r else r-rows 
+                  y = if c < (cols `div` 2) then c else c-cols
+              in func x y
 
 fft :: (Image img,
         Image img',
@@ -76,9 +89,11 @@ fft img@(dimensions -> (rows, cols)) = makeImage rows cols fftimg where
   fft' = FFT.fft rows cols vector
 
 ifft :: (Image img,
-        Pixel img ~ C.Complex Double) => img -> img
+        Image img',
+        ComplexPixel (Pixel img),
+        Pixel img' ~ C.Complex Double) => img -> img'
 ifft img@(dimensions -> (rows, cols)) = makeImage rows cols fftimg where
   fftimg r c = fft' V.! (r*cols + c)
-  vector = V.fromList . pixelList $ img
+  vector = V.map toComplex . V.fromList . pixelList $ img
   fft' = FFT.ifft rows cols vector
 

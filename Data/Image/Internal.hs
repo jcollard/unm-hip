@@ -26,6 +26,7 @@ module Data.Image.Internal(Image(..),
                            upsampleRows,
                            upsampleCols,
                            upsample,
+                           transpose,
                            pad,
                            crop,
                            normalize,
@@ -82,40 +83,37 @@ class MaxMin m where
   minimal :: [m] -> m
 
 transpose :: (Image img) => img -> img
-transpose img@(dimensions -> (rows, cols)) = makeImage rows cols trans where
+transpose img@(dimensions -> (rows, cols)) = makeImage cols rows trans where
   trans r c = ref img c r
 
 dimensions :: Image i => i -> (Int, Int)
 dimensions i = (rows i, cols i)
 
-downsampleRows :: (Image img) => img -> img
-downsampleRows img@(dimensions -> (rows, cols)) = makeImage (rows `div` 2) cols downsample where
+downsampleCols :: (Image img) => img -> img
+downsampleCols img@(dimensions -> (rows, cols)) = makeImage (rows `div` 2) cols downsample where
   downsample r c = ref img (r*2) c
   
-downsampleCols :: (Image img) => img -> img
-downsampleCols img@(dimensions -> (rows, cols)) = makeImage rows (cols `div` 2) downsample where
+downsampleRows :: (Image img) => img -> img
+downsampleRows img@(dimensions -> (rows, cols)) = makeImage rows (cols `div` 2) downsample where
   downsample r c = ref img r (c*2)
   
 downsample :: (Image img) => img -> img
 downsample = downsampleRows . downsampleCols
 
-upsampleRows :: (Image img, Monoid (Pixel img)) => img -> img
-upsampleRows img@(dimensions -> (rows, cols)) = makeImage (rows*2) cols upsample where
+upsampleCols :: (Image img, Monoid (Pixel img)) => img -> img
+upsampleCols img@(dimensions -> (rows, cols)) = makeImage (rows*2) cols upsample where
   upsample r c 
     | even r = ref img (r `div` 2) c
     | otherwise = mempty
 
-upsampleCols :: (Image img, Monoid (Pixel img)) => img -> img
-upsampleCols img@(dimensions -> (rows, cols)) = makeImage rows (cols*2) upsample where
+upsampleRows :: (Image img, Monoid (Pixel img)) => img -> img
+upsampleRows img@(dimensions -> (rows, cols)) = makeImage rows (cols*2) upsample where
   upsample r c 
-    | even r = ref img r (c `div` 2)
+    | even c = ref img r (c `div` 2)
     | otherwise = mempty
 
 upsample :: (Image img, Monoid (Pixel img)) => img -> img
-upsample img@(dimensions -> (rows, cols)) = makeImage (rows*2) (cols*2) upsample where
-  upsample r c
-    | even r && even c = ref img (r `div` 2) (c `div` 2)
-    | otherwise = mempty
+upsample = upsampleRows . upsampleCols
       
 pad :: (Image img, Monoid (Pixel img)) => Int -> Int -> img -> img    
 pad rs cs img@(dimensions -> (rows, cols)) = makeImage rs cs pad where

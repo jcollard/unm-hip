@@ -30,7 +30,7 @@ toPGM :: (Image img,
           Num (Pixel img),
           Show (Pixel img)) => img -> [Char]
 toPGM img@(dimensions -> (rows, cols)) = "P2 " ++ (show cols) ++ " " ++ (show rows) ++ " 255 " ++ px where
-  px = intercalate " " . map (show . floor . (255 `mult`)) . pixelList $ norm
+  px = intercalate " " . map (show . round . (255 `mult`)) . pixelList $ norm
   norm = normalize img
 
 toPPM :: (Image img,
@@ -43,7 +43,7 @@ toPPM img@(dimensions -> (rows, cols)) = "P3 " ++ (show cols) ++ " " ++ (show ro
   norm = normalize img
   rgbs = map (showRGB . scale . toRGB) . pixelList $ norm
   scale (r, g, b) = (255*r, 255*g, 255*b)
-  showRGB (r, g, b) = (show . floor $ r) ++ " " ++ (show . floor $ g) ++ " " ++ (show . floor $ b)
+  showRGB (r, g, b) = (show . round $ r) ++ " " ++ (show . floor $ g) ++ " " ++ (show . floor $ b)
 
 -- Displays an image using ImageMagick's display command
 -- System must have ImageMagick installed for this to work

@@ -12,6 +12,7 @@ module Data.Image.Math(BinaryPixel(..),
 import Data.Image.Internal
 
 class BinaryPixel px where
+  toBinary :: px -> Bool
   off :: px
   on  :: px
 
@@ -141,5 +142,3 @@ compareImage comp img0@(dimensions -> (rows, cols)) img1 = makeImage rows cols b
 (.*.) :: (Image img,
           Num (Pixel img)) => img -> img -> img
 (.*.) = imageOp (*)
-
-

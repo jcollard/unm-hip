@@ -1,0 +1,1026 @@
+
+<html>
+<p>
+<h1>UNM's Hasell Image Processing Library</h1>
+<p>
+<ul>
+<li><xmp>makeImage :: Image i => Int -> Int -> PixelOp (Pixel i) -> i</xmp>
+
+Given a positive integer &#60;number m&#62, a positive integer
+&#60;number n&#62, and a &#60;function&#62 returning a pixel value, 
+<i>makeImage</i> returns an Image of the pixel value of the function,
+with <i>m</i> rows and <i>n</i> columns. The value of the result image
+at location <i>(i, j)</i> is computed by applying &#60;function&#62 to
+<i>i</i> and <i>j</i>. 
+
+<xmp>
+*Main> let grad = makeImage 128 128 (\ r c -> fromIntegral (r + c)) :: GrayImage
+*Main> grad
+< Image 128x128 >
+*Main> display grad
+</xmp>
+<p>
+<IMG SRC="images/ramp1.gif">
+<p>
+<xmp>
+pii :: Complex Double
+pii = 0 :+ pi
+
+harmonicSignal :: Double -> Double -> Int -> Int -> Complex Double
+harmonicSignal u v m n = exp ((2*pii) * ((u*(fromIntegral m) + v*(fromIntegral n)) :+ 0))
+
+*Main> let signal = makeImage 128 128 (harmonicSignal (3 / 128) (2 / 128)) :: ComplexImage
+*Main> signal
+*Main> signal
+< Image 128x128 >
+*Main> display signal
+</xmp>
+<p>
+<IMG SRC="images/fdf_harmonic_signal.gif">
+<p>
+<li><xmp>readImage :: FilePath -> IO GrayImage</xmp>
+Given &#60;string filename&#62, the name of a file containing an image
+stored in ASCII <i>.pgm</i> format, <i>readImage</i> reads the file
+and returns the image. For example,
+
+<xmp>
+*Main> frog <- readImage "images/frog.pgm"
+*Main> display frog
+</xmp>
+<p>
+<IMG SRC="images/frog.gif">
+<p>
+<li><xmp>writeImage :: DisplayFormat df => FilePath -> df -> IO ()</xmp>
+
+Given a &#60;string filename&#62 and an &#60image&#62 installed in DisplayFormat (GrayImage, ColorImage, ComplexImage),
+<i>writeImage</i> creates a file representing the image in ASCII
+<i>.pgm</i> format for GrayImages and <i>.ppm</i> for ColorImage and ComplexImage. Images written this way are normalized to integers between values 0 an 255; This may result in loss of detail on very fine grain images.
+
+<xmp>
+*Main> writeImage "frog.pgm" frog
+</xmp>
+creates a file which looks like this:
+<xmp>
+P2
+# Creator: University of New Mexico Scheme 2.0
+242 225
+255
+  151   151   151   151   151   150   150   149   148   147   146   145   145   142   142 
+  143   145   148   152   156   158   159   159   159   159   157   155   152   150   153 
+  152   151   149   149   149   149   150   149   149   149   149   149   149   149   149 
+  149   146   144   141   138   136   133   132   136   136   136   136   136   136   136 
+  136   139   138   138   138   137   136   136   136   135   135   136   136   137   137 
+  138   138   138   137   138   137   138   137   138   137   135   134   134   134   138 
+  141   147   150   149   147   143   138   134   132   131   130   129   129   130   132 
+  134   136   137   137   137   137   138   139   142   145   147   149   145   146   150 
+  153   156   159   161   163   156   158   161   163   167   170   174   175   181   183 
+.
+.
+.
+</xmp>
+
+<li><xmp>ref :: Image i => i -> Int -> Int -> Pixel i</xmp>
+
+Given an &#60;image&#62, a positive &#60;int
+i&#62, and a positive &#60;int j&#62, <i>ref</i> returns
+the pixel value at location <i>(i, j)</i>. 
+
+<xmp>
+*Main> ref frog 100 100
+56.0
+</xmp>
+
+<li><xmp>rows :: Image i => i -> Int</xmp>
+Returns the number of rows of &#60;image&#62. For example,
+<xmp>
+*Main> rows frog
+225
+</xmp>
+<li><xmp>cols :: Image i => i -> Int</xmp>
+
+Returns the number of columns of &#60;image&#62. For example,
+
+<xmp>
+*Main> cols frog
+242
+</xmp>
+<li><xmp>transpose :: Image img => img -> img</xmp>
+
+Returns an image created by interchanging the rows and columns of the
+&#60;image&#62, i.e., the value at location <i>(i, j)</i>
+of the result image is the value of &#60;image&#62 at location <i>(j,
+i)</i>. For example,
+
+<xmp>
+*Main> transpose frog
+< Image 242x225 >
+*Main> display . transpose $ frog
+</xmp>
+<p>
+<IMG SRC="images/transpose-frog.gif">
+<p>
+<li><xmp>convolveRows :: (Num (Pixel img), Image img) => [Pixel img] -> img -> img</xmp>
+
+Given a &#60;list&#62
+consisting solely of pixel values representing a 1D
+convolution kernel and an &#60;image&#62, <i>convolveRows</i> returns the 1D discrete
+periodic convolution of the rows of the image with the kernel. For
+example,
+
+<xmp>
+*Main> convolveRows [1, -1] frog
+< Image 225x242 >
+*Main> display . convolveRows [1, -1] $ frog
+</xmp>
+<IMG SRC="images/convolve-rows-frog.gif">
+<p>
+<li><xmp>convolveCols :: (Num (Pixel img), Image img) => [Pixel img] -> img -> img</xmp>
+
+Given a &#60;list&#62
+consisting solely of pixel values representing a 1D
+convolution kernel and an &#60;image&#62, <i>convolveCols</i> returns the 1D discrete
+periodic convolution of the columns of the image with the kernel. For
+example,
+
+<xmp>
+*Main> convolveCols [1, -1] frog
+< Image 225x242 >
+*Main> display . convolveCols [1, -1] $ frog
+</xmp>
+<IMG SRC="images/convolve-cols-frog.gif">
+<p>
+<xmp>
+*Main> let dx = convolveRows [1, -1] frog
+*Main> let dy = convolveCols [1, -1] frog
+*Main> let grad = imageMap sqrt ((dx .*. dx) .+. (dy .*. dy)) :: GrayImage
+*Main> grad
+< Image 225x242 >
+*Main> display grad
+</xmp>
+<p>
+<IMG SRC="images/gradient-frog.gif">
+<p>
+<li><xmp>convolve :: (Num (Pixel img), Image img) => [[Pixel img]] -> img -> </xmp>
+
+Given a an &#60;array&#62
+consisting solely of pixels representing a 2D
+convolution kernel and an &#60;image&#62, <i>convolve</i> returns the 2D discrete periodic
+convolution of the image with the kernel. For example,
+
+<xmp>
+*Main> convolve [[1, 1, 1], [1, -8, 1], [1, 1, 1]] frog
+< Image 225x242 >
+*Main> display . convolve [[1, 1, 1], [1, -8, 1], [1, 1, 1]] $ frog>
+</xmp>
+<IMG SRC="images/convolve-frog.gif">
+<p>
+<li>downsampleCols :: Image img => img -> img</li>
+
+Given an &#60;image&#62, <i>downsampleCols</i>
+returns the image created by discarding the odd numbered rows, i.e.,
+the value at location <i>(i, j)</i> of the result image is the value
+of &#60;image&#62 at location <i>(2i, j)</i>. For example,
+
+<xmp>
+*Main> downsampleCols frog
+< Image 112x242 >
+*Main> display . downsampleCols $ frog
+</xmp>
+<IMG SRC="images/downsample-cols-frog.gif">
+<p>
+
+<li><xmp>downsampleRows :: Image img => img -> img</xmp>
+
+Given an &#60;image&#62, <i>downsampleRows</i>
+returns the image created by discarding the odd numbered columns,
+i.e., the value at location <i>(i, j)</i> is the value of
+&#60;image&#62 at location <i>(i, 2j)</i>. For example,
+
+<xmp>
+*Main> downsampleRows frog
+< Image 225x121 >
+*Main> display . downsampleRows $ frog
+</xmp>
+<IMG SRC="images/downsample-rows-frog.gif">
+<p>
+<li><xmp>downsample :: Image img => img -> img</xmp>
+
+<xmp>
+*Main> let tinyFrog = downsample frog
+*Main> tinyFrog
+< Image 112x121 >
+*Main> display tinyFrog
+</xmp>
+<IMG SRC="images/downsample-frog.gif">
+<p>
+<li><xmp>upsampleCols :: (Data.Monoid.Monoid (Pixel img), Image img) => img -> img</xmp>
+
+Given an &#60;image&#62, <i>upsampleCols</i> returns
+an image with twice the number of rows where the value at location
+<i>(i, j)</i> of the result image is the value of &#60;image&#62 at
+location <i>(i/2, j)</i> if <i>i</i> is even and <i>mempty</i> otherwise. For
+example,
+
+<xmp>
+*Main> upsampleCols tinyFrog
+< Image 224x121 >
+*Main> display . upsampleCols $ tinyFrog
+</xmp>
+<p>
+<IMG SRC="images/upsample-cols-tiny-frog.gif">
+<p>
+<li><xmp>upsampleRows :: (Data.Monoid.Monoid (Pixel img), Image img) => img -> img</xmp>
+
+Given an &#60;image&#62, <i>upsampleRows</i> returns
+an image with twice the number of columns where the value at location
+<i>(i, j)</i> of the result image is the value of &#60;image&#62 at
+location <i>(i, j/2)</i> if <i>j</i> is even and <i>mempty</i> otherwise. For
+example,
+
+<xmp>
+*Main> upsampleRows tinyFrog
+< Image 112x242 >
+*Main> display . upsampleRows $ tinyFrog
+</xmp>
+<IMG SRC="images/upsample-rows-tiny-frog.gif">
+<p>
+<li><xmp>upsample :: (Data.Monoid.Monoid (Pixel img), Image img) => img -> img</xmp>
+
+Given an &#60;image&#62, <i>upsample</i> returns an
+image with twice the number of rows and columns where the value at
+location <i>(i, j)</i> of the result image is the value of
+&#60;image&#62 at location <i>(i/2, j/2)</i> if both <i>i</i> and
+<i>j</i> are even and <i>mempty</i> otherwise. For example,
+
+<xmp>
+*Main> upsample tinyFrog
+< Image 224x242 >
+*Main> display . upsample $ tinyFrog
+</xmp>
+<p>
+<IMG SRC="images/upsample-tiny-frog.gif">
+<p>
+
+<li><xmp>pad :: (Data.Monoid.Monoid (Pixel img), Image img) => Int -> Int -> img -> img</xmp>
+
+Given a positive integer &#60;m&#62, positive integer &#60;n&#62, and
+an &#60;image&#62,  <i>pad</i>
+returns an image with <i>m</i> rows and <i>n</i>
+columns where the value at location <i>(i, j)</i> of the result image
+is the value of &#60;image&#62 at location <i>(i, j)</i> if <i>i</i>
+is less than <i>m</i> and <i>j</i> is less than <i>n</i> and <i>mempty</i>
+otherwise. For example,
+
+<xmp>
+*Main> pad 200 200 tinyFrog
+< Image 200x200 >
+*Main> display . pad 200 200 $ tinyFrog
+</xmp>
+<p>
+<IMG SRC="images/padded-tiny-frog.gif">
+</p>
+<li><xmp>crop :: Image img => Int -> Int -> Int -> Int -> img -> img</xmp>
+
+Given a positive integer &#60;i<sub>0</sub>&#62, positive integer &#60;j<sub>0</sub>&#62,
+positive integer &#60;m&#62, positive integer &#60;n&#62 and an &#60;image&#62, <i>image-crop</i> returns an image with
+<i>m</i> rows and <i>n</i> columns where the value at location <i>(i,
+j)</i> of the result image is the value of &#60;image&#62 at location
+<i>(i<sub>0</sub> + i, j<sub>0</sub> + j)</i>. For example,
+
+<xmp>
+*Main> let frogPart = crop 64 64 128 128 frog
+*Main> frogPart
+< Image 128x128 >
+*Main> display frogPart
+</xmp>
+<p>
+<IMG SRC="images/cropped-frog.gif">
+<p>
+<li><xmp>leftToRight :: Image img => img -> img -> img</xmp>
+
+Given two images, both with the same number of rows,
+<i>leftToRight</i> returns an image formed by
+concatenating the images from left to right. For example,
+
+<xmp>
+*Main> leftToRight tinyFrog tinyFrog
+< Image 112x242 >
+*Main> display . leftToRight tinyFrog $ tinyFrog
+</xmp>
+<IMG SRC="images/left-to-right-frog.gif">
+<p>
+<li><xmp>topToBottom :: Image img => img -> img -> img</xmp>
+
+Given two images, both with the same number of columns,
+<i>topToBottom</i> returns an image formed by
+concatenating the images from top to bottom. For example,
+
+<xmp>
+*Main> topToBottom tinyFrog tinyFrog
+< Image 224x121 >
+*Main> display . topToBottom tinyFrog $ tinyFrog
+</xmp>
+<p>
+<IMG SRC="images/top-to-bottom-frog.gif">
+</p>
+
+<li><xmp>leftToRight' and topToBottom' are versions of leftToRight and topToBottom that accept a List, Pair (,), or Triple (,,) of images and concatenates them.</xmp></li>
+
+<li><xmp>makeFilter :: Image img => Int -> Int -> PixelOp (Pixel img) -> img</xmp>
+
+Given a positive integer &#60;m&#62, a positive integer
+&#60;n&#62, and a &#60;function&#62 returning a pixel value, <i>makeFilter</i> returns an image
+with <i>m</i> rows and <i>n</i> columns. Let <i>x</i> equal <i>i</i>
+if <i>i</i> is less than <i>m/2</i> and <i>i - m</i> otherwise and let
+<i>y</i> equal <i>j</i> if <i>j</i> is less than <i>n/2</i> and <i>j -
+n</i> otherwise. To match the periodicity of the 2D discrete Fourier
+spectrum, the value of the result image at location <i>(i, j)</i> is
+computed by applying &#60;function&#62 to <i>x</i> and <i>y</i>, e.g.,
+the value at location <i>(0, 0)</i> is the result of applying
+&#60;function&#62 to 0 and 0, the value at <i>(m-1, n-1)</i> is the
+result of applying &#60;function&#62 to -1 and -1. 
+
+<xmp>
+*Main Data.Complex> let filter = makeFilter 128 128 (\ i j -> fromIntegral (i + j)) :: GrayImage
+*Main Data.Complex> filter
+< Image 128x128 >
+*Main Data.Complex> display filter
+</xmp>
+<p>
+<IMG SRC="images/ramp2.gif">
+<p>
+<xmp>
+laplacianOfGaussian stddev i j =
+  let r = fromIntegral (i*i + j*j)
+      x = (r / 2.0) / stddev 
+  in (((-pi) / stddev) / stddev) * (1 - x) * (exp (-x))
+
+*Main Data.Complex> let d2g = makeFilter 128 128 (laplacianOfGaussian 8) :: ComplexImage
+*Main Data.Complex> d2g
+< Image 128x128 >
+*Main Data.Complex> display d2g
+</xmp>
+<IMG SRC="images/fdf_log.gif"> <-- THIS IMAGE IS NOT CORRECT
+<p>
+<li><xmp>fft :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Complex Double) => img -> img' </xmp>
+
+Given an &#60;image&#62 whose pixels can be converted to a complex value, 
+<i>fft</i> returns an image with complex pixels
+representing its 2D discrete Fourier transform (DFT). Because
+the DFT is computed using the Fast Fourier Transform (FFT) algorithm,
+the number of rows and columns of &#60;image&#62 must both be powers
+of two, i.e., 2<sup><i>K</i></sup> where <i>K</i> is an integer. For
+example,
+
+<xmp>
+*Main> let fftFrog = fft frogPart :: ComplexImage
+*Main> let magFrog = magnitude fftFrog :: GrayImage
+*Main> let logFrog = imageMap log magFrog :: GrayImage
+*Main> logFrog
+< Image 128x128 >
+*Main> display logFrog
+</xmp>
+<p>
+<IMG SRC="images/fdf_log_mag_ffrog.gif">
+<p>
+<xmp>
+*Main> fft d2g :: ComplexImage
+< Image 128x128 >
+*Main> display (fft d2g :: ComplexImage)
+</xmp>
+<IMG SRC="images/fdf_flog.gif">
+<xmp>
+gaussian variance i j =          
+  let r = fromIntegral (i*i + j*j)
+      x = (r / (2*pi)) / variance
+  in exp (-x)
+*Main> let g = makeFilter 128 128 (gaussian 8) :: GrayImage
+*Main> display g
+</xmp>
+<IMG SRC="images/fdf_gaussian.gif">
+<xmp>
+*Main> fft g :: ComplexImage
+< Image 128x128 >
+*Main> display (fft g :: ComplexImage)
+</xmp>
+<IMG SRC="images/fdf_fgaussian.gif">
+<p>
+<li><xmp>ifft :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Complex Double) => img -> img'</xmp>
+
+Given an &#60;image&#62, <i>ifft</i> returns a complex
+image representing its 2D inverse discrete Fourier transform
+(DFT). Because the inverse DFT is computed using the Fast Fourier
+Transform (FFT) algorithm, the number of rows and columns of
+&#60;image&#62 must both be powers of two, i.e., 2<sup><i>K</i></sup>
+where <i>K</i> is an integer. For example,
+
+<xmp>
+*Main> let d2g' = fft d2g :: ComplexImage
+*Main> let frogPart' = (fft frogPart) :: ComplexImage
+*Main> ifft (d2g' .*. frogPart') :: ComplexImage
+< Image 128x128 >
+*Main> display (ifft (d2g' .*. frogPart') :: ComplexImage)
+</xmp>
+<IMG SRC="images/fdf_frog_log.gif">
+<p>
+<xmp>
+*Main> let g' = fft g :: ComplexImage
+*Main> ifft (frogPart' .*. g') :: ComplexImage
+< Image 128x128 >
+*Main> display (ifft (frogPart' .*. g') :: ComplexImage)
+</xmp>
+<IMG SRC="images/fdf_frog_gaussian.gif">
+<p>
+<li><xmp>realPart :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Double) => img -> img'</xmp>
+
+Given an image with complex pixels,
+<i>realPart</i> returns an image representing the
+real part. For example,
+
+<xmp>
+*Main> let cosine = realPart signal :: GrayImage
+*Main> cosine
+< Image 128x128 >
+*Main> display cosine
+</xmp>
+<IMG SRC="images/fdf_cosine.gif">
+<p>
+<xmp>
+*Main> let inverse = ifft (frogPart' .*. d2g') :: ComplexImage
+*Main> realPart inverse :: GrayImage
+< Image 128x128 >
+*Main> display (realPart inverse :: GrayImage)
+</xmp>
+<IMG SRC="images/fdf_frog_real_log.gif">
+<p>
+<xmp>
+*Main> let inverse = ifft (frogPart' .*. g') :: ComplexImage
+*Main> realPart inverse :: GrayImage
+< Image 128x128 >
+*Main> display (realPart inverse :: GrayImage)
+</xmp>
+<IMG SRC="images/fdf_frog_real_gaussian.gif">
+<p>
+<li><xmp>imagPart :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Double) => img -> img'</xmp>
+
+Given a &#60complex-image Z&#62,
+<i>imagPart</i> returns an image representing the
+imaginary part of <i>z</i> (or <i>Z</i>). For example,
+
+<xmp>
+*Main> let sine = imagPart signal :: GrayImage
+*Main> sine
+< Image 128x128 >
+*Main> display sine
+</xmp>
+<IMG SRC="images/fdf_sine.gif">
+<p>
+<li><xmp>complex :: (Image img, Image img', Pixel img' ~ C.Complex (Pixel img)) => img -> img -> img'</xmp>
+
+Given an &#60;image X&#62 and an &#60;image Y&#62 <i>complex</i> returns a
+complex image with real part <i>X</i> and
+imaginary part <i>Y</i>. For example,
+
+<xmp>
+*Main> complex cosine sine :: ComplexImage
+< Image 128x128 >
+*Main> display (complex cosine sine :: ComplexImage)
+</xmp>
+<IMG SRC="images/fdf_harmonic_signal.gif">
+<p>
+<li><xmp>complexImageToRectangular :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Double) => img -> (img', img')</xmp>
+
+Given a &#60;complex image&#62, <i>complexImageToRectangular</i>
+returns a pair containing two real images representing its real and
+imaginary parts. For example,
+
+<xmp>
+*Main> leftToRight' (complexImageToRectangular signal :: (GrayImage, GrayImage))
+< Image 128x256 >
+*Main> display . leftToRight' $ (complexImageToRectangular signal :: (GrayImage, GrayImage))
+</xmp>
+<IMG SRC="images/xy_harmonic_signal.gif">
+<p>
+<li><xmp>magnitude :: (RealFloat (Pixel img'), Image img, Image img', Pixel img ~ C.Complex (Pixel img')) => img -> img'</xmp>
+
+Given a &#60complex-image Z&#62,
+<i>magnitude</i> returns a real image representing the
+magnitude of <i>Z</i>. For example,
+
+<xmp>
+*Main> magnitude signal :: GrayImage
+< Image 128x128 >
+*Main> display (magnitude signal :: GrayImage)
+</xmp>
+<IMG SRC="images/harmonic_signal_magnitude.gif"> <--- Image is not correct in haskell libray because some of the values are ~0.9999 and others are 1.0. When normalized the 0.999 values go to 0 and the remaining go to 1.
+<p>
+<li><xmp>angle :: (RealFloat (Pixel img'), Image img, Image img', Pixel img ~ C.Complex (Pixel img')) => img -> img'</xmp
+
+Given a &#60complex-image Z&#62,
+<i>angle</i> returns a real number image representing the
+phase of <i>z</i> (or <i>Z</i>). For example,
+
+<xmp>
+*Main> angle signal :: GrayImage
+< Image 128x128 >
+*Main> display (angle signal :: GrayImage)
+</xmp>
+<IMG SRC="images/harmonic_signal_angle.gif">
+<p>
+<li><xmp>complexImageToPolar :: (RealFloat (Pixel img'), Image img, Image img', Pixel img ~ C.Complex (Pixel img')) => img -> (img', img')</xmp>
+
+Given a &#60;complex-image&#62, <i>complexImageToPolar</i> returns a
+a pair of two real images representing its magnitude and
+phase. For example,
+
+<xmp>
+*Main> complexImageToPolar signal :: (GrayImage, GrayImage)
+(< Image 128x128 >,< Image 128x128 >)
+*Main> display . leftToRight' $ (complexImageToPolar signal :: (GrayImage, GrayImage))
+</xmp>
+<IMG SRC="images/ma_harmonic_signal.gif">
+<p>
+<li><xmp>(+) :: Num a => a -> a -> a</xmp>
+
+Any image installed in the Num type class (all Boxed images) may be added together if their dimensions match. For each (i, j) the resulting pixel will be the sum of the two pixels from the provided images.
+
+<xmp>
+*Main> callisto <- readImage "images/callisto.pgm"
+*Main> display callisto
+</xmp>
+<p>
+<IMG SRC="images/callisto.gif">
+<p>
+<xmp>
+*Main> ganymede <- readImage "images/ganymede.pgm"
+*Main> display ganymede
+</xmp>
+<p>
+<IMG SRC="images/ganymede.gif">
+<p>
+<xmp>
+*Main> callisto + ganymede
+< Image 128x128 >
+*Main> display $ callisto + ganymede
+</xmp>
+<p>
+<IMG SRC="images/sum.gif">
+<p>
+<li><xmp>(-) :: Num a => a -> a -> a</xmp>
+
+Any image installed in the Num type class (all Boxed images) may be subtracted from each other if their dimensions match. For each (i, j) the resulting pixel will be the difference of the two pixels from the provided images.
+
+<xmp>
+*Main> display $ callisto - ganymede
+</xmp>
+<p>
+<IMG SRC="images/difference.gif">
+<p>
+<li><xmp>(*) :: Num a => a -> a -> a</xmp>
+
+Any image installed in the Num type class (all Boxed images) may be multiplied together if their dimensions match. For each (i, j) the resulting pixel will be the product of the two pixels from the provided images.
+
+<xmp>
+*Main> display (callisto * ganymede)
+</xmp>
+<p>
+<IMG SRC="images/product.gif">
+<p>
+<li><xmp>(/) :: Fractional a => a -> a -> a</xmp>
+
+Any image installed in the Fractional type class (all Boxed images) may be diviedfrom each other if their dimensions match. For each (i, j) the resulting pixel will be the quotient of the two pixels from the provided images.
+
+<xmp>
+*Main> display (callisto / ganymede)
+</xmp>
+<p>
+<IMG SRC="images/quotient.gif">
+<p>
+
+<li><xmp>arrayToImage :: Image img => Array (Int, Int) (Pixel img) -> img</xmp>
+
+Given an &#60;array&#62 consisting entirely of pixel values, <i>arrayToImage</i> returns an image with
+the same dimensions as the array. For example,
+
+<xmp>
+*Main> let array = listArray ((0,0),(127,127)) [0..] :: Array (Int,Int) Double
+*Main> arrayToImage array :: GrayImage
+< Image 128x128 >
+*Main> display (arrayToImage array :: GrayImage)
+</xmp>
+<p>
+<IMG SRC="images/matrix2image.gif">
+<p>
+<li><xmp>imageToArray :: Image img => img -> Array (Int, Int) (Pixel img)</xmp>
+
+Given an &#60;image&#62, <i>imageToArray</i> returns
+an array with the same dimensions as the image. For example,
+
+<xmp>
+*Main> let arr = listArray ((0,0),(2,2)) [0..] :: Array (Int, Int) Double
+*Main> imageToArray (arrayToImage arr :: GrayImage)
+array ((0,0),(2,2)) [((0,0),0.0),((0,1),1.0),((0,2),2.0),((1,0),3.0),((1,1),4.0),((1,2),5.0),((2,0),6.0),((2,1),7.0),((2,2),8.0)]
+</xmp>
+
+<li><xmp>(>.) :: (Ord (Pixel img), Image img, BinaryPixel (Pixel img)) => Pixel img -> img -> img</xmp>
+
+Given a pixel, c, that is orderable and an image whose pixels have binary values,
+returns a binary image that for each pixel p if p > c then it is on otherwise it is off. Note, there is a variation of (>.) with (.>) where the arguments are flipped.
+
+<xmp>
+*Main> stop <- readColorImage "images/stop.ppm"
+*Main> display stop
+</xmp>
+<p>
+<IMG SRC="images/stop.gif">
+<p>
+<xmp>
+*Main> let (r,g,b) = colorImageToRGB stop
+*Main> let binaryStop = (r + g + b) .> 400
+*Main> display binaryStop
+</xmp>
+<IMG SRC="images/binary-stop.gif">
+<p>
+
+<li><xmp>(<.) :: (Ord (Pixel img), Image img, BinaryPixel (Pixel img)) => Pixel img -> img -> img</xmp>
+
+Given a pixel, c, that is orderable and an image whose pixels have binary values,
+returns a binary image that for each pixel p if p > c then it is on otherwise it is off. Note, there is a variation of (<.) with (.<) where the arguments are flipped.
+
+<xmp>
+*Main> let binaryStop = (r + g + b) .< 400
+*Main> display binaryStop
+</xmp>
+<p>
+<IMG SRC="images/binarystop-inverted.gif">
+<p>
+
+<li><xmp>(.==.) :: (Eq (Pixel img), Image img, BinaryPixel (Pixel img)) => img -> img -> img</xmp>
+
+Given two images of the same type whose pixels are installed in Eq, returns an image that for each pixel (i,j) is on if the pixels in the provided image are equivalent and off otherwise.
+
+<xmp>
+shiftRight :: Image img => Int -> img -> img
+shiftRight s img = makeImage (rows img) (cols img) shift where
+  shift r c = ref img r c' where
+      c' = let sum = c + s 
+           in if sum < (cols img) then sum else sum - (cols img)
+*Main> let binaryStop = (r + g + b) .> 400
+*Main> display $ (shiftRight 100 binaryStop)
+</xmp>
+<p>
+<IMG SRC="images/shiftBinaryStop.gif">
+<xmp>
+*Main> display $ (shiftRight 100 binaryStop) .==. binaryStop
+</xmp>
+<img src="images/binaryEqual.gif">
+
+<li><xmp>normalize :: (Num (Pixel img), Scaleable (Pixel img), MaxMin (Pixel img), Image img) => img -> img</xmp>
+
+Given a an &#60;image&#62, <i>normalize</i> returns an
+image with the same dimensions where the values have been normalized to
+lie in the interval <i>[0, 1]</i>.
+
+<p>
+
+<li><xmp>(image-shrink <image> <number x>)</xmp> ---- TODO For Complex Images
+
+Given a real (or complex) &#60;image&#62 and a real positive
+&#60;number x&#62, <i>image-shrink</i> returns a real (or complex)
+image with the same dimensions. Let <i>z</i> be the value of
+&#60;image&#62 at location <i>(i, j)</i>. If <i>|z| < x</i>, then the
+value of the result image at location <i>(i, j)</i> is zero.
+Otherwise, it is <i>z - x</i> if <i>z > 0</i> and <i>z + x</i> if <i>z
+< 0</i>. If &#60;image&#62 is complex, then the value of the complex
+result image at location <i>(i, j)</i> is zero if <i>|z| < x</i>,
+otherwise the result has the same phase as <i>z</i> but the amplitude
+is decreased by <i>x</i>.
+
+<p>
+
+
+<li><xmp>medianFilter :: (Fractional (Pixel img), Image img) => Int -> Int -> img -> img</xmp>
+
+Given two positive integers, &#60;number
+m&#62 and &#60;number n&#62 and a an &#60;image&#62, <i>medianFilter</i> returns an image
+with the same dimensions where each pixel <i>(i, j)</i> in
+&#60;image&#62 is replaced by the pixel with median value in the
+neighborhood of size &#60;number m&#62 times &#60;number n&#62
+centered on <i>(i, j)</i>.
+<p>
+<xmp>
+*Main> let medianFilteredFrog = medianFilter 5 5 frog
+*Main> display medianFilteredFrog
+</xmp>
+<p>
+<IMG SRC="images/frog-median.gif">
+<p>
+
+<li><xmp>imageFold :: Image img => (Pixel img -> b -> b) -> b -> img -> b</xmp>
+
+Given a &#60;function&#62 of a pixel to a b which returns a
+b, <i>imageFold</i> returns the b which results
+from repeatedly applying &#60;function&#62 to: 1) the result
+accumulated to this point (initially the value of the first pixel);
+and 2) the value of the next pixel.
+
+<p>
+
+<li><xmp>matrixProduct :: (Num (Pixel img), Image img) => img -> img -> img</xmp>
+
+Given an &#60;image X<sub>1</sub>&#62 and an &#60;image X<sub>2</sub>&#62, where the number of columns of
+<i>X<sub>1</sub></i> equals the number of rows of
+<i>X<sub>2</sub></i>, <i>matrixProduct</i> returns an image
+representing the matrix product of <i>X<sub>1</sub></i> and
+<i>X<sub>2</sub></i>.
+
+<xmp>
+*Main> display (matrixProduct frogPart frogPart)
+</xmp>
+<p>
+<IMG SRC="images/frog-times-frog.gif">
+<p>
+
+<li><xmp>imageMap :: (Image a, Image b) => (Pixel a -> Pixel b) -> a -> b</xmp>
+
+Given a &#60;function&#62 of a pixel values of type 'a' to a pixel values of type 'b', and 
+an image containing pixel values of type 'a', returns an
+image that for each (i,j) the pixel value is applied to the pixel in the 
+provided image. Note: Boxed images are Functor and imageMap = fmap for Boxed images.
+
+<xmp>
+*Main> let img = imageMap (\ p -> if (p > 0) then (-1 * p * (log p)) else 0) frog :: GrayImage
+*Main> display img
+</xmp>
+<p>
+<IMG SRC="images/minus-log-frog.gif">
+<p>
+<li><xmp>readColorImage :: FilePath -> IO ColorImage</xmp></li>
+
+Given &#60;string filename&#62, the name of a file containing an image
+stored in ASCII <i>.ppm</i> format, <i>readColorImage</i> reads the
+file and returns the color image. For example,
+
+<xmp>
+*Main> cacti <- readColorImage "images/cactii.ppm"
+*Main> display cacti
+</xmp>
+<p>
+<IMG SRC="images/cacti.gif">
+<p>
+
+<li><xmp>colorImageRed :: ColorImage -> GrayImage</xmp>
+
+Given &#60ColorImage&#62, <i>colorImageRed</i> returns a GrayImage
+representing its red color component. For example,
+
+<xmp>
+*Main> let red = colorImageRed cacti
+*Main> display red
+</xmp>
+<p>
+<IMG SRC="images/cacti-red.gif">
+<p>
+<li><xmp>colorImageGreen :: ColorImage -> GrayImage</xmp>
+
+Given &#60ColorImage&#62, <i>colorImageGreen</i> returns a GrayImage
+ representing its green color component. For example,
+
+<xmp>
+*Main> let green = colorImageGreen cacti
+*Main> display green
+</xmp>
+<p>
+<IMG SRC="images/cacti-green.gif">
+<p>
+<li><xmp>colorImageBlue :: ColorImage -> GrayImage</xmp>
+
+Given &#60ColorImage&#62, <i>colorImageBlue</i> returns a GrayImage representing its blue color component. For example,
+
+<xmp>
+*Main> let blue = colorImageBlue cacti
+*Main> display blue
+</xmp>
+<p>
+<IMG SRC="images/cacti-blue.gif">
+<p>
+<li><xmp>rgbToColorImage :: (GrayImage, GrayImage, GrayImage) -> ColorImage</xmp>
+
+Given a triple of GrayImages, <i>rgbToColorImage</i> returns a ColorImage with red color
+component, <i>R</i>, green color component, <i>G</i>, and blue color
+component, <i>B</i>.
+
+<xmp>
+*Main> display . rgbToColorImage $ (red,green,blue)
+</xmp>
+<p>
+<IMG SRC="images/cacti.gif">
+<p>
+<li><xmp>colorImageToRGB :: ColorImage -> (GrayImage, GrayImage, GrayImage)</xmp>
+
+Given a &#60;ColorImage&#62, <i>colorImageToRGB</i> returns a triple
+containing three GrayImages representing the red, green, and blue
+color components of &#60;color-image&#62. For example,
+
+<xmp>
+*Main> display . leftToRight' $ colorImageToRGB cacti
+</xmp>
+<p>
+<IMG SRC="images/rgb-cacti.gif">
+<p>
+<li><xmp>colorImageToHSI :: ColorImage -> (GrayImage, GrayImage, GrayImage)</xmp>
+
+Given a ColorImage, <i>colorImageToHSI</i> returns a triple containing three GrayImages representing the hue, saturation, and intensity of the color
+image. For example,
+
+<xmp>
+*Main> let (h,s,i) = colorImageToHSI cacti
+*Main> display h
+</xmp>
+<p>
+<IMG SRC="images/cacti-hue.gif">
+<p>
+<xmp>
+*Main> display s
+</xmp>
+<p>
+<IMG SRC="images/cacti-saturation.gif">
+<p>
+<xmp>
+*Main> display i
+</xmp>
+<p>
+<IMG SRC="images/cacti-intensity.gif">
+<p>
+<li><xmp>hsiToColorImage :: (GrayImage, GrayImage, GrayImage) -> ColorImage</xmp>
+
+Given a triple, representing the hue, saturation, and intensity of a color
+image, <i>hsiToColorImage</i> returns a ColorImage. For example,
+
+<xmp>
+*Main> display . hsiToColorImage $ (h, s, i)
+</xmp>
+<p>
+<IMG SRC="images/cacti.gif">
+<p>
+
+<li><xmp>makeHotImage :: GrayImage -> ColorImage</xmp>
+
+Given a &#60;GrayImage&#62, <i>makeHotImage</i> returns a color
+image with the same dimensions. The R, G, B values of the result image
+at <i>(i, j)</i> are determined by using the value of &#60;image&#62
+at <i>(i, j)</i> to index three lookup tables. These lookup tables
+implement a false coloring scheme which maps small values to black,
+large values to white, and intermediate values to shades of red,
+orange, and yellow (in that order).
+
+<xmp>
+*Main> display . makeHotImage $ frog
+</xmp>
+<p>
+<IMG SRC="images/hot-frog.gif">
+<p>
+<li><xmp>dilate' :: (Num (Pixel img), Ord (Pixel img), Image img, BinaryPixel (Pixel img)) => [[Pixel img]] -> img -> img</xmp>
+
+Given a 2D list consisting solely
+of pixels representing a structuring element, and a binary &#60;image&#62, <i>dilate'</i>
+returns the morphological dilation of &#60;image&#62 with the
+structuring element. Note: There is a <i>dilate</i> function that uses a default structuring element of [[1,1], [1,1]]. For example,
+
+<xmp>
+structure = [[0, 0, 1, 0, 0],
+             [0, 1, 1, 1, 0],
+             [1, 1, 1, 1, 1],
+             [0, 1, 1, 1, 0],
+             [0, 0, 1, 0, 0]] 
+
+*Main> display . dilate' structure $ binaryStop
+</xmp>
+<p>
+<IMG SRC="images/dilate-stop.gif">
+<p>
+<li><xmp>erode' :: (Eq (Pixel img), Num (Pixel img), Image img, BinaryPixel (Pixel img)) => [[Pixel img]] -> img -> img</xmp>
+
+Given a 2D list consisting solely
+of pixels representing a structuring element, and a binary &#60;image&#62, <i>erod'</i>
+returns the morphological erosion of &#60;image&#62 with the
+structuring element. Note: There is a <i>erod</i> function that uses a default structuring element of [[1,1], [1,1]]. For example,
+
+<xmp>
+*Main> display . erode' structure $ binaryStop
+</xmp>
+<p>
+<IMG SRC="images/erode-stop.gif">
+<p>
+<li><xmp>outline :: (Image img, Pixel img ~ Double) => img -> img</xmp>
+
+Given an &#60;image&#62, <i>outline</i> returns an image where <i>edge</i> pixels are
+set to the value <i>1</i> and <i>non-edge</i> pixels are set to the
+value <i>0</i>. Pixel <i>(i, j)</i> is an edge pixel iff its value is
+different than the value of either pixel <i>(i, j+1)</i> or pixel
+<i>(i+1, j)</i>.
+
+<xmp>
+*Main> display . outline $ binaryStop
+</xmp>
+<p>
+<IMG SRC="images/outline-stop.gif">
+<p>
+<li><xmp>label :: (Image img, Pixel img ~ Double) => img -> img</xmp>
+
+Given a binary &#60;image&#62, <i>label</i> returns an image where
+pixels in distinct connected components (based on 4-neighbor
+connectivity) have distinct integer values. These values range from 1
+to <i>n</i> where <i>n</i> is the number of connected components in
+&#60;image&#62.
+
+<xmp>
+*Main> display . makeHotImage . label $ binaryStop
+</xmp>
+<p>
+<IMG SRC="images/label-stop.gif">
+<p>
+<xmp>
+
+<li><xmp>distanceTransform :: (Image img, Pixel img ~ Double) => img -> img</xmp>
+
+Given a binary &#60;image&#62, <i>distanceTransform</i> returns an
+image representing the 2D distance transform of &#60;image&#62. For
+example,
+
+<xmp>
+*Main> display . distanceTransform . dilate $ binaryStop
+</xmp>
+<p>
+<IMG SRC="images/distance-stop.gif">
+<p>
+<li><xmp>open' :: (Num (Pixel img), Ord (Pixel img), Image img, BinaryPixel (Pixel img)) => [[Pixel img]] -> img -> img</xmp<
+
+Given a list consisting of pixels representing a structuring element, and an image, <i>open'</i>
+returns the morphological opening of &#60;image&#62 with the
+structuring element. Note: There is a version <i>open</i> that uses the
+default structuring element [[1,1],[1,1]].
+
+<li><xmp>close' :: (Num (Pixel img), Ord (Pixel img), Image img, BinaryPixel (Pixel img)) => [[Pixel img]] -> img -> img</xmp>
+
+Given a list consisting of pixels representing a structuring element, and an image, <i>open'</i>
+returns the morphological closing of &#60;image&#62 with the
+structuring element. Note: There is a version <i>close</i> that uses the
+default structuring element [[1,1],[1,1]].
+
+<li><xmp>areas :: (RealFrac (Pixel img), MaxMin (Pixel img), Image img) => img -> Data.Vector.Unboxed.Base.Vector Double</xmp>
+
+Given an &#60;image&#62, <i>areas</i> returns a vector where the
+<i>n</i>-th component equals the number of pixels with value
+<i>n</i>. If &#60;image&#62 is the result of applying <i>label</i> to
+a binary image, then the vector represents the areas of the
+connected-components of the binary-image. If not, <i>areas</i> returns
+the grey-level histogram of the image. For example,
+
+<xmp>
+*Main> areas . label $ binaryStop
+fromList [9676.0,1033.0,1201.0,6.0,718.0,4.0,0.0,1036.0]
+</xmp>
+
+<li><xmp>perimeters :: (Image img, Pixel img ~ Double) => img -> Data.Vector.Unboxed.Base.Vector Double</xmp>
+
+Given an &#60;image&#62, <i>perimeters</i> returns a vector where
+the <i>n</i>-th component equals the number of pixels with value
+<i>n</i> which are adjacent to pixels of value 0 and the 0-th
+component equals the sum of the other components. If &#60;image&#62 is
+the result of applying <i>label</i> to a binary image, then the vector
+represents the perimeters of the connected-components of the
+binary-image. For example,
+
+<xmp>
+*Main> perimeters . label $ binaryStop
+fromList [1072.0,304.0,322.0,6.0,184.0,4.0,0.0,252.0]
+</xmp>
+
+<li><xmp>centersOfMass :: (Image img, Pixel img ~ Double) => img -> [(Double, Double)]</xmp>
+
+Given an &#60;image&#62, the result of applying <i>label</i> to a
+binary-image, <i>centersOfMass</i> returns a vector where the
+<i>n</i>-th component is a two element list representing the average
+row and column indices of pixels of the <i>n</i>-th
+connected-component of &#60;image&#62. For example,
+
+<xmp>
+*Main> centersOfMass . label $ binaryStop
+[(42.373668925459825,24.764762826718297),(41.76935886761032,92.25978351373855),(14.5,14.5),(35.139275766016716,57.46239554317549),(14.5,81.5),(NaN,NaN),(35.69015444015444,130.08590733590734)]
+</xmp>
+
+<li><xmp>boundingBoxes :: (Image img, Pixel img ~ Double) => img -> [(Int, Int, Int, Int)]</xmp>
+
+Given an &#60;image&#62, the result of applying <i>label</i> to a binary-image, 
+<i>centersOfMass</i> returns a vector where the <i>n</i>-th
+component is a four element list representing the minimum and maximum
+row and column indices of pixels of the <i>n</i>-th
+connected-component of &#60;image&#62. For example,
+
+<xmp>
+*Main> boundingBoxes . label $ binaryStop
+[(10,8,73,40),(10,75,73,109),(12,12,17,17),(11,43,72,72),(13,80,16,83),(86,159,0,0),(12,118,72,150)]
+</xmp>
+
+</html>

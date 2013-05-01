@@ -10,9 +10,9 @@ module Data.Image.Boxed(module Data.Image.Areas,
                         module Data.Image.MatrixProduct,
                         module Data.Image.MedianFilter,
                         module Data.Image.Outline,
-                        GrayImage, readImage, 
+                        GrayImage, Gray, readImage, 
                         shrink, grayToComplex, makeHotImage,
-                        ColorImage, readColorImage,
+                        ColorImage, Color, readColorImage,
                         colorImageRed, colorImageGreen, colorImageBlue,
                         colorImageToRGB, 
                         colorImageToHSI,
@@ -65,6 +65,19 @@ instance Functor BoxedImage where
 instance Show (BoxedImage a) where
   show (Image rows cols _) = "< Image " ++ (show rows) ++ "x" ++ (show cols) ++ " >"
 
+instance Num a => Num (BoxedImage a) where
+  (+) = imageOp (+)
+  (-) = imageOp (-)
+  (*) = imageOp (*)
+  abs = fmap abs
+  signum = fmap signum
+  fromInteger _ = error "Cannot create image from Integer"
+
+instance Fractional a => Fractional (BoxedImage a) where
+  (/) = imageOp (/)
+  recip = fmap recip
+  fromRational _ = error "Cannot create image from Rational."
+
 -- GrayImage
 type GrayImage = BoxedImage Gray
 type Gray = Double
@@ -82,6 +95,8 @@ instance HSIPixel Gray where
   toHSI = toHSI . RGB . toRGB
   
 instance BinaryPixel Gray where
+  toBinary 0.0 = False
+  toBinary _ = True
   on = 1.0
   off = 0.0
   
@@ -139,6 +154,9 @@ instance HSIPixel Color where
 --  toComplex = undefined 
 
 instance BinaryPixel Color where
+  toBinary (toRGB -> (r, g, b)) 
+    | r == 0 && g == 0 && b == 0 = False
+    | otherwise = True
   on = RGB (1.0, 1.0, 1.0)
   off = RGB (0.0, 0.0, 0.0)
 
@@ -167,6 +185,11 @@ instance Num Color where
   signum (toRGB -> (r, g, b)) = RGB (signum r, signum g, signum b)
   fromInteger (fromIntegral -> i) = RGB (i,i,i)
 
+instance Fractional Color where
+  (/) = colorOp (/)
+  recip (toRGB -> (r,g,b)) = RGB (recip r, recip g, recip b)
+  fromRational _ = error "Could not create Color from Rational."
+
 colorOp :: (Double -> Double -> Double) -> Color -> Color -> Color
 colorOp op (toRGB -> (a, b, c)) (toRGB -> (d, e, f)) = RGB (op a d, op b e, op c f)
 
@@ -176,6 +199,9 @@ type CPixel = C.Complex Double
 
 instance DisplayFormat ComplexImage where
   format (complexImageToColorImage -> rgb) = toPPM rgb
+
+instance ComplexPixel CPixel where
+  toComplex = id
 
 complexImageToColorImage :: ComplexImage -> ColorImage
 complexImageToColorImage img@(dimensions -> (rows, cols)) = makeImage rows cols rgb where

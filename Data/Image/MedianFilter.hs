@@ -1,11 +1,11 @@
-{-# LANGUAGE TypeFamilies, ViewPatterns #-}
+{-# LANGUAGE TypeFamilies, ViewPatterns, FlexibleContexts #-}
 {-# OPTIONS -O2 #-}
 module Data.Image.MedianFilter(medianFilter) where
 
 import Data.Image.Internal
 
 medianFilter :: (Image img,
-                 Pixel img ~ Double) => Int -> Int -> img -> img
+                 Fractional (Pixel img)) => Int -> Int -> img -> img
 medianFilter m n img@(dimensions -> (rows, cols)) = makeImage rows cols avg where
   [moff, noff] = map (`div` 2) [m,n]
   avg r c = (sum px)/(fromIntegral . length $ px) where
