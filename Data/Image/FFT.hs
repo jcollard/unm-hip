@@ -11,6 +11,12 @@ import qualified Data.Vector as V
 type Vector = V.Vector (Complex Double)
 type FFT = [Int] -> Vector -> Int -> Int -> [Complex Double]
 
+fft :: Int -> Int -> Vector -> Vector
+fft = fft' fftRange
+
+ifft :: Int -> Int -> Vector -> Vector
+ifft rows cols vec = V.map (/fromIntegral (rows*cols)) . fft' ifftRange rows cols $ vec
+
 isPowerOfTwo :: Int -> Bool
 isPowerOfTwo n = n /= 0 && (n .&. (n-1)) == 0
 
@@ -20,12 +26,6 @@ fft' range rows cols orig = if check then fromRows rows' else err where
   err = error "FFT can only be applied to images with dimensions 2^k x 2^j where k and j are integers."
   (fromColumns -> cols') = map (fftc range rows cols 0 (rows-1) orig) [0..cols-1] -- FFT on each col
   rows' = map (fftr range cols 0 (cols-1) cols') [0..rows-1] -- FFT on each row
-
-fft :: Int -> Int -> Vector -> Vector
-fft = fft' fftRange
-
-ifft :: Int -> Int -> Vector -> Vector
-ifft rows cols vec = V.map (/fromIntegral (rows*cols)) . fft' ifftRange rows cols $ vec
 
 fromColumns :: [[Complex Double]] -> V.Vector (Complex Double)
 fromColumns = fromRows . transpose

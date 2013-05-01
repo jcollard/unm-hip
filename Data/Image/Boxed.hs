@@ -22,8 +22,7 @@ module Data.Image.Boxed(
   ComplexImage,
   complexImageToColorImage,
   realPart', imagPart', magnitude',
-  angle', polar', complexImageToRectangular',
-  fft', ifft') where
+  angle', polar', complexImageToRectangular') where
  
 import Data.Image.Binary
 import Data.Image.Complex
@@ -331,12 +330,6 @@ colors xs = helper xs [] [] []
 grayToComplex :: GrayImage -> ComplexImage
 grayToComplex img@(dimensions -> (rows, cols)) = makeImage rows cols toComp where
   toComp r c = (ref img r c ) C.:+ 0.0
-
-fft' :: ComplexImage -> ComplexImage
-fft' = undefined
-
-ifft' :: ComplexImage -> ComplexImage
-ifft' = undefined
 
 makeHotImage :: GrayImage -> ColorImage
 makeHotImage img@(dimensions -> (rows, cols)) = makeImage rows cols hot where
