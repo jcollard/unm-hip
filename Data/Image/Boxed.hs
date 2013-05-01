@@ -1,41 +1,36 @@
 {-# LANGUAGE TypeFamilies, ViewPatterns, FlexibleContexts, FlexibleInstances #-}
 {-# OPTIONS_GHC -O2 #-}
-module Data.Image.Boxed(module Data.Image.Areas,
-                        module Data.Image.Complex,
-                        module Data.Image.Convolution,
-                        module Data.Image.DistanceTransform,
-                        module Data.Image.Internal,
-                        module Data.Image.IO,
-                        module Data.Image.Math,
-                        module Data.Image.MatrixProduct,
-                        module Data.Image.MedianFilter,
-                        module Data.Image.Outline,
-                        GrayImage, Gray, readImage, 
-                        shrink, grayToComplex, makeHotImage,
-                        ColorImage, Color, readColorImage,
-                        colorImageRed, colorImageGreen, colorImageBlue,
-                        colorImageToRGB, 
-                        colorImageToHSI,
-                        rgbToColorImage, 
-                        hsiToColorImage, 
-                        ComplexImage,
-                        complexImageToColorImage,
-                        realPart', imagPart', magnitude',
-                        angle', polar', complexImageToRectangular',
-                        fft', ifft')
-                        where
-
-import Data.Image.Areas
+module Data.Image.Boxed(
+  -- | Contains functionality related to Binary Images
+  module Data.Image.Binary, 
+  -- | Contains functionality related to Complex Images
+  module Data.Image.Complex,
+  -- | Contains functionality for convolution of images
+  module Data.Image.Convolution,
+  -- | Contains basic functionality for Images
+  module Data.Image.Internal,
+  -- | Contains functionality for writing images and displaying with an external program
+  module Data.Image.IO,
+  GrayImage, Gray, readImage, 
+  shrink, grayToComplex, makeHotImage,
+  ColorImage, Color, readColorImage,
+  colorImageRed, colorImageGreen, colorImageBlue,
+  colorImageToRGB, 
+  colorImageToHSI,
+  rgbToColorImage, 
+  hsiToColorImage, 
+  ComplexImage,
+  complexImageToColorImage,
+  realPart', imagPart', magnitude',
+  angle', polar', complexImageToRectangular',
+  fft', ifft') where
+ 
+import Data.Image.Binary
 import Data.Image.Complex
 import Data.Image.Convolution
-import Data.Image.DisplayFormat
-import Data.Image.DistanceTransform
 import Data.Image.Internal
 import Data.Image.IO
 import Data.Image.Math
-import Data.Image.MatrixProduct
-import Data.Image.MedianFilter
-import Data.Image.Outline
 
 import Control.Applicative
 import qualified Data.Complex as C
@@ -60,12 +55,6 @@ instance Image (BoxedImage a) where
     px = [ f r c | r <- [0..rows-1], c <- [0..cols-1]]
   pixelList = V.toList . pixels
   imageOp = liftA2
-
-instance Monoid (BoxedImage a) where
-  mempty = Image 0 0 (V.fromList [])
-  mappend i0@(Image rows cols px) i1@(Image rows' cols' px')
-   | rows /= rows' = error "Images must have the same number of rows" 
-   | otherwise = leftToRight i0 i1
 
 instance Functor BoxedImage where
   fmap f (Image rows cols pixels) = Image rows cols (fmap f pixels)
@@ -129,11 +118,9 @@ instance MaxMin Gray where
   maximal = maximum
   minimal = minimum
 
-instance Scaleable Gray where
-  divide = (/)
-  mult = (*)
-  
 -- ColorImage
+class HSIPixel px where
+  toHSI :: px -> (Double, Double, Double)
 
 type ColorImage = BoxedImage Color
 
@@ -185,10 +172,6 @@ instance Monoid Color where
 instance MaxMin Color where
   maximal = helper max mempty . map toRGB
   minimal = helper min (RGB (10e10, 10e10, 10e10)) . map toRGB
-  
-instance Scaleable Color where
-  divide f (toRGB -> (r, g, b)) = maximum [f/r, f/g, f/b]
-  mult f (toRGB -> (r, g, b)) = RGB (r*f, g*f, b*f)
   
 helper :: (Double -> Double -> Double) -> Color -> [(Double, Double, Double)] -> Color
 helper compare (RGB (r,g,b)) [] = let i = foldr1 compare [r, g, b] in RGB (i,i,i)
@@ -260,13 +243,8 @@ hsiToColorImage (h@(dimensions -> (rows, cols)), s, i) = makeImage rows cols hsi
     i' = ref' i
 
 colorImageToHSI :: ColorImage -> (GrayImage, GrayImage, GrayImage)
-colorImageToHSI img@(dimensions -> (rows, cols)) = (mkImg himg, mkImg simg, mkImg iimg) where
-  himg r c = (\(h,_,_) -> h) (toHSI (ref img r c)) -- This feels dumb...
-  simg r c = (\(_,s,_) -> s) (toHSI (ref img r c)) -- This feels dumb...
-  iimg r c = (\(_,_,i) -> i) (toHSI (ref img r c)) -- This feels dumb...
-  mkImg = makeImage rows cols
+colorImageToHSI img = (colorImageHue img, colorImageSaturation img, colorImageIntensity img) 
   
---getColor :: ((Double, Double, Double) -> Double) -> ColorImage -> GrayImage
 getColor to color img@(dimensions -> (rows,cols)) = makeImage rows cols get where
   get r c = color . to . ref img r $ c
   
@@ -300,7 +278,7 @@ rgbToColorImage (red, green, blue@(dimensions -> (rows, cols))) = makeImage rows
     b = ref blue row col
 
 colorImageToRGB :: ColorImage -> (GrayImage, GrayImage, GrayImage)
-colorImageToRGB img= (colorImageRed img, colorImageGreen img, colorImageBlue img)
+colorImageToRGB img = (colorImageRed img, colorImageGreen img, colorImageBlue img)
 
 shrink :: (Integral a) => a -> GrayImage -> GrayImage
 shrink (fromIntegral -> x) img@(dimensions -> (rows, cols)) = makeImage rows cols shrink' where

@@ -13,7 +13,6 @@ module Data.Image.Complex(ComplexPixel(..),
                           fft, ifft) where
 
 import Data.Image.Internal
-import Data.Monoid
 import qualified Data.Complex as C
 import qualified Data.Image.FFT as FFT
 import qualified Data.Vector as V

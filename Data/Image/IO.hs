@@ -1,5 +1,8 @@
 {-# LANGUAGE ViewPatterns, FlexibleContexts, FlexibleInstances #-}
-module Data.Image.IO(display,
+module Data.Image.IO(DisplayFormat(..),
+                     GrayPixel(..),
+                     RGBPixel(..),
+                     display,
                      writeImage,
                      toPGM,
                      toPPM,
@@ -7,13 +10,21 @@ module Data.Image.IO(display,
                      module System.Process)  where
 
 import Data.Image.Internal
-import Data.Image.DisplayFormat
 import Data.List(intercalate)
 import System.IO
 import System.Process
 
 import System.IO.Unsafe
 import Data.IORef
+
+class DisplayFormat df where
+  format :: df -> String
+  
+class GrayPixel px where
+  toGray :: px -> Double
+
+class RGBPixel px where
+  toRGB :: px -> (Double, Double, Double)
 
 displayProgram :: IORef String
 displayProgram = unsafePerformIO $ do
@@ -41,19 +52,17 @@ runCommandWithStdIn cmd stdin =
 
 -- Converts an image into a PGM string
 toPGM :: (Image img, 
-          Scaleable (Pixel img),
           RealFrac (Pixel img),
           MaxMin (Pixel img),
           Num (Pixel img),
           Show (Pixel img)) => img -> [Char]
 toPGM img@(dimensions -> (rows, cols)) = "P2 " ++ (show cols) ++ " " ++ (show rows) ++ " 255 " ++ px where
-  px = intercalate " " . map (show . round . (255 `mult`)) . pixelList $ norm
+  px = intercalate " " . map (show . round . (255 *)) . pixelList $ norm
   norm = normalize img
 
 toPPM :: (Image img,
           MaxMin (Pixel img),
-          Scaleable (Pixel img),
-          Num (Pixel img),
+          Fractional (Pixel img),
           RGBPixel (Pixel img)) => img -> [Char]
 toPPM img@(dimensions -> (rows, cols)) = "P3 " ++ (show cols) ++ " " ++ (show rows) ++ " 255 " ++ px where
   px = intercalate " " rgbs
