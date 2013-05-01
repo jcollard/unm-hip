@@ -12,10 +12,14 @@ module Data.Image.Complex(ComplexPixel(..),
                           makeFilter,
                           fft, ifft) where
 
-import Data.Image.Internal
+import Data.Image.Internal(Image(..), PixelOp, imageMap,dimensions)
 import qualified Data.Complex as C
-import qualified Data.Image.FFT as FFT
+import Data.Complex(Complex((:+)))
+import Data.List(transpose)
 import qualified Data.Vector as V
+
+import Data.Bits
+
 
 class ComplexPixel px where
   toComplex :: px -> C.Complex Double
@@ -85,7 +89,7 @@ fft :: (Image img,
 fft img@(dimensions -> (rows, cols)) = makeImage rows cols fftimg where
   fftimg r c = fft' V.! (r*cols + c)
   vector = V.map toComplex . V.fromList . pixelList $ img
-  fft' = FFT.fft rows cols vector
+  fft' = fftv rows cols vector
 
 ifft :: (Image img,
         Image img',
@@ -94,5 +98,69 @@ ifft :: (Image img,
 ifft img@(dimensions -> (rows, cols)) = makeImage rows cols fftimg where
   fftimg r c = fft' V.! (r*cols + c)
   vector = V.map toComplex . V.fromList . pixelList $ img
-  fft' = FFT.ifft rows cols vector
+  fft' = ifftv rows cols vector
 
+type Vector = V.Vector (Complex Double)
+type FFT = [Int] -> Vector -> Int -> Int -> [Complex Double]
+
+-- FFT support code
+
+fftv :: Int -> Int -> Vector -> Vector
+fftv = fft' fftRange
+
+ifftv :: Int -> Int -> Vector -> Vector
+ifftv rows cols vec = V.map (/fromIntegral (rows*cols)) . fft' ifftRange rows cols $ vec
+
+isPowerOfTwo :: Int -> Bool
+isPowerOfTwo n = n /= 0 && (n .&. (n-1)) == 0
+
+fft' :: FFT -> Int -> Int -> Vector -> Vector
+fft' range rows cols orig = if check then fromRows rows' else err where 
+  check = and . map isPowerOfTwo $ [rows, cols]
+  err = error "FFT can only be applied to images with dimensions 2^k x 2^j where k and j are integers."
+  (fromColumns -> cols') = map (fftc range rows cols 0 (rows-1) orig) [0..cols-1] -- FFT on each col
+  rows' = map (fftr range cols 0 (cols-1) cols') [0..rows-1] -- FFT on each row
+
+fromColumns :: [[Complex Double]] -> V.Vector (Complex Double)
+fromColumns = fromRows . transpose
+
+fromRows :: [[Complex Double]] -> V.Vector (Complex Double)
+fromRows = V.fromList . concat
+
+fftc :: FFT -> Int -> Int -> Int -> Int -> Vector -> Int -> [Complex Double]
+fftc fftfunc rows cols sIx eIx orig row = fftfunc indices orig rows 1 where
+  indices = map ((+row) . (*cols)) $ [sIx..eIx]
+
+fftr :: FFT -> Int -> Int -> Int -> Vector ->  Int -> [Complex Double]
+fftr fftfunc cols sIx eIx orig row = fftfunc indices orig cols 1 where
+  indices = map (+ (row*cols)) $ [sIx..eIx]
+
+fftRange :: FFT
+fftRange = range (-2*pii)
+
+ifftRange :: FFT
+ifftRange = range (2*pii)
+
+range :: Complex Double -> FFT
+range e ix vec n s 
+  | n == 1 = [vec V.! (head ix)]
+  | otherwise = fft' where
+    fft' = seperate data'
+    fi = fromIntegral
+    ix0 = range e ix vec (n `div` 2) (2*s)
+    ix1 = range e (drop s ix) vec (n `div` 2) (2*s)
+    data' = (flip map) (zip3 ix0 ix1 [0..]) (\ (ix0, ix1, k) -> do
+      let e' = exp (e * ((fi k) / (fi n)))
+          ix0' = ((ix0 + e' * ix1))
+          ix1' = ((ix0 - e' * ix1))
+        in (ix0', ix1'))
+    
+seperate :: [(a, a)] -> [a]
+seperate = seperate' [] [] where
+  seperate' acc0 acc1 [] = (reverse acc0) ++ (reverse acc1)
+  seperate' acc0 acc1 ((a, b):xs) = seperate' (a:acc0) (b:acc1) xs
+
+pii :: Complex Double
+pii = 0 :+ pi
+
+-- End FFT support code
