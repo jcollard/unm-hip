@@ -9,8 +9,5 @@ haddock: Data/*.hs Data/Image/*.hs
 	mkdir haddock
 	haddock -h -o haddock/ Data/*.hs Data/Image/*.hs
 
-clean-haddock:
-	rm haddock -rf
-
 clean:
 	rm Data/*.o Data/*.hi Data/Image/*.o Data/Image/*.hi

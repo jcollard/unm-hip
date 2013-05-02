@@ -1,7 +1,16 @@
 {-# LANGUAGE TypeFamilies, ViewPatterns, FlexibleContexts, FlexibleInstances #-}
 {-# OPTIONS_GHC -O2 #-}
 module Data.Image.Boxed(
-  -- | Contains functionality related to Binary Images
+  BoxedImage,
+  GrayImage, Gray, readImage, 
+  grayToComplex, makeHotImage,
+  ColorImage, Color(..), readColorImage,
+  colorImageRed, colorImageGreen, colorImageBlue,
+  colorImageToRGB, rgbToColorImage, 
+  colorImageHue, colorImageSaturation, colorImageIntensity,
+  colorImageToHSI, hsiToColorImage, 
+  ComplexImage, Complex,
+    -- | Contains functionality related to Binary Images
   module Data.Image.Binary, 
   -- | Contains functionality related to Complex Images
   module Data.Image.Complex,
@@ -10,19 +19,7 @@ module Data.Image.Boxed(
   -- | Contains basic functionality for Images
   module Data.Image.Internal,
   -- | Contains functionality for writing images and displaying with an external program
-  module Data.Image.IO,
-  GrayImage, Gray, readImage, 
-  shrink, grayToComplex, makeHotImage,
-  ColorImage, Color, readColorImage,
-  colorImageRed, colorImageGreen, colorImageBlue,
-  colorImageToRGB, 
-  colorImageToHSI,
-  rgbToColorImage, 
-  hsiToColorImage, 
-  ComplexImage,
-  complexImageToColorImage,
-  realPart', imagPart', magnitude',
-  angle', polar', complexImageToRectangular') where
+  module Data.Image.IO) where
  
 import Data.Image.Binary
 import Data.Image.Complex
@@ -30,16 +27,19 @@ import Data.Image.Convolution
 import Data.Image.Internal
 import Data.Image.IO
 
+--base>=4
 import Control.Applicative
 import qualified Data.Complex as C
-import qualified Data.ByteString.Char8 as B
 import Data.Maybe(fromJust)
 import Data.Monoid
+
+import qualified Data.ByteString.Char8 as B
 import qualified Data.Vector as V
 
 type Vector = V.Vector
 
 -- BoxedImage
+-- | BoxedImage is a concrete implementation of Image using a boxed internal structure. This allows for it to be installed nicely in Functor and Applicative.
 data BoxedImage a = Image { rs :: Int,
                         cs :: Int,
                         pixels :: Vector a} 
@@ -83,6 +83,9 @@ instance Fractional a => Fractional (BoxedImage a) where
   fromRational i = pure $ fromRational i
 
 -- GrayImage
+{-| A concrete instance of Image representing a gray scale image.
+    This instance is installed in DisplayFormat as a gray PGM.
+ -}
 type GrayImage = BoxedImage Gray
 type Gray = Double
 
@@ -116,15 +119,22 @@ instance MaxMin Gray where
   minimal = minimum
 
 -- ColorImage
+{-| A concrete instance of Image that represents images with color values.
+    This instance is installed in DisplayFormat and can be written to 
+    a color PPM -}
+type ColorImage = BoxedImage Color
+
 class HSIPixel px where
   toHSI :: px -> (Double, Double, Double)
-
-type ColorImage = BoxedImage Color
 
 instance DisplayFormat ColorImage where
   format = toPPM
 
-data Color = RGB (Double, Double, Double)
+-- | A color encoding scheme
+data Color = 
+             -- | Red, Green, Blue encoding
+             RGB (Double, Double, Double)
+             -- | Hue, Saturation, Intensity encoding
            | HSI (Double, Double, Double) deriving (Show, Eq)
 
 instance GrayPixel Color where
@@ -192,13 +202,16 @@ colorOp :: (Double -> Double -> Double) -> Color -> Color -> Color
 colorOp op (toRGB -> (a, b, c)) (toRGB -> (d, e, f)) = RGB (op a d, op b e, op c f)
 
 -- ComplexImage
-type ComplexImage = BoxedImage CPixel
-type CPixel = C.Complex Double
+{-| A concrete instance of Image representing pixels as complex values. 
+    This instance can be written to file as a color PPM.
+ -}
+type ComplexImage = BoxedImage Complex
+type Complex = C.Complex Double
 
 instance DisplayFormat ComplexImage where
   format (complexImageToColorImage -> rgb) = toPPM rgb
 
-instance ComplexPixel CPixel where
+instance ComplexPixel Complex where
   toComplex = id
 
 complexImageToColorImage :: ComplexImage -> ColorImage
@@ -229,71 +242,65 @@ complexScale (complexImageToRectangular -> (real, imag)) = 2.0/(maxv - minv) whe
 twodivsqrtsix = 0.81649658092772603273 --2.0/sqrt(6)
 onedivsqrtsix = 0.40824829046386301636 --1.0/sqrt(6)
 sqrttwodivtwo = 0.70710678118654752440 --sqrt(2)/2.0
-
-hsiToColorImage :: (GrayImage, GrayImage, GrayImage) -> ColorImage
-hsiToColorImage (h, s, i) = toHSI <$> h <*> s <*> i where
-  toHSI h s i = HSI (h, s, i)
-
-colorImageToHSI :: ColorImage -> (GrayImage, GrayImage, GrayImage)
-colorImageToHSI img = (colorImageHue img, colorImageSaturation img, colorImageIntensity img) 
   
-getColor to color img = fmap (color . to) img
+getComponent to component img = fmap (component . to) img
   
-getRGB = getColor toRGB
+getRGB = getComponent toRGB
  
+-- | Given a ColorImage, returns a GrayImage representing the Red color component
 colorImageRed :: ColorImage -> GrayImage
 colorImageRed = getRGB (\ (r, _, _) -> r)
 
+-- | Given a ColorImage, returns a GrayImage representing the Green color component
 colorImageGreen :: ColorImage -> GrayImage
 colorImageGreen = getRGB (\ (_,g,_) -> g)
 
+-- | Given a ColorImage, returns a GrayImage representing the Blue color component
 colorImageBlue :: ColorImage -> GrayImage
 colorImageBlue = getRGB (\ (_,_,b) -> b)
 
-getHSI = getColor toHSI
+{-| Given a ColorImage, returns a triple containing three GrayImages each
+    containing one of the color components (red, green, blue)
+ -}
+colorImageToRGB :: ColorImage -> (GrayImage, GrayImage, GrayImage)
+colorImageToRGB img = (colorImageRed img, colorImageGreen img, colorImageBlue img)
 
-colorImageHue :: ColorImage -> GrayImage
-colorImageHue = getHSI (\ (h, _, _) -> h)
-
-colorImageSaturation :: ColorImage -> GrayImage
-colorImageSaturation = getHSI (\ (_,s,_) -> s)
-
-colorImageIntensity :: ColorImage -> GrayImage
-colorImageIntensity = getHSI (\ (_,_,i) -> i)
-
+{-| Given a triple containing three GrayImages each containing one of the
+    color components (red, green, blue), returns a ColorImage
+ -}
 rgbToColorImage :: (GrayImage, GrayImage, GrayImage) -> ColorImage
 rgbToColorImage (red, green, blue) = createRGB <$> red <*> green <*> blue where
   createRGB r g b = RGB (r, g, b)
 
-colorImageToRGB :: ColorImage -> (GrayImage, GrayImage, GrayImage)
-colorImageToRGB img = (colorImageRed img, colorImageGreen img, colorImageBlue img)
+getHSI = getComponent toHSI
 
-shrink :: (Integral a) => a -> GrayImage -> GrayImage
-shrink (fromIntegral -> x) img@(dimensions -> (rows, cols)) = fmap shrink' img where
-  shrink' (abs -> px) = helper px where
-    helper z 
-      | z < x = mempty
-      | z > 0 = z - x 
-      | otherwise = z  + x
+-- | Given a ColorImage, returns a GrayImage representing the Hue component
+colorImageHue :: ColorImage -> GrayImage
+colorImageHue = getHSI (\ (h, _, _) -> h)
 
-realPart' :: ComplexImage -> GrayImage
-realPart' = realPart
+-- | Given a ColorImage, returns a GrayImage representing the Saturation component
+colorImageSaturation :: ColorImage -> GrayImage
+colorImageSaturation = getHSI (\ (_,s,_) -> s)
 
-imagPart' :: ComplexImage -> GrayImage
-imagPart' = imagPart
+-- | Given a ColorImage, returns a GrayImage representing the Intensity component
+colorImageIntensity :: ColorImage -> GrayImage
+colorImageIntensity = getHSI (\ (_,_,i) -> i)
 
-magnitude' :: ComplexImage -> GrayImage
-magnitude' = magnitude
+{-| Given a ColorImage, returns a triple containing three GrayImages each
+    containing one of the components (hue, saturation, intensity)
+ -}
+hsiToColorImage :: (GrayImage, GrayImage, GrayImage) -> ColorImage
+hsiToColorImage (h, s, i) = toHSI <$> h <*> s <*> i where
+  toHSI h s i = HSI (h, s, i)
 
-angle' :: ComplexImage -> GrayImage
-angle' = angle
+{-| Given a triple containing three GrayImages each containing one of the
+    color components (hue, saturation, ), returns a ColorImage
+ -}
+colorImageToHSI :: ColorImage -> (GrayImage, GrayImage, GrayImage)
+colorImageToHSI img = (colorImageHue img, colorImageSaturation img, colorImageIntensity img) 
 
-polar' :: ComplexImage -> (GrayImage, GrayImage)
-polar' = polar
 
-complexImageToRectangular' :: ComplexImage -> (GrayImage, GrayImage) 
-complexImageToRectangular' = complexImageToRectangular
-
+-- | Reads in an ASCI PPM file as a ColorImage
 readColorImage :: FilePath -> IO ColorImage
 readColorImage fileName =
   do
@@ -317,9 +324,19 @@ colors xs = helper xs [] [] []
   where helper [] red green blue = map (map fromIntegral) $ map reverse [red, green, blue]
         helper (r:g:b:cs) red green blue = helper cs (r:red) (g:green) (b:blue)
 
+{-| Coerces a GrayImage to a ComplexImage where the imaginary 
+    part for all pixels is 0.
+ -}
 grayToComplex :: GrayImage -> ComplexImage
 grayToComplex img = fmap (C.:+ 0.0) img
 
+{-| Given a GrayImage, makeHotImage returns a ColorImage with the same 
+    dimensions. The R, G, B values of the result image at (i, j) are 
+    determined by using the value of the ColorImage at (i, j) to index 
+    three lookup tables. These lookup tables implement a false coloring 
+    scheme which maps small values to black, large values to white, and 
+    intermediate values to shades of red, orange, and yellow (in that order).
+ -}
 makeHotImage :: GrayImage -> ColorImage
 makeHotImage img = fmap (toHot max min) img where
   max = maxIntensity img
@@ -331,7 +348,7 @@ makeHotImage img = fmap (toHot max min) img where
           if px < 0.666666667 then (px - 0.333333333)*3 else 1.0
     b = if px < 0.666666667 then 0.0 else (px - 0.666666667)*3
 
--- Reads in a PGM image located at fileName
+-- | Reads in a ASCII PGM image located at fileName as a GrayImage
 readImage :: FilePath -> IO GrayImage
 readImage fileName = 
   do

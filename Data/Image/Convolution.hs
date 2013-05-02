@@ -4,6 +4,7 @@ module Data.Image.Convolution(convolveRows,
                               convolveCols,
                               convolve) where
 
+--array>=0.4.0.1
 import Data.Array.IArray
 
 import Data.Image.Internal

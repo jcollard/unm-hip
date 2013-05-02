@@ -375,7 +375,7 @@ laplacianOfGaussian stddev i j =
 < Image 128x128 >
 *Main Data.Complex> display d2g
 </xmp>
-<IMG SRC="images/fdf_log.gif"> <-- THIS IMAGE IS NOT CORRECT
+<IMG SRC="images/fdf_log.gif">
 <p>
 <li><xmp>fft :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Complex Double) => img -> img' </xmp>
 
@@ -1062,7 +1062,7 @@ For example,
 <li><xmp>boundingBoxes :: (Image img, Pixel img ~ Double) => img -> [(Int, Int, Int, Int)]</xmp>
 
 Given an &#60;image&#62, the result of applying <i>label</i> to a binary-image, 
-<i>centersOfMass</i> returns a vector where the <i>n</i>-th
+<i>boundingBoxes</i> returns a vector where the <i>n</i>-th
 component is a four element list representing the minimum and maximum
 row and column indices of pixels of the <i>n</i>-th
 connected-component of &#60;image&#62.

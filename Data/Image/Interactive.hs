@@ -3,15 +3,25 @@ module Data.Image.Interactive(display,
 
 import Data.Image.IO
 
+--base>=4
 import Data.IORef
 import System.IO.Unsafe
 import System.IO
 
+{-| Sets the program to use when making a call to display and specifies if
+    the program can accept an image via stdin. If it cannot, then a temporary
+    file will be created and passed as an argument instead. By default,
+    ImageMagick ("display") is the default program to use and it is read
+    using stdin.
+ -}
 setDisplayProgram :: String -> Bool -> IO ()
 setDisplayProgram program stdin = writeIORef displayProgram program >> writeIORef useStdin stdin
 
--- Displays an image using ImageMagick's display command
--- System must have ImageMagick installed for this to work
+
+{-| Makes a call to the current display program to be displayed. If the
+    program cannot read from standard in, a file named ".tmp-img" is created
+    and used as an argument to the program.
+ -}
 display :: (DisplayFormat df) => df -> IO (Handle, Handle, Handle, ProcessHandle)
 display img = do
   usestdin <- readIORef useStdin

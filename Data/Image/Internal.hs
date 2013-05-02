@@ -20,6 +20,8 @@ module Data.Image.Internal(Image(..),
                            upsampleRows,
                            upsampleCols,
                            upsample,
+                           matrixProduct,
+                           medianFilter,                           
                            normalize,
                            imageFold,
                            imageMap,
@@ -28,12 +30,13 @@ module Data.Image.Internal(Image(..),
                            topToBottom,
                            topToBottom',
                            imageToArray,
-                           arrayToImage,
-                           matrixProduct,
-                           medianFilter) where
+                           arrayToImage) where
 
-import Data.Array.IArray
+--base>=4
 import Data.Monoid
+
+--array>=0.4.0.1
+import Data.Array.IArray
 
 -- | A function of a row and column that returns a pixel at that location
 type PixelOp px = Int -> Int -> px
@@ -191,6 +194,37 @@ upsampleRows img@(dimensions -> (rows, cols)) = makeImage rows (cols*2) upsample
 upsample :: (Image img, Monoid (Pixel img)) => img -> img
 upsample = upsampleRows . upsampleCols
 
+{-| Given an image X1 and an image X2, where the number of columns of X1 
+    equals the number of rows of X2, matrixProduct returns an image 
+    representing the matrix product of X1 and X2. -}
+matrixProduct :: (Image img,
+                  Num (Pixel img)) => img -> img -> img
+matrixProduct 
+  a@(dimensions -> (arows, acols)) 
+  b@(dimensions -> (brows, bcols)) = if check then makeImage arows bcols product else err where
+    check = acols == brows
+    err = error "Matrix Product requires images with matching inner dimensions AxN and NxB and produces a new image with dimensions AxB."
+    product r c = sum . zipWith (*) arow $ bcol where
+      arow = map (ref a r) [0..acols-1]
+      bcol = map (flip (ref b) c) [0..brows-1]
+
+{-| Given two positive integers, m and n and a an image, 
+    medianFilter returns an image with the same dimensions where each 
+    pixel (i, j) in <image> is replaced by the pixel with median value 
+    in the neighborhood of size m times n centered on (i, j).
+ -}
+medianFilter :: (Image img,
+                 Fractional (Pixel img)) => Int -> Int -> img -> img
+medianFilter m n img@(dimensions -> (rows, cols)) = makeImage rows cols avg where
+  [moff, noff] = map (`div` 2) [m,n]
+  avg r c = (sum px)/(fromIntegral . length $ px) where
+    px = [ ref img i j | 
+                   i <- [rm..rm+m], 
+                   j <- [cm..cm+n], 
+                   i >= 0, i < rows, j >= 0, j < cols]
+    rm = r - moff
+    cm = c - noff
+
 {-| Given img, normalize returns an image with the same dimensions 
     where the values have been normalized to lie in the interval [0, 1].
  -}
@@ -276,25 +310,3 @@ arrayToImage arr = makeImage rows cols ref where
   cols = cmax - cmin + 1
   ref r c = arr ! (r, c)
   
-matrixProduct :: (Image img,
-                  Num (Pixel img)) => img -> img -> img
-matrixProduct 
-  a@(dimensions -> (arows, acols)) 
-  b@(dimensions -> (brows, bcols)) = if check then makeImage arows bcols product else err where
-    check = acols == brows
-    err = error "Matrix Product requires images with matching inner dimensions AxN and NxB and produces a new image with dimensions AxB."
-    product r c = sum . zipWith (*) arow $ bcol where
-      arow = map (ref a r) [0..acols-1]
-      bcol = map (flip (ref b) c) [0..brows-1]
-
-medianFilter :: (Image img,
-                 Fractional (Pixel img)) => Int -> Int -> img -> img
-medianFilter m n img@(dimensions -> (rows, cols)) = makeImage rows cols avg where
-  [moff, noff] = map (`div` 2) [m,n]
-  avg r c = (sum px)/(fromIntegral . length $ px) where
-    px = [ ref img i j | 
-                   i <- [rm..rm+m], 
-                   j <- [cm..cm+n], 
-                   i >= 0, i < rows, j >= 0, j < cols]
-    rm = r - moff
-    cm = c - noff
