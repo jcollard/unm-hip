@@ -33,7 +33,10 @@ import qualified Data.Complex as C
 import Data.Maybe(fromJust)
 import Data.Monoid
 
+--bytestring-0.10.0.2
 import qualified Data.ByteString.Char8 as B
+
+--vector>=0.10.0.1
 import qualified Data.Vector as V
 
 type Vector = V.Vector
