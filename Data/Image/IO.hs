@@ -4,16 +4,12 @@ module Data.Image.IO(DisplayFormat(..),
                      RGBPixel(..),
                      writeImage,
                      toPGM,
-                     toPPM,
-                     module System.Process)  where
+                     toPPM)  where
 
 import Data.Image.Internal
 
 --base>=4
 import Data.List(intercalate)
-
---process>=1.1.0.2
-import System.Process
 
 -- | A DisplayFormat for writing to a file
 class DisplayFormat df where

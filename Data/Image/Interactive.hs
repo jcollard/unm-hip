@@ -15,6 +15,9 @@ import System.IO
 --vector>=0.10.0.2
 import qualified Data.Vector.Unboxed as V
 
+--process>=1.1.0.2
+import System.Process
+
 {-| Sets the program to use when making a call to display and specifies if
     the program can accept an image via stdin. If it cannot, then a temporary
     file will be created and passed as an argument instead. By default,

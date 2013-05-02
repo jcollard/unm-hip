@@ -2,19 +2,23 @@
 {-# OPTIONS_GHC -O2 #-}
 module Data.Image.Boxed(
   BoxedImage,
+  -- * Gray Images
   GrayImage, Gray, readImage, 
   grayToComplex, makeHotImage,
+  -- * Color Images
   ColorImage, Color(..), readColorImage,
   colorImageRed, colorImageGreen, colorImageBlue,
   colorImageToRGB, rgbToColorImage, 
   colorImageHue, colorImageSaturation, colorImageIntensity,
   colorImageToHSI, hsiToColorImage, 
+  -- * Complex Images
   ComplexImage, Complex,
   realPart, imagPart,
   magnitude, angle,
   complex, complexImageToRectangular,
   shrink, CI.makeFilter,
   fft, ifft,
+  -- * Additional Modules
     -- | Contains functionality related to Binary Images
   module Data.Image.Binary, 
   -- | Contains functionality for convolution of images

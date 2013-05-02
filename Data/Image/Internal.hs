@@ -4,14 +4,22 @@
    FlexibleInstances, 
    ViewPatterns #-}
 {-# OPTIONS_GHC -O2 #-}
-module Data.Image.Internal(Image(..), 
+module Data.Image.Internal(-- * Images
+                           Image(..), 
                            PixelOp,
                            MaxMin(..),
                            Listable(..),
+                           -- * Basic
                            dimensions, 
                            maxIntensity,
                            minIntensity,
                            transpose,
+                           matrixProduct,
+                           medianFilter,                           
+                           normalize,
+                           imageFold,
+                           imageMap,
+                           -- * Resizing Images
                            pad,
                            crop,
                            downsampleRows,
@@ -20,15 +28,12 @@ module Data.Image.Internal(Image(..),
                            upsampleRows,
                            upsampleCols,
                            upsample,
-                           matrixProduct,
-                           medianFilter,                           
-                           normalize,
-                           imageFold,
-                           imageMap,
+                           -- * Concatenation of Images
                            leftToRight,
                            leftToRight',
                            topToBottom,
                            topToBottom',
+                           -- * Images as Arrays
                            imageToArray,
                            arrayToImage) where
 

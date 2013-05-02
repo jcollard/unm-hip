@@ -1,16 +1,19 @@
 {-# LANGUAGE ViewPatterns, FlexibleContexts, TypeFamilies #-}
 {-# OPTIONS -O2 #-}
-module Data.Image.Binary(BinaryPixel(..),
+module Data.Image.Binary(-- * Binary Images
+                         BinaryPixel(..),
                          toBinaryImage,
                          (<.), (.<),
                          (>.), (.>),
                          (==.), (.==),
                          compareImage,
                          (.<.), (.>.), (.==.),
+                         -- * Binary Morphology
                          erode, erode',
                          dilate, dilate',
                          open, open',
                          close, close',
+                         -- * Functions on Binary Images
                          label,
                          areas, 
                          perimeters,

@@ -1,6 +1,7 @@
 {-# LANGUAGE ViewPatterns, FlexibleInstances, TypeFamilies, FlexibleContexts #-}
 {-# OPTIONS -O2 #-}
-module Data.Image.Complex(ComplexPixel(..),
+module Data.Image.Complex(-- * Complex Images
+                          ComplexPixel(..),
                           complex,
                           realPart,
                           imagPart,
@@ -9,6 +10,7 @@ module Data.Image.Complex(ComplexPixel(..),
                           shrink,
                           complexImageToRectangular,
                           complexImageToPolar,
+                          -- * Discrete Fourier Transformations
                           makeFilter,
                           fft, ifft) where
 
