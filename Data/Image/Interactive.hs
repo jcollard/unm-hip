@@ -60,7 +60,7 @@ runCommandWithStdIn cmd stdin =
     return ioval
 
 {-| Takes a list, pair, or triple of images and passes them to 
-    gnuplot to be displayed as histograms
+    gnuplot to be displayed as histograms.
  -}
 plotHistograms images = runCommandWithStdIn "gnuplot -persist"  $ input
   where input = intercalate "\n" [plotCommand datas max, histogramList, "exit"]

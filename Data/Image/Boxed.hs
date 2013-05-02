@@ -10,10 +10,13 @@ module Data.Image.Boxed(
   colorImageHue, colorImageSaturation, colorImageIntensity,
   colorImageToHSI, hsiToColorImage, 
   ComplexImage, Complex,
+  realPart, imagPart,
+  magnitude, angle,
+  complex, complexImageToRectangular,
+  shrink, CI.makeFilter,
+  fft, ifft,
     -- | Contains functionality related to Binary Images
   module Data.Image.Binary, 
-  -- | Contains functionality related to Complex Images
-  module Data.Image.Complex,
   -- | Contains functionality for convolution of images
   module Data.Image.Convolution,
   -- | Contains basic functionality for Images
@@ -22,7 +25,7 @@ module Data.Image.Boxed(
   module Data.Image.IO) where
  
 import Data.Image.Binary
-import Data.Image.Complex
+import qualified Data.Image.Complex as CI
 import Data.Image.Convolution
 import Data.Image.Internal
 import Data.Image.IO
@@ -96,9 +99,11 @@ instance DisplayFormat GrayImage where
   format = toPGM
 
 instance GrayPixel Gray where
+  type GrayVal Gray = Gray
   toGray = id
 
 instance RGBPixel Gray where
+  type ColorVal Gray = Gray
   toRGB px = (px, px, px)
 
 instance HSIPixel Gray where
@@ -110,7 +115,8 @@ instance BinaryPixel Gray where
   on = 1.0
   off = 0.0
   
-instance ComplexPixel Gray where
+instance CI.ComplexPixel Gray where
+  type Value Gray = Double
   toComplex i =  i C.:+ 0.0
 
 instance Monoid Gray where
@@ -141,10 +147,12 @@ data Color =
            | HSI (Double, Double, Double) deriving (Show, Eq)
 
 instance GrayPixel Color where
+  type GrayVal Color = Double
   toGray (RGB (r, g, b)) = (r + g + b) / 3.0
   toGray (toRGB -> (r, g, b)) = (r + g + b) / 3.0
 
 instance RGBPixel Color where
+  type ColorVal Color = Double
   toRGB (RGB px) = px
   toRGB (HSI (h, s, i)) = (r, g, b) where
     r = i + v1
@@ -214,7 +222,8 @@ type Complex = C.Complex Double
 instance DisplayFormat ComplexImage where
   format (complexImageToColorImage -> rgb) = toPPM rgb
 
-instance ComplexPixel Complex where
+instance CI.ComplexPixel Complex where
+  type Value Complex = Double
   toComplex = id
 
 complexImageToColorImage :: ComplexImage -> ColorImage
@@ -234,7 +243,7 @@ complexImageToColorImage img = fmap rgb img where
     g' = 0.5 - (d * (a + b))
     
 complexScale :: ComplexImage -> Double
-complexScale (complexImageToRectangular -> (real, imag)) = 2.0/(maxv - minv) where
+complexScale (CI.complexImageToRectangular -> (real, imag)) = 2.0/(maxv - minv) where
     maxr = maximum . pixelList $ (real :: GrayImage)
     maxi = maximum . pixelList $ imag
     minr = minimum . pixelList $ real
@@ -350,6 +359,82 @@ makeHotImage img = fmap (toHot max min) img where
     g = if px < 0.333333333 then 0.0 else
           if px < 0.666666667 then (px - 0.333333333)*3 else 1.0
     b = if px < 0.666666667 then 0.0 else (px - 0.666666667)*3
+
+{-| Given a complex image, returns a real image representing
+    the real part of the image.
+ -}
+realPart :: ComplexImage -> GrayImage
+realPart = CI.realPart
+
+{-| Given a complex image, returns a real image representing
+   the imaginary part of the image
+ -}
+imagPart :: ComplexImage -> GrayImage
+imagPart = CI.imagPart
+
+{-| Given a complex image, returns a real image representing
+    the magnitude of the image.
+ -}
+magnitude :: ComplexImage -> GrayImage 
+magnitude = CI.magnitude
+
+{-| Given a complex image, returns a real image representing
+    the angle of the image -}
+angle :: ComplexImage -> GrayImage 
+angle = CI.angle         
+
+{-| Given a complex image, returns a pair of real images each
+    representing the component (magnitude, phase) of the image
+ -}
+complexImageToPolar :: ComplexImage -> (GrayImage, GrayImage)
+complexImageToPolar = CI.complexImageToPolar
+
+{-| Given an image representing the real part of a complex image, and
+    an image representing the imaginary part of a complex image, returns
+    a complex image.
+ -}
+complex :: GrayImage -> GrayImage -> ComplexImage
+complex = CI.complex
+
+{-| Given a complex image, return a pair of real images each representing
+    a component of the complex image (real, imaginary).
+ -}
+complexImageToRectangular :: ComplexImage -> (GrayImage, GrayImage)
+complexImageToRectangular = CI.complexImageToRectangular
+
+{-| Given a complex image and a real positive number x, shrink returns 
+    a complex image with the same dimensions. Let z be the value of the 
+    image at location (i, j). The value of the complex result image at 
+    location (i, j) is zero if |z| < x, otherwise the result has the 
+    same phase as z but the amplitude is decreased by x.
+ -}
+shrink :: (Num a,
+           Image img,
+           CI.ComplexPixel (Pixel img),
+           CI.Value (Pixel img) ~ Double) => a -> img -> ComplexImage 
+shrink = CI.shrink
+
+{-| Given an image whose pixels can be converted to a complex value, 
+    fft returns an image with complex pixels representing its 2D discrete 
+    Fourier transform (DFT). Because the DFT is computed using the Fast Fourier 
+    Transform (FFT) algorithm, the number of rows and columns of the image 
+    must both be powers of two, i.e., 2K where K is an integer.
+ -}
+fft :: (Image img,
+        CI.ComplexPixel (Pixel img),
+        CI.Value (Pixel img) ~ Double) => img -> ComplexImage
+fft = CI.fft
+
+{-| Given an image, ifft returns a complex image representing its 2D 
+    inverse discrete Fourier transform (DFT). Because the inverse DFT is 
+    computed using the Fast Fourier Transform (FFT) algorithm, the number 
+    of rows and columns of <image> must both be powers of two, i.e., 2K 
+    where K is an integer. 
+ -}
+ifft :: (Image img,
+         CI.ComplexPixel (Pixel img),
+         CI.Value (Pixel img) ~ Double) => img -> ComplexImage
+ifft = CI.ifft
 
 -- | Reads in a ASCII PGM image located at fileName as a GrayImage
 readImage :: FilePath -> IO GrayImage

@@ -1,4 +1,4 @@
-{-# LANGUAGE ViewPatterns, FlexibleContexts #-}
+{-# LANGUAGE TypeFamilies,  ViewPatterns, FlexibleContexts #-}
 module Data.Image.IO(DisplayFormat(..),
                      GrayPixel(..),
                      RGBPixel(..),
@@ -20,12 +20,14 @@ class DisplayFormat df where
   format :: df -> String
     
 -- | GrayPixels will be converted using this class
-class GrayPixel px where
-  toGray :: px -> Double
+class RealFrac (GrayVal px) => GrayPixel px where
+  type GrayVal px :: *
+  toGray :: px -> GrayVal px
 
 -- | RGBPixels will be converted using this class
-class RGBPixel px where
-  toRGB :: px -> (Double, Double, Double)
+class RealFrac (ColorVal px) => RGBPixel px where
+  type ColorVal px :: *
+  toRGB :: px -> (ColorVal px, ColorVal px, ColorVal px)
 
 
 -- Converts an image into a PGM string
@@ -52,18 +54,18 @@ toPPM img@(dimensions -> (rows, cols)) = "P3 " ++ (show cols) ++ " " ++ (show ro
   scaleRGB (r, g, b) = (scale*(r-min), scale*(g-min), scale*(b-min))
   showRGB (r, g, b) = (show . round $ r) ++ " " ++ (show . floor $ g) ++ " " ++ (show . floor $ b)
 
-min' :: Double -> Double -> Double
+min' :: RealFrac a => a -> a -> a
 min' = comp' (<)
 
-max' :: Double -> Double -> Double
+max' :: RealFrac a => a -> a -> a
 max' = comp' (>)
   
-comp' :: (Double -> Double -> Bool) -> Double -> Double -> Double
+comp' :: RealFrac a => (a -> a -> Bool) -> a -> a -> a
 comp' f d0 d1
   | f d0 d1 = d0
   | otherwise = d1
 
-comp :: Double -> (Double -> Double -> Double) -> [(Double, Double, Double)] -> Double
+comp :: RealFrac a => a -> (a -> a -> a) -> [(a, a, a)] -> a
 comp seed f = compare' (seed,seed,seed) where
   compare' (r,g,b) [] =  foldr1 f [r,g,b]
   compare' (r,g,b) ((r',g',b'):xs) = compare' (f r r', f g g', f b b') xs

@@ -12,7 +12,6 @@ module Data.Image.Complex(ComplexPixel(..),
                           makeFilter,
                           fft, ifft) where
 
-
 import Data.Image.Internal(Image(..), PixelOp, imageMap,dimensions)
 
 --base>=4
@@ -24,54 +23,55 @@ import Data.Bits
 --vector>=0.10.0.1
 import qualified Data.Vector as V
 
-class ComplexPixel px where
-  toComplex :: px -> C.Complex Double
-
+class RealFloat (Value px) => ComplexPixel px where
+  type Value px :: *
+  toComplex ::  px -> C.Complex (Value px)
+  
 {-| Given a complex image, returns a real image representing
     the real part of the image.
  -}
 realPart :: (Image img,
+             ComplexPixel (Pixel img),
              Image img',
-             Pixel img' ~ Double,
-             ComplexPixel (Pixel img)) => img -> img'
+             Pixel img' ~ Value (Pixel img)) => img -> img'
 realPart = imageMap (C.realPart . toComplex)
 
 {-| Given a complex image, returns a real image representing
    the imaginary part of the image
  -}
 imagPart :: (Image img,
+             ComplexPixel (Pixel img),
              Image img',
-             Pixel img' ~ Double,
-             ComplexPixel (Pixel img)) => img -> img'
+             Pixel img' ~ Value (Pixel img)) => img -> img'
 imagPart = imageMap (C.imagPart . toComplex)
 
 {-| Given a complex image, returns a real image representing
     the magnitude of the image.
  -}
 magnitude :: (Image img,
-             Image img',
-             RealFloat (Pixel img'),
-             Pixel img ~ C.Complex (Pixel img')) => img -> img'
-magnitude = imageMap C.magnitude
+              ComplexPixel (Pixel img),
+              Image img',
+              Pixel img' ~ Value (Pixel img)) => img -> img'
+magnitude = imageMap (C.magnitude . toComplex)
 
 {-| Given a complex image, returns a real image representing
     the angle of the image -}
 angle :: (Image img,
+          ComplexPixel (Pixel img),
           Image img',
-          RealFloat (Pixel img'),
-          Pixel img ~ C.Complex (Pixel img')) => img -> img'
-angle = imageMap C.phase
+          Pixel img' ~ Value (Pixel img)) => img -> img'
+angle = imageMap (C.phase . toComplex)
 
 {-| Given a complex image, returns a pair of real images each
     representing the component (magnitude, phase) of the image
  -}
 complexImageToPolar :: (Image img,
-          Image img',
-          RealFloat (Pixel img'),
-          Pixel img ~ C.Complex (Pixel img')) => img -> (img', img')
+                        ComplexPixel (Pixel img),
+                        Image img',
+                        Pixel img' ~ Value (Pixel img)) => img -> (img', img')
 complexImageToPolar img@(dimensions -> (rows, cols)) = (mkImg mag, mkImg phs) where
   mkImg = makeImage rows cols
-  ref' r c = C.polar $ (ref img r c)
+  ref' r c = C.polar . toComplex . ref img r $ c
   mag r c = fst (ref' r c)
   phs r c = snd (ref' r c)
 
@@ -89,9 +89,9 @@ complex real imag@(dimensions -> (rows, cols)) = makeImage rows cols ri where
     a component of the complex image (real, imaginary).
  -}
 complexImageToRectangular :: (Image img,
+                              ComplexPixel (Pixel img),
                               Image img',
-                              Pixel img' ~ Double,
-                              ComplexPixel (Pixel img)) => img -> (img', img')
+                              Pixel img' ~ Value (Pixel img)) => img -> (img', img')
 complexImageToRectangular img = (realPart img, imagPart img)
 
 {-| Given a complex image and a real positive number x, shrink returns 
@@ -101,13 +101,13 @@ complexImageToRectangular img = (realPart img, imagPart img)
     same phase as z but the amplitude is decreased by x.
  -}
 shrink :: (Num a,
-           Image img, 
+           Image img,
+           ComplexPixel (Pixel img), 
            Image img',
-           Pixel img' ~ C.Complex Double,
-           ComplexPixel (Pixel img)) => a -> img -> img'
+           Pixel img' ~ C.Complex (Value (Pixel img))) => a -> img -> img'
 shrink x img@(dimensions -> (rows, cols)) = makeImage rows cols shrink' where
   shrink' r c = helper px where
-    px = toComplex $ (ref img r c)
+    px = toComplex . ref img r $ c
     helper px
       | (C.magnitude px) < x = 0.0 C.:+ 0.0
       | otherwise = real C.:+ imag where
@@ -139,9 +139,9 @@ makeFilter rows cols func = makeImage rows cols func' where
     must both be powers of two, i.e., 2K where K is an integer.
  -}
 fft :: (Image img,
-        Image img',
         ComplexPixel (Pixel img),
-        Pixel img' ~ C.Complex Double) => img -> img'
+        Image img',
+        Pixel img' ~ C.Complex (Value (Pixel img))) => img -> img'
 fft img@(dimensions -> (rows, cols)) = makeImage rows cols fftimg where
   fftimg r c = fft' V.! (r*cols + c)
   vector = V.map toComplex . V.fromList . pixelList $ img
@@ -154,56 +154,56 @@ fft img@(dimensions -> (rows, cols)) = makeImage rows cols fftimg where
     where K is an integer. 
  -}
 ifft :: (Image img,
-        Image img',
         ComplexPixel (Pixel img),
-        Pixel img' ~ C.Complex Double) => img -> img'
+        Image img',
+        Pixel img' ~ C.Complex (Value (Pixel img))) => img -> img'
 ifft img@(dimensions -> (rows, cols)) = makeImage rows cols fftimg where
   fftimg r c = fft' V.! (r*cols + c)
   vector = V.map toComplex . V.fromList . pixelList $ img
   fft' = ifftv rows cols vector
 
-type Vector = V.Vector (Complex Double)
-type FFT = [Int] -> Vector -> Int -> Int -> [Complex Double]
+type Vector a = V.Vector (Complex a)
+type FFT a = [Int] -> Vector a -> Int -> Int -> [Complex a] 
 
 -- FFT support code
 
-fftv :: Int -> Int -> Vector -> Vector
+fftv :: (RealFloat a) => Int -> Int -> Vector a -> Vector a
 fftv = fft' fftRange
 
-ifftv :: Int -> Int -> Vector -> Vector
+ifftv :: (RealFloat a) => Int -> Int -> Vector a -> Vector a
 ifftv rows cols vec = V.map (/fromIntegral (rows*cols)) . fft' ifftRange rows cols $ vec
 
 isPowerOfTwo :: Int -> Bool
 isPowerOfTwo n = n /= 0 && (n .&. (n-1)) == 0
 
-fft' :: FFT -> Int -> Int -> Vector -> Vector
+fft' :: FFT a -> Int -> Int -> Vector a -> Vector a
 fft' range rows cols orig = if check then fromRows rows' else err where 
   check = and . map isPowerOfTwo $ [rows, cols]
   err = error "FFT can only be applied to images with dimensions 2^k x 2^j where k and j are integers."
   (fromColumns -> cols') = map (fftc range rows cols 0 (rows-1) orig) [0..cols-1] -- FFT on each col
   rows' = map (fftr range cols 0 (cols-1) cols') [0..rows-1] -- FFT on each row
 
-fromColumns :: [[Complex Double]] -> V.Vector (Complex Double)
+fromColumns :: [[Complex a]] -> V.Vector (Complex a)
 fromColumns = fromRows . transpose
 
-fromRows :: [[Complex Double]] -> V.Vector (Complex Double)
+fromRows :: [[Complex a]] -> V.Vector (Complex a)
 fromRows = V.fromList . concat
 
-fftc :: FFT -> Int -> Int -> Int -> Int -> Vector -> Int -> [Complex Double]
+fftc :: FFT a -> Int -> Int -> Int -> Int -> Vector a -> Int -> [Complex a]
 fftc fftfunc rows cols sIx eIx orig row = fftfunc indices orig rows 1 where
   indices = map ((+row) . (*cols)) $ [sIx..eIx]
 
-fftr :: FFT -> Int -> Int -> Int -> Vector ->  Int -> [Complex Double]
+fftr :: FFT a -> Int -> Int -> Int -> Vector a ->  Int -> [Complex a]
 fftr fftfunc cols sIx eIx orig row = fftfunc indices orig cols 1 where
   indices = map (+ (row*cols)) $ [sIx..eIx]
 
-fftRange :: FFT
+fftRange :: (RealFloat a) => FFT a
 fftRange = range (-2*pii)
 
-ifftRange :: FFT
+ifftRange :: (RealFloat a) => FFT a
 ifftRange = range (2*pii)
 
-range :: Complex Double -> FFT
+range :: (RealFloat a) => Complex a -> FFT a
 range e ix vec n s 
   | n == 1 = [vec V.! (head ix)]
   | otherwise = fft' where
@@ -222,7 +222,7 @@ seperate = seperate' [] [] where
   seperate' acc0 acc1 [] = (reverse acc0) ++ (reverse acc1)
   seperate' acc0 acc1 ((a, b):xs) = seperate' (a:acc0) (b:acc1) xs
 
-pii :: Complex Double
+pii :: (Floating a) => Complex a
 pii = 0 :+ pi
 
 -- End FFT support code
