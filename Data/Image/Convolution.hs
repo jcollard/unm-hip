@@ -21,7 +21,16 @@ kernel2d ls = listArray ((0,0), (length ls-1, length (head ls) - 1)) (reverse . 
 {-| Given a list consisting solely of pixel values representing a 1D 
     convolution kernel and an image, convolveRows returns the 1D discrete 
     periodic convolution of the rows of the image with the kernel.
- -}
+
+    >>>frog <- readImage "images/frog.pgm"
+    
+    <https://raw.github.com/jcollard/unm-hip/master/examples/frog.jpg>
+ 
+    >>>convolveRows [1,-1] frog
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/convolverows.jpg>
+ 
+-}
 convolveRows :: (Image img,
                  Num (Pixel img)) => [Pixel img] -> img -> img
 convolveRows = convolveRows' . kernel
@@ -36,6 +45,17 @@ convolveRows' k = convolve' k' where
 {-| Given a list consisting solely of pixel values representing a 1D 
     convolution kernel and an image, convolveCols returns the 1D discrete 
     periodic convolution of the columns of the image with the kernel.
+
+    >>>convolveCols [1,-1] frog
+    
+    <https://raw.github.com/jcollard/unm-hip/master/examples/convolvecols.jpg>
+ 
+    >>>let dx = convolveRows [1, -1] frog
+    >>>let dy = convolveCols [1, -1] frog
+    >>>imageMap sqrt (dx*dx + dy*dy) :: GrayImage
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/convolvedxdy.jpg>
+
  -}    
 convolveCols :: (Image img,
                  Num (Pixel img)) => [Pixel img] -> img -> img
@@ -51,6 +71,10 @@ convolveCols' k = convolve' k' where
 {-| Given a 2D list consisting solely of pixels representing a 2D 
     convolution kernel and an image, convolve returns the 2D discrete 
     periodic convolution of the image with the kernel.
+
+    >>>convolve [[1,1,1],[1,-8,1],[1,1,1]] frog
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/convolve.jpg>
  -}
 convolve :: (Image img,
              Num (Pixel img)) => [[Pixel img]] -> img -> img
