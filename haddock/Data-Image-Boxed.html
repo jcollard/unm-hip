@@ -71,6 +71,23 @@ window.onload = function () {pageLoad();setSynopsis("mini_Data-Image-Boxed.html"
     and y, e.g., the value at location (0, 0) is the result of applying the 
     function to 0 and 0, the value at (m-1, n-1) is the result of applying 
     function to -1 and -1.
+</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>makeFilter 128 128 (\ r c -&gt; fromIntegral (r + c)) :: GrayImage
+</code></strong>&lt; Image 128x128 &gt;
+</pre><p><a href="https://raw.github.com/jcollard/unm-hip/master/examples/makefilter.jpg">https://raw.github.com/jcollard/unm-hip/master/examples/makefilter.jpg</a>
+</p><pre>
+    laplacianOfGaussian :: Double -&gt; Int -&gt; Int -&gt; Double
+    laplacianOfGaussian stddev i j = ((-pi) / (stddev*stddev)) * (1 - x) * (exp (-x)) where
+      r = fromIntegral $ i*i + j*j
+      x = r / (2.0*stddev)
+</pre><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>let d2g = makeFilter 128 128 (laplacianOfGaussian 8) :: GrayImage
+</code></strong></pre><p><a href="https://raw.github.com/jcollard/unm-hip/master/examples/d2g.jpg">https://raw.github.com/jcollard/unm-hip/master/examples/d2g.jpg</a>
+</p><pre>
+    gaussian :: Double -&gt; Int -&gt; Int -&gt; Double 
+    gaussian variance i j = exp (-x) where
+      r = fromIntegral $ i*i + j*j
+      x = r / (2.0*pi*variance)
+</pre><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>let g = makeFilter 128 128 (gaussian 8) :: GrayImage
+</code></strong></pre><p><a href="https://raw.github.com/jcollard/unm-hip/master/examples/g.jpg">https://raw.github.com/jcollard/unm-hip/master/examples/g.jpg</a>
 </p></div></div><div class="top"><p class="src"><a name="v:fft" class="def">fft</a> :: (<a href="Data-Image-Internal.html#t:Image">Image</a> img, <a href="Data-Image-Complex.html#t:ComplexPixel">ComplexPixel</a> (<a href="Data-Image-Internal.html#t:Pixel">Pixel</a> img), <a href="Data-Image-Complex.html#t:Value">Value</a> (<a href="Data-Image-Internal.html#t:Pixel">Pixel</a> img) ~ Double) =&gt; img -&gt; <a href="Data-Image-Boxed.html#t:ComplexImage">ComplexImage</a></p><div class="doc"><p>Given an image whose pixels can be converted to a complex value, 
     fft returns an image with complex pixels representing its 2D discrete 
     Fourier transform (DFT). Because the DFT is computed using the Fast Fourier 

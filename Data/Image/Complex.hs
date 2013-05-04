@@ -2,6 +2,10 @@
 {-# OPTIONS -O2 #-}
 module Data.Image.Complex(-- * Complex Images
                           ComplexPixel(..),
+                          -- * Discrete Fourier Transformations
+                          makeFilter,
+                          fft, ifft,
+                          -- * Converting Complex Images
                           complex,
                           realPart,
                           imagPart,
@@ -9,10 +13,7 @@ module Data.Image.Complex(-- * Complex Images
                           angle,
                           shrink,
                           complexImageToRectangular,
-                          complexImageToPolar,
-                          -- * Discrete Fourier Transformations
-                          makeFilter,
-                          fft, ifft) where
+                          complexImageToPolar) where
 
 import Data.Image.Internal(Image(..), PixelOp, imageMap,dimensions)
 
@@ -29,9 +30,134 @@ class RealFloat (Value px) => ComplexPixel px where
   type Value px :: *
   toComplex ::  px -> C.Complex (Value px)
   
+{-| Given a positive integer m, a positive integer n, and a function 
+    returning a pixel value, makeFilter returns an image with m rows 
+    and n columns. Let x equal i if i is less than m/2 and i - m otherwise 
+    and let y equal j if j is less than n/2 and j - n otherwise. To match 
+    the periodicity of the 2D discrete Fourier spectrum, the value of the 
+    result image at location (i, j) is computed by applying the function to x 
+    and y, e.g., the value at location (0, 0) is the result of applying the 
+    function to 0 and 0, the value at (m-1, n-1) is the result of applying 
+    function to -1 and -1.
+
+    >>> makeFilter 128 128 (\ r c -> fromIntegral (r + c)) :: GrayImage
+    < Image 128x128 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/makefilter.jpg>
+
+    @
+    laplacianOfGaussian :: Double -> Int -> Int -> Double
+    laplacianOfGaussian stddev i j = ((-pi) / (stddev*stddev)) * (1 - x) * (exp (-x)) where
+      r = fromIntegral $ i*i + j*j
+      x = r / (2.0*stddev)
+    @
+
+    >>>let d2g = makeFilter 128 128 (laplacianOfGaussian 8) :: GrayImage
+ 
+    <https://raw.github.com/jcollard/unm-hip/master/examples/d2g.jpg>
+
+    @
+    gaussian :: Double -> Int -> Int -> Double 
+    gaussian variance i j = exp (-x) where
+      r = fromIntegral $ i*i + j*j
+      x = r / (2.0*pi*variance)
+    @
+
+    >>>let g = makeFilter 128 128 (gaussian 8) :: GrayImage
+    
+    <https://raw.github.com/jcollard/unm-hip/master/examples/g.jpg>
+-}
+makeFilter :: (Image img) => Int -> Int -> (PixelOp (Pixel img)) -> img
+makeFilter rows cols func = makeImage rows cols func' where
+  func' r c = let x = if r < (rows `div` 2) then r else r-rows 
+                  y = if c < (cols `div` 2) then c else c-cols
+              in func x y
+
+{-| Given an image whose pixels can be converted to a complex value, 
+    fft returns an image with complex pixels representing its 2D discrete 
+    Fourier transform (DFT). Because the DFT is computed using the Fast Fourier 
+    Transform (FFT) algorithm, the number of rows and columns of the image 
+    must both be powers of two, i.e., 2K where K is an integer.
+
+    >>>frog <- readImage "images/frog.pgm"
+    >>>let frogpart = crop 64 64 128 128 frog
+    
+    <https://raw.github.com/jcollard/unm-hip/master/examples/frog.jpg>
+    
+    <https://raw.github.com/jcollard/unm-hip/master/examples/frogpart.jpg>
+
+    >>>imageMap log . fft $ frogpart :: ComplexImage
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/fft.jpg>  
+    
+    >>>fft d2g
+ 
+    <https://raw.github.com/jcollard/unm-hip/master/examples/fftd2g.jpg>  
+    
+    >>>fft g
+    
+    <https://raw.github.com/jcollard/unm-hip/master/examples/fftg.jpg>      
+-}
+fft :: (Image img,
+        ComplexPixel (Pixel img),
+        Image img',
+        Pixel img' ~ C.Complex (Value (Pixel img))) => img -> img'
+fft img@(dimensions -> (rows, cols)) = makeImage rows cols fftimg where
+  fftimg r c = fft' V.! (r*cols + c)
+  vector = V.map toComplex . V.fromList . pixelList $ img
+  fft' = fftv rows cols vector
+
+{-| Given an image, ifft returns a complex image representing its 2D 
+    inverse discrete Fourier transform (DFT). Because the inverse DFT is 
+    computed using the Fast Fourier Transform (FFT) algorithm, the number 
+    of rows and columns of <image> must both be powers of two, i.e., 2K 
+    where K is an integer. 
+
+    >>>ifft ((fft frogpart) * (fft d2g))
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/ifft.jpg>
+    
+    >>>ifft ((fft frogpart) * (fft g))
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/ifft2.jpg>
+ -}
+ifft :: (Image img,
+        ComplexPixel (Pixel img),
+        Image img',
+        Pixel img' ~ C.Complex (Value (Pixel img))) => img -> img'
+ifft img@(dimensions -> (rows, cols)) = makeImage rows cols fftimg where
+  fftimg r c = fft' V.! (r*cols + c)
+  vector = V.map toComplex . V.fromList . pixelList $ img
+  fft' = ifftv rows cols vector
+
 {-| Given a complex image, returns a real image representing
     the real part of the image.
- -}
+
+    @
+    harmonicSignal :: Double -> Double -> Int -> Int -> C.Complex Double
+    harmonicSignal u v m n = exp (-pii*2.0 * var) where 
+      pii = 0.0 C.:+ pi
+      var = (u*m' + v*n') C.:+ 0.0
+      [m',n'] = map fromIntegral [m, n]
+    @
+
+    >>> let signal = makeImage 128 128 (harmonicSignal (3/128) (2/128)) :: ComplexImage
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/signal.jpg>
+
+    >>>let cosine = realPart signal
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/cosine.jpg>
+
+    >>>realPart realPart . ifft $ (fft frogpart) * (fft d2g)
+ 
+    <https://raw.github.com/jcollard/unm-hip/master/examples/realpart.jpg>
+    
+    >>>realPart realPart . ifft $ (fft frogpart) * (fft g)
+ 
+    <https://raw.github.com/jcollard/unm-hip/master/examples/realpart2.jpg>
+
+-}
 realPart :: (Image img,
              ComplexPixel (Pixel img),
              Image img',
@@ -118,51 +244,6 @@ shrink x img@(dimensions -> (rows, cols)) = makeImage rows cols shrink' where
         real = x*(C.realPart px)
         imag = x*(C.imagPart px)
 
-{-| Given a positive integer m, a positive integer n, and a function 
-    returning a pixel value, makeFilter returns an image with m rows 
-    and n columns. Let x equal i if i is less than m/2 and i - m otherwise 
-    and let y equal j if j is less than n/2 and j - n otherwise. To match 
-    the periodicity of the 2D discrete Fourier spectrum, the value of the 
-    result image at location (i, j) is computed by applying the function to x 
-    and y, e.g., the value at location (0, 0) is the result of applying the 
-    function to 0 and 0, the value at (m-1, n-1) is the result of applying 
-    function to -1 and -1.
- -}
-makeFilter :: (Image img) => Int -> Int -> (PixelOp (Pixel img)) -> img
-makeFilter rows cols func = makeImage rows cols func' where
-  func' r c = let x = if r < (rows `div` 2) then r else r-rows 
-                  y = if c < (cols `div` 2) then c else c-cols
-              in func x y
-
-{-| Given an image whose pixels can be converted to a complex value, 
-    fft returns an image with complex pixels representing its 2D discrete 
-    Fourier transform (DFT). Because the DFT is computed using the Fast Fourier 
-    Transform (FFT) algorithm, the number of rows and columns of the image 
-    must both be powers of two, i.e., 2K where K is an integer.
- -}
-fft :: (Image img,
-        ComplexPixel (Pixel img),
-        Image img',
-        Pixel img' ~ C.Complex (Value (Pixel img))) => img -> img'
-fft img@(dimensions -> (rows, cols)) = makeImage rows cols fftimg where
-  fftimg r c = fft' V.! (r*cols + c)
-  vector = V.map toComplex . V.fromList . pixelList $ img
-  fft' = fftv rows cols vector
-
-{-| Given an image, ifft returns a complex image representing its 2D 
-    inverse discrete Fourier transform (DFT). Because the inverse DFT is 
-    computed using the Fast Fourier Transform (FFT) algorithm, the number 
-    of rows and columns of <image> must both be powers of two, i.e., 2K 
-    where K is an integer. 
- -}
-ifft :: (Image img,
-        ComplexPixel (Pixel img),
-        Image img',
-        Pixel img' ~ C.Complex (Value (Pixel img))) => img -> img'
-ifft img@(dimensions -> (rows, cols)) = makeImage rows cols fftimg where
-  fftimg r c = fft' V.! (r*cols + c)
-  vector = V.map toComplex . V.fromList . pixelList $ img
-  fft' = ifftv rows cols vector
 
 type Vector a = V.Vector (Complex a)
 type FFT a = [Int] -> Vector a -> Int -> Int -> [Complex a] 
