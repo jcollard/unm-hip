@@ -68,6 +68,21 @@ comp seed f = compare' (seed,seed,seed) where
 
 {-| Given a file name and a formatable image, writes the image to that file
     with the format.
- -}
+
+    >>>frog <- readImage "images/frog.pgm"
+    >>>writeImage "transposeFrog.pgm" (transpose frog)
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/frog.jpg>
+    
+    <https://raw.github.com/jcollard/unm-hip/master/examples/transposefrog.jpg>
+
+    >>>cactii <- readColorImage "images/cactii.ppm"
+    >>>writeImage "inverseCactii.ppm" (imageMap (*(-1)) cactii)
+ 
+    <https://raw.github.com/jcollard/unm-hip/master/examples/cactii.jpg>
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/inversecactii.jpg>
+
+-}
 writeImage :: (DisplayFormat df) => FilePath -> df -> IO ()
 writeImage file = writeFile file . format 
