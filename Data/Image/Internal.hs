@@ -50,29 +50,47 @@ type PixelOp px = Int -> Int -> px
 class Image i where
   -- | The type of Pixel to be stored in images of type i.
   type Pixel i :: *
-  
+
   {-| Given an Int m, Int n, and a PixelOp f, returns an Image with      
       dimensions m x n and the Pixel value at each (i, j) is (f i j)
 
       >let gradient = makeImage 128 128 (\r c -> fromIntegral (r*c)) :: GrayImage
-      >display gradient
+
+      >>>gradient
+      < Image 128x128 >
+
+      <https://raw.github.com/jcollard/unm-hip/master/examples/gradient.jpg>
    -}
   makeImage :: Int -> Int -> PixelOp (Pixel i) -> i
   
   {-| Given an Image i, row i, and column j, returns the Pixel in
       i at row i and column j.
+
+      >>>ref gradient 12 52
+      624.0
    -}
   ref  :: i -> Int -> Int -> (Pixel i)
   
-  -- | Given an Image i, returns the number of rows in i
+  {-| Given an Image i, returns the number of rows in i
+      
+      >>>rows gradient
+      128
+   -}
   rows :: i -> Int
   
-  -- | Given an Image i, returns the number of columns in i
+  {-| Given an Image i, returns the number of columns in i
+   
+      >>>cols gradient
+      128
+   -}
   cols :: i -> Int
   
   {-| Given an Image i, returns a list containing all of the pixels in i.
       The order in which the pixels are returned is from top left to
       bottom right.
+
+      >>> take 5 . reverse . pixelList $ gradient
+      [16129.0,16002.0,15875.0,15748.0,15621.0]
    -}
   pixelList :: i -> [Pixel i]
   pixelList i = [ ref i r c | r <- [0..(rows i - 1)], c <- [0..(cols i - 1)]]
@@ -81,17 +99,27 @@ class Image i where
       an image Y, return an Image that for each pixel value at (i,j) is the
       result of applying f to X(i,j) and Y(i,j). Note: The dimensions of X and
       Y must be equal otherwise the result of imageOp is undefined.  
+
+      > let white = makeImage 128 128 (\ r c -> 8000) :: GrayImage
+      
+      >>>imageOp (-) gradient white
+      < Image 128x128 >
+      
+      <https://raw.github.com/jcollard/unm-hip/master/examples/whitegrad.jpg>
    -} 
   imageOp :: (Pixel i -> Pixel i -> Pixel i) -> i -> i -> i
   imageOp op i0 i1 = makeImage (rows i0) (cols i0) operate where
     operate r c = op (ref i0 r c) (ref i1 r c)
   
--- | Something is Listable if it can be converted to a list.
+{-| Something is Listable if it can be converted to a list.
+    This type class is mostly for convenience when using leftToRight'
+    and topToBottom'.
+ -}
 class Listable a where
   -- | The type of the elements in the list
   type Elem a :: *
   toList :: a -> [Elem a]
-  
+
 instance Listable [a] where
   type Elem [a] = a
   toList = id
@@ -103,22 +131,40 @@ instance Listable (a,a) where
 instance Listable (a,a,a) where
   type Elem (a,a,a) = a
   toList (a,b,c) = [a,b,c]
-  
+    
 class MaxMin m where
   -- | Given a [m] returns the maximal m in the list
   maximal :: [m] -> m
   -- | Given a [m] returns the minimal m in the list
   minimal :: [m] -> m
 
--- | Given an Image i, return a pair (rows i, cols i)
+{-| Given an Image i, return a pair (rows i, cols i)
+    
+    >>>dimensions gradient
+    (128, 128)
+ -}
 dimensions :: Image i => i -> (Int, Int)
 dimensions i = (rows i, cols i)
 
--- | Given an Image i, returns the value of the Pixel with the maximal intensity
+{-| Given an Image i, returns the value of the Pixel with the maximal intensity
+
+    >>>maxIntensity gradient
+    16129.0
+
+    >>>maxIntensity cactii
+    RGB (254.0, 254.0, 254.0)
+ -}
 maxIntensity :: (Image img, MaxMin (Pixel img)) => img -> Pixel img
 maxIntensity = maximal . pixelList
 
--- | Given an Image i, returns the value of the Pixel with the minimal intensity
+{-| Given an Image i, returns the value of the Pixel with the minimal intensity
+    
+    >>>minIntensity gradient
+    0.0
+
+    >>>minIntensity cactii
+    RGB (18.0, 18.0, 18.0)
+ -}
 minIntensity :: (Image img, MaxMin (Pixel img)) => img -> Pixel img
 minIntensity = minimal . pixelList
 
@@ -126,6 +172,11 @@ minIntensity = minimal . pixelList
 {-| Given an Image i, returns an Image created by interchanging the rows 
     and columns of i, i.e., the pixel value at location (i, j) of the resulting 
     Image is the value of i at location (j, i).
+
+    >>> transpose frog
+    < Image 242x225 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/transposefrog.jpg>
  -}
 transpose :: (Image img) => img -> img
 transpose img@(dimensions -> (rows, cols)) = makeImage cols rows trans where
@@ -135,6 +186,11 @@ transpose img@(dimensions -> (rows, cols)) = makeImage cols rows trans where
     where the value at location (i, j) of the result image is the value 
     of img at location (i, j) if i is less than m and j is less than n 
     and mempty otherwise.
+
+    >>> pad 256 256 frog
+    < Image 256x256 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/padfrog.jpg>
  -}
 pad :: (Image img, Monoid (Pixel img)) => Int -> Int -> img -> img    
 pad rs cs img@(dimensions -> (rows, cols)) = makeImage rs cs pad where
@@ -145,6 +201,11 @@ pad rs cs img@(dimensions -> (rows, cols)) = makeImage rs cs pad where
 {-| Given a i0, j0, m, n, and img, crop returns an image with m rows 
     and n columns where the value at location (i, j) of the result 
     image is the value of img at location (i0 + i, j0 + j).  
+
+    >>> crop 64 64 128 128 frog
+    < Image 128x128 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/cropfrog.jpg>
  -}
 crop :: (Image img) => Int -> Int -> Int -> Int -> img -> img
 crop r0 c0 w h img = makeImage w h crop where
@@ -153,6 +214,11 @@ crop r0 c0 w h img = makeImage w h crop where
 {-| Given img, downsampleCols returns the image created by discarding 
     the odd numbered rows, i.e., the value at location (i, j) of the 
     result image is the value of img at location (2i, j).  
+
+    >>> downsampleCols frog
+    < Image 112x242 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/downsamplecolsfrog.jpg>
  -}
 downsampleCols :: (Image img) => img -> img
 downsampleCols img@(dimensions -> (rows, cols)) = makeImage (rows `div` 2) cols downsample where
@@ -161,6 +227,11 @@ downsampleCols img@(dimensions -> (rows, cols)) = makeImage (rows `div` 2) cols 
 {-| Given img, downsampleRows returns the image created by discarding the odd 
     numbered columns, i.e., the value at location (i, j) is the value of img 
     at location (i, 2j).  
+
+    >>> downsampleRows frog
+    < Image 225x121 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/downsamplerowsfrog.jpg>
  -}
 downsampleRows :: (Image img) => img -> img
 downsampleRows img@(dimensions -> (rows, cols)) = makeImage rows (cols `div` 2) downsample where
@@ -169,6 +240,11 @@ downsampleRows img@(dimensions -> (rows, cols)) = makeImage rows (cols `div` 2) 
 {-| Given img, downsample returns the image created by discarding the odd
     numbered rows and columns, i.e., the value at location (i, j) is the
     value of img at location (2i, 2j)
+
+    >>> downsample frog
+    < Image 112x121 >
+    
+    <https://raw.github.com/jcollard/unm-hip/master/examples/downsamplefrog.jpg>
  -}
 downsample :: (Image img) => img -> img
 downsample = downsampleRows . downsampleCols
