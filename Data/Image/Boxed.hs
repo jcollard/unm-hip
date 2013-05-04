@@ -13,12 +13,13 @@ module Data.Image.Boxed(
   colorImageToHSI, hsiToColorImage, 
   -- * Complex Images
   ComplexImage, Complex,
+  CI.makeFilter,
+  fft, ifft,
   realPart, imagPart,
   magnitude, angle,
   complex, complexImageToRectangular,
   complexImageToPolar,
-  shrink, CI.makeFilter,
-  fft, ifft,
+  shrink, 
   -- * Binary Images
   distanceTransform, label,
   -- * Additional Modules
