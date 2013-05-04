@@ -23,6 +23,12 @@ import System.Process
     file will be created and passed as an argument instead. By default,
     ImageMagick ("display") is the default program to use and it is read
     using stdin.
+
+    >>>setDisplayProgram "gimp" False
+    
+    >>>setDisplayProgram "xv" False
+
+    >>>setDisplayProgram "display" True
  -}
 setDisplayProgram :: String -> Bool -> IO ()
 setDisplayProgram program stdin = writeIORef displayProgram program >> writeIORef useStdin stdin
@@ -31,6 +37,10 @@ setDisplayProgram program stdin = writeIORef displayProgram program >> writeIORe
 {-| Makes a call to the current display program to be displayed. If the
     program cannot read from standard in, a file named ".tmp-img" is created
     and used as an argument to the program.
+
+    >>>frog <- readImage "images/frog.pgm"
+    >>>display frog
+
  -}
 display :: (DisplayFormat df) => df -> IO (Handle, Handle, Handle, ProcessHandle)
 display img = do
@@ -64,6 +74,20 @@ runCommandWithStdIn cmd stdin =
 
 {-| Takes a list, pair, or triple of images and passes them to 
     gnuplot to be displayed as histograms.
+
+    >>>frog <- readImage "images/frog.pgm"
+    >>>plotHistograms $ [frog]
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/frog.jpg>
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/frogplot.jpg>
+
+    >>>cactii <- readColorImage "images/cactii.ppm"
+    >>>plotHistograms . colorImageToRGB $ cactii
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/cactii.jpg>
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/cactiiplot.jpg>
  -}
 plotHistograms images = runCommandWithStdIn "gnuplot -persist"  $ input
   where input = intercalate "\n" [plotCommand datas max, histogramList, "exit"]
