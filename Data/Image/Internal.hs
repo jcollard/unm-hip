@@ -54,8 +54,7 @@ class Image i where
   {-| Given an Int m, Int n, and a PixelOp f, returns an Image with      
       dimensions m x n and the Pixel value at each (i, j) is (f i j)
 
-      >let gradient = makeImage 128 128 (\r c -> fromIntegral (r*c)) :: GrayImage
-
+      >>>let gradient = makeImage 128 128 (\r c -> fromIntegral (r*c)) :: GrayImage
       >>>gradient
       < Image 128x128 >
 
@@ -100,9 +99,8 @@ class Image i where
       result of applying f to X(i,j) and Y(i,j). Note: The dimensions of X and
       Y must be equal otherwise the result of imageOp is undefined.  
 
-      >let white = makeImage 128 128 (\ r c -> 8000) :: GrayImage
-      >let diff = imageOp (-) gradient white
-      
+      >>>let white = makeImage 128 128 (\ r c -> 8000) :: GrayImage
+      >>>let diff = imageOp (-) gradient white
       >>>diff
       < Image 128x128 >
       >>>ref diff 0 0
@@ -242,8 +240,7 @@ downsampleRows img@(dimensions -> (rows, cols)) = makeImage rows (cols `div` 2) 
     numbered rows and columns, i.e., the value at location (i, j) is the
     value of img at location (2i, 2j)
 
-    >let smallfrog = downsample frog
-   
+    >>>let smallfrog = downsample frog
     >>>smallfrog
     < Image 112x121 >
     
@@ -300,8 +297,7 @@ upsample = upsampleRows . upsampleCols
     equals the number of rows of X2, matrixProduct returns an image 
     representing the matrix product of X1 and X2. 
 
-    >let cropped = crop 64 64 128 128 frog
-
+    >>>let cropped = crop 64 64 128 128 frog
     >>>matrixProduct cropped cropped
     < Image 128x128 >
 
@@ -343,8 +339,7 @@ medianFilter m n img@(dimensions -> (rows, cols)) = makeImage rows cols avg wher
 {-| Given img, normalize returns an image with the same dimensions 
     where the values have been normalized to lie in the interval [0, 1].
 
-    >let normalfrog = normalize frog
-
+    >>>let normalfrog = normalize frog
     >>>ref frog 0 0
     151.0
     >>>ref normalfrog 0 0
@@ -445,8 +440,7 @@ topToBottom' (toList -> imgs) = foldr1 topToBottom imgs
 {-| Given img, returns an two dimensional array of Pixel values 
     indexed by pairs of Ints where the fst is the row and snd is the column.
 
-    >let frogArr = imageToArray frog
-
+    >>>let frogArr = imageToArray frog
     >>>frogArr ! (0, 0)
     151.0
  -}
@@ -459,8 +453,7 @@ imageToArray img@(dimensions -> (rows, cols)) = listArray bounds elems where
     pairs of Ints where the fst is the row and snd is the column, returns
     an Image.
 
-    >let img = arrayToImage (listArray ((0,0) (127,127)) [0..]) :: GrayImage
-
+    >>>let img = arrayToImage (listArray ((0,0) (127,127)) [0..]) :: GrayImage
     >>>img
     < Image 128x128 >
     >>>ref img 0 0

@@ -6,8 +6,9 @@ module Data.Image.Binary(-- * Binary Images
                          (<.), (.<),
                          (>.), (.>),
                          (==.), (.==),
+                         (/=.), (./=),
                          compareImage,
-                         (.<.), (.>.), (.==.),
+                         (.<.), (.>.), (.==.), (./=.),
                          -- * Binary Morphology
                          erode, erode',
                          dilate, dilate',
@@ -48,6 +49,13 @@ class BinaryPixel px where
 
 {-| Given a function of a pixel to a boolean and an image, returns the Binary
     version of that image.
+
+    >>>stop <- readColorImage "images/stop.ppm"
+    >>>let binaryStop = toBinaryImage (\(RGB (r, g, b)) -> r > 196 && g > 0 && b > 0) stop
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/stop.jpg>
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/binarystop.jpg>
  -}
 toBinaryImage :: (Image img,
                   BinaryPixel (Pixel img)) => (Pixel img -> Bool) -> img -> img
@@ -57,6 +65,12 @@ toBinaryImage pred img@(dimensions -> (rows, cols)) = makeImage rows cols bin wh
 {-| Given an image, img, and a Pixel p, return a Binary image where the
     pixel at (i, j) is on if the corresponding pixel in img at (i,j) is less
     than p and off otherwise.
+
+    >>>frog <- readImage "images/frog.pgm"
+    >>>frog .< 50
+    < Image 225x242 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/lessthanfrog.jpg>
  -}
 (.<) :: (Image img, 
          BinaryPixel (Pixel img),
@@ -68,6 +82,11 @@ toBinaryImage pred img@(dimensions -> (rows, cols)) = makeImage rows cols bin wh
 {-| Given a Pixel p and an image img, return a Binary image where the
     pixel at (i, j) is on if p is less than the corresponding pixel in 
     img at (i,j) and off otherwise.
+
+    >>>frog <. 50
+    < Image 225x242 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/greaterthanfrog.jpg>
  -}
 (<.) :: (Image img,
          BinaryPixel (Pixel img),
@@ -79,6 +98,11 @@ toBinaryImage pred img@(dimensions -> (rows, cols)) = makeImage rows cols bin wh
 {-| Given an image, img, and a Pixel p, return a Binary image where the
     pixel at (i, j) is on if the corresponding pixel in img at (i,j) is greater
     than p and off otherwise.
+    
+    >>>50 <. frog
+    < Image 225x242 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/greaterthanfrog.jpg>
  -}
 (.>) :: (Image img,
          BinaryPixel (Pixel img),
@@ -90,6 +114,12 @@ toBinaryImage pred img@(dimensions -> (rows, cols)) = makeImage rows cols bin wh
 {-| Given a Pixel p and an image img, return a Binary image where the
     pixel at (i, j) is on if p is greater than the corresponding pixel in 
     img at (i,j) and off otherwise.
+
+    >>>50 >. frog
+    < Image 225x242 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/lessthanfrog.jpg>
+
  -}
 (>.) :: (Image img,
          BinaryPixel (Pixel img),
@@ -101,7 +131,12 @@ toBinaryImage pred img@(dimensions -> (rows, cols)) = makeImage rows cols bin wh
 {-| Given an image, img, and a Pixel p, return a Binary image where the
     pixel at (i, j) is on if the corresponding pixel in img at (i,j) is equal
     to p and off otherwise.
- -}
+
+    >>>frog .== 50
+    < Image 225x242 >
+ 
+    <https://raw.github.com/jcollard/unm-hip/master/examples/frogequals.jpg>
+-}
 (.==) :: (Image img,
           BinaryPixel (Pixel img),
           Eq (Pixel img),
@@ -112,6 +147,11 @@ toBinaryImage pred img@(dimensions -> (rows, cols)) = makeImage rows cols bin wh
 {-| Given a Pixel p and an image img, return a Binary image where the
     pixel at (i, j) is on if the corresponding pixel in img at (i,j) is equal
     to p and off otherwise.
+
+    >>>50 ==. frog
+    < Image 225x242 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/frogequals.jpg>
  -}
 (==.) :: (Image img,
           BinaryPixel (Pixel img),
@@ -119,10 +159,48 @@ toBinaryImage pred img@(dimensions -> (rows, cols)) = makeImage rows cols bin wh
           Pixel img ~ a) => a -> img -> img
 (==.) = flip (.==)
 
+{-| Given an image, img, and a Pixel p, return a Binary image where the
+    pixel at (i, j) is on if the corresponding pixel in img at (i,j) is equal
+    to p and off otherwise.
+
+    >>>frog ./= 50
+    < Image 225x242 >
+ 
+    <https://raw.github.com/jcollard/unm-hip/master/examples/notequals.jpg>
+-}
+(./=) :: (Image img,
+          BinaryPixel (Pixel img),
+          Eq (Pixel img),
+          Pixel img ~ a) => img -> a -> img
+(./=) img num = toBinaryImage pred img where
+  pred p = p /= num
+
+{-| Given a Pixel p and an image img, return a Binary image where the
+    pixel at (i, j) is on if the corresponding pixel in img at (i,j) is equal
+    to p and off otherwise.
+
+    >>>50 /=. frog
+    < Image 225x242 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/notequals.jpg>
+ -}
+(/=.) :: (Image img,
+          BinaryPixel (Pixel img),
+          Eq (Pixel img),
+          Pixel img ~ a) => a -> img -> img
+(/=.) = flip (./=)
+
 {-| Given a function of two pixels to a boolean pred  and two images X and Y, 
     return a binary image that for each pixel (i,j) is on if the pixel 
     pred X(i,j) Y(i,j) return True and off otherwise.
- -}
+
+    >>>let fade = makeImage 225 242 (\ r _ -> fromIntegral r) :: GrayImage
+    >>>let fademask = compareImage (>) frog fade
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/fade.jpg>
+ 
+    <https://raw.github.com/jcollard/unm-hip/master/examples/fademask.jpg>
+-}
 compareImage :: (Image img,
                  BinaryPixel (Pixel img),
                  Ord (Pixel img)) => ((Pixel img) -> (Pixel img) -> Bool) -> img -> img -> img
@@ -133,6 +211,10 @@ compareImage comp img0@(dimensions -> (rows, cols)) img1 = makeImage rows cols b
 
 {-| Given two images X and Y, return a binary image that for each pixel (i, j)
     is on if X(i,j) > Y(i,j) and off otherwise.
+
+    >>>let fademask = frog .>. fade
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/fademask.jpg>
  -}
 (.>.) :: (Image img,
           BinaryPixel (Pixel img),
@@ -141,14 +223,22 @@ compareImage comp img0@(dimensions -> (rows, cols)) img1 = makeImage rows cols b
   
 {-| Given two images X and Y, return a binary image that for each pixel (i, j)
     is on if X(i,j) < Y(i,j) and off otherwise.
+
+    >>>let fademask2 = frog .<. fade
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/fademask2.jpg>
  -}
 (.<.) :: (Image img,
           BinaryPixel (Pixel img),
           Ord (Pixel img)) => img -> img -> img
 (.<.) = compareImage (<)
 
-{-| Given two images X and Y, return a bniry image that for each pixel (i, j)
+{-| Given two images X and Y, return a binray image that for each pixel (i, j)
     is on if X(i,j) == Y(i,j) and off otherwise.
+
+    >>>let fademask3 = frog .==. fade
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/fademask3.jpg>
  -}
 (.==.) :: (Image img,
            BinaryPixel (Pixel img),
@@ -158,17 +248,52 @@ compareImage comp img0@(dimensions -> (rows, cols)) img1 = makeImage rows cols b
     p0 = ref img0 r c
     p1 = ref img1 r c
 
+{-| Given two images X and Y, return a bniry image that for each pixel (i, j)
+    is on if X(i,j) == Y(i,j) and off otherwise.
+
+    >>>let fademask4 = frog ./=. fade
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/fademask4.jpg>
+ -}
+(./=.) :: (Image img,
+           BinaryPixel (Pixel img),
+           Eq (Pixel img)) => img -> img -> img
+(./=.) img0@(dimensions -> (rows, cols)) img1 = makeImage rows cols img where
+  img r c = if p0 /= p1 then on else off where
+    p0 = ref img0 r c
+    p1 = ref img1 r c
+
 {-| Given a 2D list consisting solely of pixels representing a structuring 
     element, and a binary image, erode returns the morphological erosion of 
     the <image> with the structuring element. 
- -}
+
+    >>>stop <- readColorImage "images/stop.ppm"
+    >>>let binaryStop = toBinaryImage (\(RGB (r, g, b)) -> r > 196 && g > 0 && b > 0) stop
+    >>>let erosion = erode [[1,1],[1,1]] binaryStop
+    >>>binaryStop - erosion
+    < Image 86x159 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/stop.jpg>
+    
+    <https://raw.github.com/jcollard/unm-hip/master/examples/binaryStop.jpg>
+ 
+    <https://raw.github.com/jcollard/unm-hip/master/examples/erode.jpg>
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/erosion.jpg>
+-}
 erode :: (Image img,
            BinaryPixel (Pixel img),
            Num (Pixel img),
            Eq (Pixel img)) => [[Pixel img]] -> img -> img
 erode ls img = (convolve ls img) .== (sum . concat $ ls)
 
--- | For convenience erode' = erode [[1,1],[1,1]]
+{-| For convenience erode' = erode [[1,1],[1,1]]
+    
+    >>>erode' binaryStop
+    < Image 86x159 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/erode.jpg>
+-}
 erode' :: (Image img,
           BinaryPixel (Pixel img),
           Num (Pixel img),
@@ -178,59 +303,104 @@ erode' = erode [[1,1],[1,1]]
 {-| Given a 2D list consisting solely of pixels representing a structuring 
     element, and a binary image, dilate returns the morphological dilation of 
     the <image> with the structuring element. 
+
+    >>>let dilated = dilate [[1,1],[1,1]] binaryStop
+    >>>dilate - binaryStop
+    < Image 86x159 >
+    
+    <https://raw.github.com/jcollard/unm-hip/master/examples/dilate.jpg>
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/dilated.jpg>
  -}
 dilate :: (Image img,
            BinaryPixel (Pixel img),
            Num (Pixel img),
-           Ord (Pixel img)) => [[Pixel img]] -> img -> img
-dilate ls img = (convolve ls img) .> 0
+           Eq (Pixel img)) => [[Pixel img]] -> img -> img
+dilate ls img = toBinaryImage (0 /=) (convolve ls img)
 
--- | For convenience dilate' = dilate [[1,1],[1,1]]
+{-| For convenience dilate' = dilate [[1,1],[1,1]]
+
+    >>>dilate' binaryStop
+    < Image 86x159 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/dilate.jpg>
+ -}
 dilate' :: (Image img,
            BinaryPixel (Pixel img),
            Num (Pixel img),
-           Ord (Pixel img)) => img -> img
+           Eq (Pixel img)) => img -> img
 dilate' = dilate [[1,1],[1,1]]
 
 {-| Given a 2D list consisting solely of pixels representing a structuring 
     element, and a binary image, dilate returns the morphological opening of 
     the <image> with the structuring element. 
- -}
+
+    >>>noise <- readColorImage "images/noise.ppm"
+    >>>let noisyStop = binaryStop ./=. noise
+    >>>open noisyStop
+    < Image 86x159 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/noise.jpg>
+ 
+    <https://raw.github.com/jcollard/unm-hip/master/examples/noisyStop.jpg>
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/open.jpg>
+-}
 open :: (Image img,
           BinaryPixel (Pixel img),
           Num (Pixel img),
-          Ord (Pixel img)) => [[Pixel img]] -> img -> img
+          Eq (Pixel img)) => [[Pixel img]] -> img -> img
 open ls = dilate ls . erode ls
 
--- | For convenience open' = open [[1,1],[1,1]]
+{-| For convenience open' = open [[1,1],[1,1]]
+ 
+    >>>open' noisyStop
+    < Image 86x159 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/open.jpg>
+-}
 open' :: (Image img,
          BinaryPixel (Pixel img),
          Num (Pixel img),
-         Ord (Pixel img)) => img -> img
+         Eq (Pixel img)) => img -> img
 open' = dilate' . erode'
 
 
 {-| Given a 2D list consisting solely of pixels representing a structuring 
     element, and a binary image, dilate returns the morphological closing of 
     the <image> with the structuring element. 
+
+    >>>close [[1,1],[1,1]] noisyStop
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/close.jpg>
  -}
 close :: (Image img,
            BinaryPixel (Pixel img),
            Num (Pixel img),
-           Ord (Pixel img)) => [[Pixel img]] -> img -> img
+           Eq (Pixel img)) => [[Pixel img]] -> img -> img
 close ls = erode ls . dilate ls
 
--- | For convenience close' = close [[1,1],[1,1]]
+{-| For convenience close' = close [[1,1],[1,1]]
+    
+    >>>close' noisyStop
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/close.jpg>
+ -}
 close' :: (Image img,
           BinaryPixel (Pixel img),
           Num (Pixel img),
-          Ord (Pixel img)) => img -> img
+          Eq (Pixel img)) => img -> img
 close' = erode' . dilate'
 
 {-| Given a binary image, label returns an image where pixels in 
     distinct connected components (based on 4-neighbor connectivity) 
     have distinct integer values. These values range from 1 to n where 
     n is the number of connected components in image.
+
+    >>> label binaryStop
+    < Image 86x159 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/label.jpg>
  -}
 label :: (Image img,
           BinaryPixel (Pixel img),
@@ -303,6 +473,9 @@ neighbor labels rows cols r c
     label to a binary image, then the vector represents the areas of the 
     connected-components of the binary-image. If not, areas returns 
     the histogram of the image.
+
+    >>> areas . label $ binaryStop
+    fromList [9241.0,1149.0,1323.0,5.0,809.0,3.0,1144.0]
  -}
 areas :: (Image img,
          MaxMin (Pixel img),
@@ -320,6 +493,9 @@ areas img@(dimensions -> (rows, cols)) = runST $ do
     If image is the result of applying label to a binary image, then the 
     vector represents the perimeters of the connected-components of the 
     binary-image.
+
+    >>>perimeters . label $ binaryStop
+    fromList [1082.0,307.0,323.0,5.0,184.0,3.0,260.0]
  -}
 perimeters :: (Image img,
                MaxMin (Pixel img),
@@ -348,6 +524,9 @@ neighborList img@(dimensions -> (rows, cols)) r c =
     boundingBoxes returns a vector where the n-th component is a four 
     element tuple representing the minimum and maximum row and column 
     indices of pixels of the n-th connected-component of the image.
+
+    >>>boundingBoxes . label $ binarySto
+    [(10,8,73,41),(10,75,74,110),(12,12,16,16),(11,42,72,73),(13,80,15,82),(11,117,72,150)]
  -}
 boundingBoxes :: (Image img,
                   MaxMin (Pixel img),
@@ -398,6 +577,9 @@ toQuads = toQuads' [] where
     centersOfMass returns a vector where the n-th component is a tuple 
     representing the average row and column indices of pixels of the 
     n-th connected-component of the image.
+
+    >>>centersOfMass . label $ binaryStop
+    [(42.391644908616186,24.70409051348999),(41.80952380952381,92.23431594860166),(14.0,14.0),(35.31025957972806,57.595797280593324),(14.0,81.0),(35.59178321678322,129.90734265734267)]
  -}
 centersOfMass :: (Image img,
                   MaxMin (Pixel img),
@@ -429,6 +611,11 @@ averageMass ((fromIntegral -> total), (fromIntegral -> rows), (fromIntegral -> c
     representing the 2D distance transform of the image.
     The distance transform is accurate to within a 2% error for euclidean
      distance.
+
+    >>>distanceTransform binaryStop :: GrayImage
+    < Image 86x159 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/distancetransform.jpg>
  -}
 distanceTransform :: (Image img,
                       BinaryPixel (Pixel img),
@@ -499,9 +686,14 @@ boolToDouble _ = 0.0
 -- End Distance Transform Support code
 
 {-| Given an image, outline returns an image where edge pixels are 
-    set to the value 1 and non-edge pixels are set to the value 0. 
+    set to the value on and non-edge pixels are set to the value off. 
     Pixel (i, j) is an edge pixel iff its value is different than the value 
     of either pixel (i, j+1) or pixel (i+1, j).
+
+    >>>outline binaryStop
+    < Image 86x159 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/outline.jpg>
  -}
 outline :: (Image img,
             BinaryPixel (Pixel img),
@@ -513,6 +705,11 @@ outline img = outline' off on img
     set to the value edge and non-edge pixels are set to the value nonEdge. 
     Pixel (i, j) is an edge pixel iff its value is different than the value 
     of either pixel (i, j+1) or pixel (i+1, j).
+
+    >>>outline' (RGB (255, 255, 255)) (RGB (0, 0, 255)) binaryStop
+    < Image 86x159 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/outline2.jpg>
  -}
 outline' :: (Image img,
             BinaryPixel (Pixel img),
