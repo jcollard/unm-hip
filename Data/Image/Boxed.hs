@@ -18,9 +18,11 @@ module Data.Image.Boxed(
   complex, complexImageToRectangular,
   shrink, CI.makeFilter,
   fft, ifft,
+  -- * Binary Images
+  distanceTransform, label,
   -- * Additional Modules
     -- | Contains functionality related to Binary Images
-  module Data.Image.Binary, 
+  module Data.Image.Binary,  
   -- | Contains functionality for convolution of images
   module Data.Image.Convolution,
   -- | Contains basic functionality for Images
@@ -28,7 +30,8 @@ module Data.Image.Boxed(
   -- | Contains functionality for writing images and displaying with an external program
   module Data.Image.IO) where
  
-import Data.Image.Binary
+import Data.Image.Binary hiding (distanceTransform, label)
+import qualified Data.Image.Binary as Bin
 import qualified Data.Image.Complex as CI
 import Data.Image.Convolution
 import Data.Image.Internal
@@ -439,6 +442,27 @@ ifft :: (Image img,
          CI.ComplexPixel (Pixel img),
          CI.Value (Pixel img) ~ Double) => img -> ComplexImage
 ifft = CI.ifft
+
+
+-- Binary Images
+
+{-| Given a binary image, distanceTransform returns an image 
+    representing the 2D distance transform of the image.
+    The distance transform is accurate to within a 2% error for euclidean
+     distance.
+ -}
+distanceTransform :: (Image img, 
+                      BinaryPixel (Pixel img)) => img -> GrayImage
+distanceTransform = Bin.distanceTransform
+
+{-| Given a binary image, label returns an image where pixels in 
+    distinct connected components (based on 4-neighbor connectivity) 
+    have distinct integer values. These values range from 1 to n where 
+    n is the number of connected components in image.
+ -}
+label :: (Image img,
+          BinaryPixel (Pixel img)) => img -> GrayImage
+label = Bin.label
 
 -- | Reads in a ASCII PGM image located at fileName as a GrayImage
 readImage :: FilePath -> IO GrayImage

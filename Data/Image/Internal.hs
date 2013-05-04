@@ -51,8 +51,11 @@ class Image i where
   -- | The type of Pixel to be stored in images of type i.
   type Pixel i :: *
   
-  {-| Given an Int m, Int n, and a PixelOp f, returns an Image with
+  {-| Given an Int m, Int n, and a PixelOp f, returns an Image with      
       dimensions m x n and the Pixel value at each (i, j) is (f i j)
+
+      >let gradient = makeImage 128 128 (\r c -> fromIntegral (r*c)) :: GrayImage
+      >display gradient
    -}
   makeImage :: Int -> Int -> PixelOp (Pixel i) -> i
   

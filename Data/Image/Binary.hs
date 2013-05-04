@@ -34,6 +34,9 @@ import qualified Data.Map as M
 import qualified Data.Vector.Unboxed as V
 import qualified Data.Vector.Unboxed.Mutable as VM
 
+import qualified Data.Vector as BV
+import qualified Data.Vector.Mutable as BVM
+
 import Data.Image.Internal
 import Data.Image.Convolution
 
@@ -502,9 +505,8 @@ boolToDouble _ = 0.0
  -}
 outline :: (Image img,
             BinaryPixel (Pixel img),
-            Image img',
-            Pixel img' ~ Double) => img -> img'
-outline img = outline' 0.0 1.0 img
+            Eq (Pixel img)) => img -> img
+outline img = outline' off on img
 
 {-| Given two doubles nonEdge and edge, and an image, outline' returns 
     an image where edge pixels are 
@@ -514,55 +516,55 @@ outline img = outline' 0.0 1.0 img
  -}
 outline' :: (Image img,
             BinaryPixel (Pixel img),
-            Image img',
-            Pixel img' ~ Double) => Double -> Double -> img -> img'
+            Eq (Pixel img)) => Pixel img -> Pixel img -> img -> img
 outline' nonEdge edge img@(dimensions -> (rows, cols)) = makeImage rows cols func
   where arr = getOutlineArray img edge nonEdge
-        func r c = arr V.! ((cols*r)+c)
+        func r c = arr BV.! ((cols*r)+c)
 
 -- Outline support code
 getOutlineArray :: (Image img,
-                    BinaryPixel (Pixel img)) => img -> Double -> Double -> V.Vector Double
+                    BinaryPixel (Pixel img),
+                    Eq (Pixel img)) => img -> Pixel img -> Pixel img -> BV.Vector (Pixel img)
 getOutlineArray img@(dimensions -> (rows, cols)) edge nonEdge = runST $ do
-  let data1 = V.fromList . map (boolToDouble . toBinary) . pixelList $ img :: V.Vector Double
-  data4 <- VM.replicate (rows*cols) 0 :: ST s (VM.STVector s Double)
+  let data1 = BV.fromList . map (boolToDouble . toBinary) . pixelList $ img :: BV.Vector Double
+  data4 <- BVM.replicate (rows*cols) off -- :: ST s (BVM.STVector s (Pixel img))
   
   forM [0..rows-1] $ \ i -> do
     let index0 = i*cols
     forM [0..cols-1] $ \ j -> do
-      VM.write data4 (index0+j) nonEdge
+      BVM.write data4 (index0+j) nonEdge
 
   forM [0..rows-2] $ \ i -> do
     let index0 = i*cols
     let index1 = (i+1)*cols
     forM [0..cols-1] $ \ j -> do
-      let val = (data1 V.! (index0+j)) + (data1 V.! (index1+j))
+      let val = (data1 BV.! (index0+j)) + (data1 BV.! (index1+j))
       if (val == 1) 
         then 
-          VM.write data4 (index0+j) edge
+          BVM.write data4 (index0+j) edge
         else return ()
 
   let index0 = (rows-1)*cols
   forM [0..cols-1] $ \ j -> do
-    let val = (data1 V.! (index0+j)) + (data1 V.! j)
+    let val = (data1 BV.! (index0+j)) + (data1 BV.! j)
     if (val == 1)
-      then VM.write data4 (index0+j) edge
+      then BVM.write data4 (index0+j) edge
       else return ()
 
   forM [0..rows-1] $ \ i -> do
     let index0 = i*cols
     forM [1..cols-2] $ \ j -> do
-      let val = (data1 V.! (index0+j)) + (data1 V.! (index0 + j + 1))
+      let val = (data1 BV.! (index0+j)) + (data1 BV.! (index0 + j + 1))
       if (val == 1)
-        then VM.write data4 (index0+j) edge
+        then BVM.write data4 (index0+j) edge
         else return ()
    
   forM [0..rows-1] $ \ i -> do
     let index0 = i*cols
-    let val = (data1 V.! (index0+cols-1)) + (data1 V.! index0)
+    let val = (data1 BV.! (index0+cols-1)) + (data1 BV.! index0)
     if (val == 1)
-      then VM.write data4 (index0+cols-1) edge
+      then BVM.write data4 (index0+cols-1) edge
       else return ()  
    
-  V.freeze data4
+  BV.freeze data4
 -- End outline support code
