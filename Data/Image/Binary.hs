@@ -275,7 +275,7 @@ compareImage comp img0@(dimensions -> (rows, cols)) img1 = makeImage rows cols b
 
     <https://raw.github.com/jcollard/unm-hip/master/examples/stop.jpg>
     
-    <https://raw.github.com/jcollard/unm-hip/master/examples/binaryStop.jpg>
+    <https://raw.github.com/jcollard/unm-hip/master/examples/binarystop.jpg>
  
     <https://raw.github.com/jcollard/unm-hip/master/examples/erode.jpg>
 
