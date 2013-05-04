@@ -121,7 +121,7 @@ window.onload = function () {pageLoad();setSynopsis("mini_Data-Image-Binary.html
 </code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>open noisyStop
 </code></strong>&lt; Image 86x159 &gt;
 </pre><p><a href="https://raw.github.com/jcollard/unm-hip/master/examples/noise.jpg">https://raw.github.com/jcollard/unm-hip/master/examples/noise.jpg</a>
-</p><p><a href="https://raw.github.com/jcollard/unm-hip/master/examples/noisyStop.jpg">https://raw.github.com/jcollard/unm-hip/master/examples/noisyStop.jpg</a>
+</p><p><a href="https://raw.github.com/jcollard/unm-hip/master/examples/noisystop.jpg">https://raw.github.com/jcollard/unm-hip/master/examples/noisystop.jpg</a>
 </p><p><a href="https://raw.github.com/jcollard/unm-hip/master/examples/open.jpg">https://raw.github.com/jcollard/unm-hip/master/examples/open.jpg</a>
 </p></div></div><div class="top"><p class="src"><a name="v:open-39-" class="def">open'</a> :: (<a href="Data-Image-Internal.html#t:Image">Image</a> img, <a href="Data-Image-Binary.html#t:BinaryPixel">BinaryPixel</a> (<a href="Data-Image-Internal.html#t:Pixel">Pixel</a> img), Num (<a href="Data-Image-Internal.html#t:Pixel">Pixel</a> img), Eq (<a href="Data-Image-Internal.html#t:Pixel">Pixel</a> img)) =&gt; img -&gt; img</p><div class="doc"><p>For convenience open' = open [[1,1],[1,1]]
 </p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>open' noisyStop
@@ -162,7 +162,7 @@ window.onload = function () {pageLoad();setSynopsis("mini_Data-Image-Binary.html
     boundingBoxes returns a vector where the n-th component is a four 
     element tuple representing the minimum and maximum row and column 
     indices of pixels of the n-th connected-component of the image.
-</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>boundingBoxes . label $ binarySto
+</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>boundingBoxes . label $ binaryStop
 </code></strong>[(10,8,73,41),(10,75,74,110),(12,12,16,16),(11,42,72,73),(13,80,15,82),(11,117,72,150)]
 </pre></div></div><div class="top"><p class="src"><a name="v:centersOfMass" class="def">centersOfMass</a> :: (<a href="Data-Image-Internal.html#t:Image">Image</a> img, <a href="Data-Image-Internal.html#t:MaxMin">MaxMin</a> (<a href="Data-Image-Internal.html#t:Pixel">Pixel</a> img), <a href="Data-Image-Internal.html#t:Pixel">Pixel</a> img ~ Double) =&gt; img -&gt; [(Double, Double)]</p><div class="doc"><p>Given an image, the result of applying label to a binary-image, 
     centersOfMass returns a vector where the n-th component is a tuple 

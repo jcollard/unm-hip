@@ -342,7 +342,7 @@ dilate' = dilate [[1,1],[1,1]]
 
     <https://raw.github.com/jcollard/unm-hip/master/examples/noise.jpg>
  
-    <https://raw.github.com/jcollard/unm-hip/master/examples/noisyStop.jpg>
+    <https://raw.github.com/jcollard/unm-hip/master/examples/noisystop.jpg>
 
     <https://raw.github.com/jcollard/unm-hip/master/examples/open.jpg>
 -}
@@ -525,7 +525,7 @@ neighborList img@(dimensions -> (rows, cols)) r c =
     element tuple representing the minimum and maximum row and column 
     indices of pixels of the n-th connected-component of the image.
 
-    >>>boundingBoxes . label $ binarySto
+    >>>boundingBoxes . label $ binaryStop
     [(10,8,73,41),(10,75,74,110),(12,12,16,16),(11,42,72,73),(13,80,15,82),(11,117,72,150)]
  -}
 boundingBoxes :: (Image img,
