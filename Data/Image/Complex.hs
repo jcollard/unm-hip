@@ -239,7 +239,7 @@ complex real imag@(dimensions -> (rows, cols)) = makeImage rows cols ri where
 
     >>>leftToRight' . complexImageToRectangular $ signal
 
-    <https://raw.github.com/jcollard/unm-hip/master/examples/compleximagetorectangular.jpg>
+    <https://raw.github.com/jcollard/unm-hip/master/examples/complexsignaltorectangular.jpg>
  -}
 complexImageToRectangular :: (Image img,
                               ComplexPixel (Pixel img),
