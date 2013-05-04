@@ -267,26 +267,49 @@ getComponent to component img = fmap (component . to) img
   
 getRGB = getComponent toRGB
  
--- | Given a ColorImage, returns a GrayImage representing the Red color component
+{-| Given a ColorImage, returns a GrayImage representing the Red color component
+    
+    >>>let red = colorImageRed cactii
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/colorimagered.jpg>
+ -}
 colorImageRed :: ColorImage -> GrayImage
 colorImageRed = getRGB (\ (r, _, _) -> r)
 
--- | Given a ColorImage, returns a GrayImage representing the Green color component
+{-| Given a ColorImage, returns a GrayImage representing the Green color component
+
+    >>>let green = colorImageGreen cactii
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/colorimagegreen.jpg>
+ -}
 colorImageGreen :: ColorImage -> GrayImage
 colorImageGreen = getRGB (\ (_,g,_) -> g)
 
--- | Given a ColorImage, returns a GrayImage representing the Blue color component
+{-| Given a ColorImage, returns a GrayImage representing the Blue color component
+   
+    >>>let blue = colorImageBlue cactii
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/colorimageblue.jpg>
+ -}
 colorImageBlue :: ColorImage -> GrayImage
 colorImageBlue = getRGB (\ (_,_,b) -> b)
 
 {-| Given a ColorImage, returns a triple containing three GrayImages each
     containing one of the color components (red, green, blue)
+
+    >>>leftToRight' . colorImageToRGB $ cactii
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/colorimagetorgb.jpg>
  -}
 colorImageToRGB :: ColorImage -> (GrayImage, GrayImage, GrayImage)
 colorImageToRGB img = (colorImageRed img, colorImageGreen img, colorImageBlue img)
 
 {-| Given a triple containing three GrayImages each containing one of the
     color components (red, green, blue), returns a ColorImage
+
+    >>>rgbToColorImage (red,green,blue)
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/cactii.jpg>
  -}
 rgbToColorImage :: (GrayImage, GrayImage, GrayImage) -> ColorImage
 rgbToColorImage (red, green, blue) = createRGB <$> red <*> green <*> blue where
@@ -294,33 +317,60 @@ rgbToColorImage (red, green, blue) = createRGB <$> red <*> green <*> blue where
 
 getHSI = getComponent toHSI
 
--- | Given a ColorImage, returns a GrayImage representing the Hue component
+{-| Given a ColorImage, returns a GrayImage representing the Hue component
+
+    >>>let h = colorImageHue cactii
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/colorimagehue.jpg>
+ -}
 colorImageHue :: ColorImage -> GrayImage
 colorImageHue = getHSI (\ (h, _, _) -> h)
 
--- | Given a ColorImage, returns a GrayImage representing the Saturation component
+{-| Given a ColorImage, returns a GrayImage representing the Saturation component
+
+    >>>let s = colorImageSaturation cactii
+  
+    <https://raw.github.com/jcollard/unm-hip/master/examples/colorimagesaturation.jpg>
+ -}
 colorImageSaturation :: ColorImage -> GrayImage
 colorImageSaturation = getHSI (\ (_,s,_) -> s)
 
--- | Given a ColorImage, returns a GrayImage representing the Intensity component
+{-| Given a ColorImage, returns a GrayImage representing the Intensity component
+
+    >>>let i = colorImageIntensity cactii 
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/colorimageintensity.jpg>
+
+ -}
 colorImageIntensity :: ColorImage -> GrayImage
 colorImageIntensity = getHSI (\ (_,_,i) -> i)
 
-{-| Given a ColorImage, returns a triple containing three GrayImages each
-    containing one of the components (hue, saturation, intensity)
+{-| Given a triple containing three GrayImages each containing one of the
+    color components (hue, saturation, ), returns a ColorImage
+
+    >>> hsiToColorImage (h, s, i) 
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/cactii.jpg>
  -}
 hsiToColorImage :: (GrayImage, GrayImage, GrayImage) -> ColorImage
 hsiToColorImage (h, s, i) = toHSI <$> h <*> s <*> i where
   toHSI h s i = HSI (h, s, i)
 
-{-| Given a triple containing three GrayImages each containing one of the
-    color components (hue, saturation, ), returns a ColorImage
+{-| Given a ColorImage, returns a triple containing three GrayImages each
+    containing one of the components (hue, saturation, intensity)
+
+    >>>let (h, s, i) = colorImageToHSI $ cactii
  -}
 colorImageToHSI :: ColorImage -> (GrayImage, GrayImage, GrayImage)
 colorImageToHSI img = (colorImageHue img, colorImageSaturation img, colorImageIntensity img) 
 
 
--- | Reads in an ASCI PPM file as a ColorImage
+{-| Reads in an ASCI PPM file as a ColorImage
+    
+    >>>cactii <- readImage "images/cactii.ppm"
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/cactii.jpg>
+ -}
 readColorImage :: FilePath -> IO ColorImage
 readColorImage fileName =
   do
@@ -346,6 +396,9 @@ colors xs = helper xs [] [] []
 
 {-| Coerces a GrayImage to a ComplexImage where the imaginary 
     part for all pixels is 0.
+
+    >>>grayToComplex frog
+
  -}
 grayToComplex :: GrayImage -> ComplexImage
 grayToComplex img = fmap (C.:+ 0.0) img
@@ -356,6 +409,10 @@ grayToComplex img = fmap (C.:+ 0.0) img
     three lookup tables. These lookup tables implement a false coloring 
     scheme which maps small values to black, large values to white, and 
     intermediate values to shades of red, orange, and yellow (in that order).
+
+    >>>makeHotImage frog
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/makehotimage.jpg>
  -}
 makeHotImage :: GrayImage -> ColorImage
 makeHotImage img = fmap (toHot max min) img where
@@ -370,42 +427,92 @@ makeHotImage img = fmap (toHot max min) img where
 
 {-| Given a complex image, returns a real image representing
     the real part of the image.
- -}
+
+    @
+    harmonicSignal :: Double -> Double -> Int -> Int -> C.Complex Double
+    harmonicSignal u v m n = exp (-pii*2.0 * var) where 
+      pii = 0.0 C.:+ pi
+      var = (u*m' + v*n') C.:+ 0.0
+      [m',n'] = map fromIntegral [m, n]
+    @
+
+    >>> let signal = makeImage 128 128 (harmonicSignal (3/128) (2/128)) :: ComplexImage
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/signal.jpg>
+
+    >>>let cosine = realPart signal
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/cosine.jpg>
+
+    >>>realPart realPart . ifft $ (fft frogpart) * (fft d2g)
+ 
+    <https://raw.github.com/jcollard/unm-hip/master/examples/realpart.jpg>
+    
+    >>>realPart realPart . ifft $ (fft frogpart) * (fft g)
+ 
+    <https://raw.github.com/jcollard/unm-hip/master/examples/realpart2.jpg>
+
+-}
 realPart :: ComplexImage -> GrayImage
 realPart = CI.realPart
 
 {-| Given a complex image, returns a real image representing
    the imaginary part of the image
+
+   >>>let sine = imagPart signal
+ 
+    <https://raw.github.com/jcollard/unm-hip/master/examples/sine.jpg>
+
  -}
 imagPart :: ComplexImage -> GrayImage
 imagPart = CI.imagPart
 
 {-| Given a complex image, returns a real image representing
     the magnitude of the image.
+
+    >>>magnitude signal
+
  -}
 magnitude :: ComplexImage -> GrayImage 
 magnitude = CI.magnitude
 
 {-| Given a complex image, returns a real image representing
-    the angle of the image -}
+    the angle of the image 
+   
+    >>>angle signal
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/angle.jpg>
+-}
 angle :: ComplexImage -> GrayImage 
 angle = CI.angle         
 
 {-| Given a complex image, returns a pair of real images each
     representing the component (magnitude, phase) of the image
- -}
+
+    >>>leftToRight' . complexImageToPolar $ signal
+ 
+    <https://raw.github.com/jcollard/unm-hip/master/examples/compleximagetopolar.jpg>
+-}
 complexImageToPolar :: ComplexImage -> (GrayImage, GrayImage)
 complexImageToPolar = CI.complexImageToPolar
 
 {-| Given an image representing the real part of a complex image, and
     an image representing the imaginary part of a complex image, returns
     a complex image.
+
+    >>>complex cosine sine
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/signal.jpg>
  -}
 complex :: GrayImage -> GrayImage -> ComplexImage
 complex = CI.complex
 
 {-| Given a complex image, return a pair of real images each representing
     a component of the complex image (real, imaginary).
+
+    >>>leftToRight' . complexImageToRectangular $ signal
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/complexsignaltorectangular.jpg>
  -}
 complexImageToRectangular :: ComplexImage -> (GrayImage, GrayImage)
 complexImageToRectangular = CI.complexImageToRectangular
@@ -415,6 +522,7 @@ complexImageToRectangular = CI.complexImageToRectangular
     image at location (i, j). The value of the complex result image at 
     location (i, j) is zero if |z| < x, otherwise the result has the 
     same phase as z but the amplitude is decreased by x.
+   
  -}
 shrink :: (Num a,
            Image img,
@@ -427,7 +535,26 @@ shrink = CI.shrink
     Fourier transform (DFT). Because the DFT is computed using the Fast Fourier 
     Transform (FFT) algorithm, the number of rows and columns of the image 
     must both be powers of two, i.e., 2K where K is an integer.
- -}
+
+    >>>frog <- readImage "images/frog.pgm"
+    >>>let frogpart = crop 64 64 128 128 frog
+    
+    <https://raw.github.com/jcollard/unm-hip/master/examples/frog.jpg>
+    
+    <https://raw.github.com/jcollard/unm-hip/master/examples/frogpart.jpg>
+
+    >>>imageMap log . fft $ frogpart :: ComplexImage
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/fft.jpg>  
+    
+    >>>fft d2g
+ 
+    <https://raw.github.com/jcollard/unm-hip/master/examples/fftd2g.jpg>  
+    
+    >>>fft g
+    
+    <https://raw.github.com/jcollard/unm-hip/master/examples/fftg.jpg>      
+-}
 fft :: (Image img,
         CI.ComplexPixel (Pixel img),
         CI.Value (Pixel img) ~ Double) => img -> ComplexImage
@@ -438,6 +565,14 @@ fft = CI.fft
     computed using the Fast Fourier Transform (FFT) algorithm, the number 
     of rows and columns of <image> must both be powers of two, i.e., 2K 
     where K is an integer. 
+
+    >>>ifft ((fft frogpart) * (fft d2g))
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/ifft.jpg>
+    
+    >>>ifft ((fft frogpart) * (fft g))
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/ifft2.jpg>
  -}
 ifft :: (Image img,
          CI.ComplexPixel (Pixel img),
@@ -451,6 +586,11 @@ ifft = CI.ifft
     representing the 2D distance transform of the image.
     The distance transform is accurate to within a 2% error for euclidean
      distance.
+
+    >>>distanceTransform binaryStop :: GrayImage
+    < Image 86x159 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/distancetransform.jpg>
  -}
 distanceTransform :: (Image img, 
                       BinaryPixel (Pixel img)) => img -> GrayImage
@@ -460,12 +600,22 @@ distanceTransform = Bin.distanceTransform
     distinct connected components (based on 4-neighbor connectivity) 
     have distinct integer values. These values range from 1 to n where 
     n is the number of connected components in image.
+
+    >>> label binaryStop
+    < Image 86x159 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/label.jpg>
  -}
 label :: (Image img,
           BinaryPixel (Pixel img)) => img -> GrayImage
 label = Bin.label
 
--- | Reads in a ASCII PGM image located at fileName as a GrayImage
+{-| Reads in a ASCII PGM image located at fileName as a GrayImage
+    
+    >>>frog <- readImage "images/frog.pgm"
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/frog.jpg>
+ -}
 readImage :: FilePath -> IO GrayImage
 readImage fileName = 
   do
