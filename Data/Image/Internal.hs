@@ -100,11 +100,14 @@ class Image i where
       result of applying f to X(i,j) and Y(i,j). Note: The dimensions of X and
       Y must be equal otherwise the result of imageOp is undefined.  
 
-      > let white = makeImage 128 128 (\ r c -> 8000) :: GrayImage
+      >let white = makeImage 128 128 (\ r c -> 8000) :: GrayImage
+      >let diff = imageOp (-) gradient white
       
-      >>>imageOp (-) gradient white
+      >>>diff
       < Image 128x128 >
-      
+      >>>ref diff 0 0
+      -8000.0
+
       <https://raw.github.com/jcollard/unm-hip/master/examples/whitegrad.jpg>
    -} 
   imageOp :: (Pixel i -> Pixel i -> Pixel i) -> i -> i -> i
@@ -150,7 +153,6 @@ dimensions i = (rows i, cols i)
 
     >>>maxIntensity gradient
     16129.0
-
     >>>maxIntensity cactii
     RGB (254.0, 254.0, 254.0)
  -}
@@ -161,7 +163,6 @@ maxIntensity = maximal . pixelList
     
     >>>minIntensity gradient
     0.0
-
     >>>minIntensity cactii
     RGB (18.0, 18.0, 18.0)
  -}
@@ -241,7 +242,9 @@ downsampleRows img@(dimensions -> (rows, cols)) = makeImage rows (cols `div` 2) 
     numbered rows and columns, i.e., the value at location (i, j) is the
     value of img at location (2i, 2j)
 
-    >>> downsample frog
+    >let smallfrog = downsample frog
+   
+    >>>smallfrog
     < Image 112x121 >
     
     <https://raw.github.com/jcollard/unm-hip/master/examples/downsamplefrog.jpg>
@@ -252,6 +255,11 @@ downsample = downsampleRows . downsampleCols
 {-| Given img, upsampleCols returns an image with twice the number of 
     rows where the value at location (i, j) of the result image is the 
     value of img at location (i/2, j) if i is even and mempty otherwise.
+
+    >>>upsampleCols smallfrog
+    < Image 224x121 >
+ 
+    <https://raw.github.com/jcollard/unm-hip/master/examples/upsamplecols.jpg>
  -}
 upsampleCols :: (Image img, Monoid (Pixel img)) => img -> img
 upsampleCols img@(dimensions -> (rows, cols)) = makeImage (rows*2) cols upsample where
@@ -263,6 +271,11 @@ upsampleCols img@(dimensions -> (rows, cols)) = makeImage (rows*2) cols upsample
     columns where the value at location (i, j) of the result image is 
     the value of img at location (i, j/2) if j is even and 
     mempty otherwise.
+
+    >>>upsampleRows smallfrog
+    < Image 112x242 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/upsamplerows.jpg>
  -}
 upsampleRows :: (Image img, Monoid (Pixel img)) => img -> img
 upsampleRows img@(dimensions -> (rows, cols)) = makeImage rows (cols*2) upsample where
@@ -274,13 +287,26 @@ upsampleRows img@(dimensions -> (rows, cols)) = makeImage rows (cols*2) upsample
     rows and columns where the value at location (i, j) of the resulting
     image is the value of img at location (i/2, j/2) if i and jare are even
     and mempty otherwise.
+
+    >>>upsample smallfrog
+    < Image 224x242 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/upsample.jpg>
  -}
 upsample :: (Image img, Monoid (Pixel img)) => img -> img
 upsample = upsampleRows . upsampleCols
 
 {-| Given an image X1 and an image X2, where the number of columns of X1 
     equals the number of rows of X2, matrixProduct returns an image 
-    representing the matrix product of X1 and X2. -}
+    representing the matrix product of X1 and X2. 
+
+    >let cropped = crop 64 64 128 128 frog
+
+    >>>matrixProduct cropped cropped
+    < Image 128x128 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/matrixproduct.jpg>
+-}
 matrixProduct :: (Image img,
                   Num (Pixel img)) => img -> img -> img
 matrixProduct 
@@ -296,6 +322,11 @@ matrixProduct
     medianFilter returns an image with the same dimensions where each 
     pixel (i, j) in <image> is replaced by the pixel with median value 
     in the neighborhood of size m times n centered on (i, j).
+
+    >>>medianFilter 5 5 frog
+    < Image 225x242 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/medianfilter.jpg>
  -}
 medianFilter :: (Image img,
                  Fractional (Pixel img)) => Int -> Int -> img -> img
@@ -311,6 +342,13 @@ medianFilter m n img@(dimensions -> (rows, cols)) = makeImage rows cols avg wher
 
 {-| Given img, normalize returns an image with the same dimensions 
     where the values have been normalized to lie in the interval [0, 1].
+
+    >let normalfrog = normalize frog
+
+    >>>ref frog 0 0
+    151.0
+    >>>ref normalfrog 0 0
+    0.592156862745098
  -}
 normalize :: (Image img,
               MaxMin (Pixel img),
@@ -321,12 +359,21 @@ normalize img@(dimensions -> (rows, cols)) = makeImage rows cols map where
   scale = 1 / (max - min)
   px = pixelList img
 
--- | Folds over the pixels of the provided image 
+{-| Folds over the pixels of the provided image 
+ 
+    >>>imageFold (+) 0 frog
+    6948219.0
+-}
 imageFold :: Image img => (Pixel img -> b -> b) -> b -> img -> b
 imageFold f init img = foldr f init (pixelList img)
 
 {-| Maps a function over each pixel in the provided image. When using
     Boxed images, you should use fmap instead.
+
+    >>>imageMap ((-1) *) frog :: GrayImage
+    < Image 225x242 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/invertfrog.jpg>
  -}
 imageMap :: (Image img, Image img') => (Pixel img -> Pixel img') -> img -> img'
 imageMap f img@(dimensions -> (rows, cols)) = makeImage rows cols map where
@@ -334,6 +381,11 @@ imageMap f img@(dimensions -> (rows, cols)) = makeImage rows cols map where
 
 {-| Given two images with the same number of rows X and Y,  returns an
     image that is the concatenation of the two images from left to right.
+
+    >>>leftToRight frog frog
+    < Image 225x484 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/lefttoright.jpg>
  -}
 leftToRight :: (Image img) => img -> img -> img
 leftToRight i0@(dimensions -> (rows, cols)) i1@(dimensions -> (rows', cols'))
@@ -346,6 +398,11 @@ leftToRight i0@(dimensions -> (rows, cols)) i1@(dimensions -> (rows', cols'))
 {-| Given a Listable of images each of which have the same number of rows,
     returns an image that is the concatenation of all of the images from 
     left to Right.
+
+    >>>leftToRight' . replicate 3 $ frog
+    < Image 225x726 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/lefttoright3.jpg>
  -}
 leftToRight' :: (Listable a,
                  Image img,
@@ -355,6 +412,11 @@ leftToRight' (toList -> imgs) = foldr1 leftToRight imgs
 
 {-| Given two images with the same number of columns X and Y, returns an
     image that is the concatenation of the two images from top to bottom.
+
+    >>>topToBottom frog frog
+    < Image 450x242 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/toptobottom.jpg>
  -}
 topToBottom :: (Image img) => img -> img -> img
 topToBottom i0@(dimensions -> (rows, cols)) i1@(dimensions -> (rows',cols')) 
@@ -367,6 +429,11 @@ topToBottom i0@(dimensions -> (rows, cols)) i1@(dimensions -> (rows',cols'))
 {-| Given a Listable of images all of which have the same number of columns,
     returns an image that is the concatenation of all of theimages from top
     to bottom.
+
+    >>>topToBottom' . replicate 3 $ frog
+    < Image 675x242 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/toptobottom3.jpg>
  -}
 topToBottom' :: (Listable a,
                  Image img,
@@ -377,6 +444,11 @@ topToBottom' (toList -> imgs) = foldr1 topToBottom imgs
   
 {-| Given img, returns an two dimensional array of Pixel values 
     indexed by pairs of Ints where the fst is the row and snd is the column.
+
+    >let frogArr = imageToArray frog
+
+    >>>frogArr ! (0, 0)
+    151.0
  -}
 imageToArray :: (Image img) => img -> Array (Int, Int) (Pixel img)
 imageToArray img@(dimensions -> (rows, cols)) = listArray bounds elems where
@@ -386,6 +458,19 @@ imageToArray img@(dimensions -> (rows, cols)) = listArray bounds elems where
 {-| Given a two dimensional array of Pixel values indexed by
     pairs of Ints where the fst is the row and snd is the column, returns
     an Image.
+
+    >let img = arrayToImage (listArray ((0,0) (127,127)) [0..]) :: GrayImage
+
+    >>>img
+    < Image 128x128 >
+    >>>ref img 0 0
+    0.0
+    >>>ref img 0 10
+    10.0
+    >>>ref img 10 0
+    1280.0
+    >>>ref img 10 10
+    1290.0
  -}
 arrayToImage :: (Image img) => Array (Int, Int) (Pixel img) -> img
 arrayToImage arr = makeImage rows cols ref where
