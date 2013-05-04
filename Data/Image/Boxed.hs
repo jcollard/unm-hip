@@ -16,6 +16,7 @@ module Data.Image.Boxed(
   realPart, imagPart,
   magnitude, angle,
   complex, complexImageToRectangular,
+  complexImageToPolar,
   shrink, CI.makeFilter,
   fft, ifft,
   -- * Binary Images

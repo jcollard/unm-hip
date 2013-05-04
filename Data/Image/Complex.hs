@@ -166,6 +166,11 @@ realPart = imageMap (C.realPart . toComplex)
 
 {-| Given a complex image, returns a real image representing
    the imaginary part of the image
+
+   >>>let sine = imagPart signal
+ 
+    <https://raw.github.com/jcollard/unm-hip/master/examples/sine.jpg>
+
  -}
 imagPart :: (Image img,
              ComplexPixel (Pixel img),
@@ -175,6 +180,9 @@ imagPart = imageMap (C.imagPart . toComplex)
 
 {-| Given a complex image, returns a real image representing
     the magnitude of the image.
+
+    >>>magnitude signal
+
  -}
 magnitude :: (Image img,
               ComplexPixel (Pixel img),
@@ -183,7 +191,12 @@ magnitude :: (Image img,
 magnitude = imageMap (C.magnitude . toComplex)
 
 {-| Given a complex image, returns a real image representing
-    the angle of the image -}
+    the angle of the image 
+   
+    >>>angle signal
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/angle.jpg>
+-}
 angle :: (Image img,
           ComplexPixel (Pixel img),
           Image img',
@@ -192,7 +205,11 @@ angle = imageMap (C.phase . toComplex)
 
 {-| Given a complex image, returns a pair of real images each
     representing the component (magnitude, phase) of the image
- -}
+
+    >>>leftToRight' . complexImageToPolar $ signal
+ 
+    <https://raw.github.com/jcollard/unm-hip/master/examples/compleximagetopolar.jpg>
+-}
 complexImageToPolar :: (Image img,
                         ComplexPixel (Pixel img),
                         Image img',
@@ -206,6 +223,10 @@ complexImageToPolar img@(dimensions -> (rows, cols)) = (mkImg mag, mkImg phs) wh
 {-| Given an image representing the real part of a complex image, and
     an image representing the imaginary part of a complex image, returns
     a complex image.
+
+    >>>complex cosine sine
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/signal.jpg>
  -}
 complex :: (Image img,
             Image img',
@@ -215,6 +236,10 @@ complex real imag@(dimensions -> (rows, cols)) = makeImage rows cols ri where
 
 {-| Given a complex image, return a pair of real images each representing
     a component of the complex image (real, imaginary).
+
+    >>>leftToRight' . complexImageToRectangular $ signal
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/compleximagetorectangular.jpg>
  -}
 complexImageToRectangular :: (Image img,
                               ComplexPixel (Pixel img),
@@ -227,6 +252,7 @@ complexImageToRectangular img = (realPart img, imagPart img)
     image at location (i, j). The value of the complex result image at 
     location (i, j) is zero if |z| < x, otherwise the result has the 
     same phase as z but the amplitude is decreased by x.
+   
  -}
 shrink :: (Num a,
            Image img,
