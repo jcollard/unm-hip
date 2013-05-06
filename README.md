@@ -159,7 +159,7 @@ For example,
 <p>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/convolvedxdy.jpg" />
 </p>
-<pre>convolve :: (Num (Pixel img), Image img) => [[Pixel img]] -> img -> </pre>
+<pre>convolve :: (Num (Pixel img), Image img) => [[Pixel img]] -> img -> img</pre>
 
 Given a 2D list consisting solely of pixels representing a 2D 
 convolution kernel and an image, convolve returns the 2D discrete 
@@ -388,9 +388,9 @@ For example,
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/fft.jpg"/>
 <p>
 <pre>
-*Main> fft d2g :: ComplexImage
+*Main> fft d2g
 &lt; Image 128x128 &gt;
-*Main> display (fft d2g :: ComplexImage)
+*Main> display . fft $ d2g
 </pre>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/fftd2g.jpg" />
 <pre>
@@ -403,9 +403,9 @@ gaussian variance i j =
 </pre>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/g.jpg"/>
 <pre>
-*Main> fft g :: ComplexImage
+*Main> fft g 
 &lt; Image 128x128 &gt;
-*Main> display (fft g :: ComplexImage)
+*Main> display . fft $ g
 </pre>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/fftg.jpg"/>
 <p>

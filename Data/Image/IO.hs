@@ -33,7 +33,7 @@ toPGM :: (Image img,
 toPGM img@(dimensions -> (rows, cols)) = "P2 " ++ (show cols) ++ " " ++ (show rows) ++ " 255 " ++ px where
   px = intercalate " " . map (show . round . (*scale) . (flip (-) min)) $ pixels
   pixels = map toGray . pixelList $ img
-  min = minimum pixels
+  min = (minimum (0:pixels))
   max = maximum pixels
   scale = 255 / (max - min)
 
@@ -44,7 +44,7 @@ toPPM img@(dimensions -> (rows, cols)) = "P3 " ++ (show cols) ++ " " ++ (show ro
   px = intercalate " " rgbs
   rgbs = map (showRGB . scaleRGB) pixels
   pixels = map toRGB . pixelList $ img
-  min = comp 10e10 min' pixels
+  min = comp 0 min' pixels
   max = comp (-10e10) max' pixels
   scale = 255 / (max - min)
   scaleRGB (r, g, b) = (scale*(r-min), scale*(g-min), scale*(b-min))
