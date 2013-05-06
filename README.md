@@ -12,7 +12,7 @@ each (i, j) is (f i j)</p>
 <pre>
 *Main> let grad = makeImage 128 128 (\ r c -> fromIntegral (r + c)) :: GrayImage
 *Main> grad
-< Image 128x128 >
+&lt; Image 128x128 &gt;
 *Main> display grad
 </pre>
 <p>
@@ -29,7 +29,7 @@ harmonicSignal u v m n = exp ((2*pii) * ((u*(fromIntegral m) + v*(fromIntegral n
 *Main> let signal = makeImage 128 128 (harmonicSignal (3 / 128) (2 / 128)) :: ComplexImage
 *Main> signal
 *Main> signal
-< Image 128x128 >
+&lt; Image 128x128 &gt;
 *Main> display signal
 </pre>
 <p>
@@ -41,7 +41,7 @@ stored in ASCII <i>.pgm</i> format, <i>readImage</i> reads the file
 and returns the <i>Image</i>. For example,
 
 <pre>
-*Main> frog <- readImage "images/frog.pgm"
+*Main> frog &lt;- readImage "images/frog.pgm"
 *Main> display frog
 </pre>
 <p>
@@ -112,7 +112,7 @@ For example,
 
 <pre>
 *Main> transpose frog
-< Image 242x225 >
+&lt; Image 242x225 &gt;
 *Main> display . transpose $ frog
 </pre>
 <p>
@@ -127,7 +127,7 @@ For example,
 
 <pre>
 *Main> convolveRows [1, -1] frog
-< Image 225x242 >
+&lt; Image 225x242 &gt;
 *Main> display . convolveRows [1, -1] $ frog
 </pre>
 <p>
@@ -142,7 +142,7 @@ For example,
 
 <pre>
 *Main> convolveCols [1, -1] frog
-< Image 225x242 >
+&lt; Image 225x242 &gt;
 *Main> display . convolveCols [1, -1] $ frog
 </pre>
 <p>
@@ -153,7 +153,7 @@ For example,
 *Main> let dy = convolveCols [1, -1] frog
 *Main> let grad = imageMap sqrt ((dx .*. dx) .+. (dy .*. dy)) :: GrayImage
 *Main> grad
-< Image 225x242 >
+&lt; Image 225x242 &gt;
 *Main> display grad
 </pre>
 <p>
@@ -168,7 +168,7 @@ For example,
 
 <pre>
 *Main> convolve [[1, 1, 1], [1, -8, 1], [1, 1, 1]] frog
-< Image 225x242 >
+&lt; Image 225x242 &gt;
 *Main> display . convolve [[1, 1, 1], [1, -8, 1], [1, 1, 1]] $ frog>
 </pre>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/convolve.jpg"/>
@@ -183,7 +183,7 @@ For example,
 
 <pre>
 *Main> downsampleCols frog
-< Image 112x242 >
+&lt; Image 112x242 &gt;
 *Main> display . downsampleCols $ frog
 </pre>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/downsamplecolsfrog.jpg"/>
@@ -199,7 +199,7 @@ For example,
 
 <pre>
 *Main> downsampleRows frog
-< Image 225x121 >
+&lt; Image 225x121 &gt;
 *Main> display . downsampleRows $ frog
 </pre>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/downsamplerowsfrog.jpg"/>
@@ -209,7 +209,7 @@ For example,
 <pre>
 *Main> let tinyFrog = downsample frog
 *Main> tinyFrog
-< Image 112x121 >
+&lt; Image 112x121 &gt;
 *Main> display tinyFrog
 </pre>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/downsamplefrog.jpg" />
@@ -224,7 +224,7 @@ For example,
 
 <pre>
 *Main> upsampleCols tinyFrog
-< Image 224x121 >
+&lt; Image 224x121 &gt;
 *Main> display . upsampleCols $ tinyFrog
 </pre>
 <p>
@@ -241,7 +241,7 @@ For example,
 
 <pre>
 *Main> upsampleRows tinyFrog
-< Image 112x242 >
+&lt; Image 112x242 &gt;
 *Main> display . upsampleRows $ tinyFrog
 </pre>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/upsamplerows.jpg"/>
@@ -257,7 +257,7 @@ For example,
 
 <pre>
 *Main> upsample tinyFrog
-< Image 224x242 >
+&lt; Image 224x242 &gt;
 *Main> display . upsample $ tinyFrog
 </pre>
 <p>
@@ -275,7 +275,7 @@ For example,
 
 <pre>
 *Main> pad 200 200 tinyFrog
-< Image 200x200 >
+&lt; Image 200x200 &gt;
 *Main> display . pad 200 200 $ tinyFrog
 </pre>
 <p>
@@ -292,7 +292,7 @@ For example,
 <pre>
 *Main> let frogPart = crop 64 64 128 128 frog
 *Main> frogPart
-< Image 128x128 >
+&lt; Image 128x128 &gt;
 *Main> display frogPart
 </pre>
 <p>
@@ -309,7 +309,7 @@ For example,
 
 <pre>
 *Main> leftToRight tinyFrog tinyFrog
-< Image 112x242 >
+&lt; Image 112x242 &gt;
 *Main> display . leftToRight tinyFrog $ tinyFrog
 </pre>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/lefttoright.jpg"/>
@@ -325,7 +325,7 @@ For example,
 
 <pre>
 *Main> topToBottom tinyFrog tinyFrog
-< Image 224x121 >
+&lt; Image 224x121 &gt;
 *Main> display . topToBottom tinyFrog $ tinyFrog
 </pre>
 <p>
@@ -349,7 +349,7 @@ For example,
 <pre>
 *Main Data.Complex> let filter = makeFilter 128 128 (\ i j -> fromIntegral (i + j)) :: GrayImage
 *Main Data.Complex> filter
-< Image 128x128 >
+&lt; Image 128x128 &gt;
 *Main Data.Complex> display filter
 </pre>
 <p>
@@ -363,7 +363,7 @@ laplacianOfGaussian stddev i j =
 
 *Main Data.Complex> let d2g = makeFilter 128 128 (laplacianOfGaussian 8) :: ComplexImage
 *Main Data.Complex> d2g
-< Image 128x128 >
+&lt; Image 128x128 &gt;
 *Main Data.Complex> display d2g
 </pre>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/d2g.jpg" />
@@ -381,7 +381,7 @@ For example,
 <pre>
 *Main> let logFrog = imageMap log . fft $ frogPart :: ComplexImage
 *Main> logFrog
-< Image 128x128 >
+&lt; Image 128x128 &gt;
 *Main> display logFrog
 </pre>
 <p>
@@ -389,7 +389,7 @@ For example,
 <p>
 <pre>
 *Main> fft d2g :: ComplexImage
-< Image 128x128 >
+&lt; Image 128x128 &gt;
 *Main> display (fft d2g :: ComplexImage)
 </pre>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/fftd2g.jpg" />
@@ -404,7 +404,7 @@ gaussian variance i j =
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/g.jpg"/>
 <pre>
 *Main> fft g :: ComplexImage
-< Image 128x128 >
+&lt; Image 128x128 &gt;
 *Main> display (fft g :: ComplexImage)
 </pre>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/fftg.jpg"/>
@@ -422,14 +422,14 @@ For example,
 <pre>
 *Main> ifft ((fft frogPart) * (fft d2g))
 
-< Image 128x128 >
+&lt; Image 128x128 &gt;
 *Main> display $ ifft ((fft frogPart) * (fft d2g))
 </pre>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/ifft.jpg"/>
 <p>
 <pre>
 *Main> ifft ((fft frogPart) * (fft g))
-< Image 128x128 >
+&lt; Image 128x128 &gt;
 *Main> display $ ifft ((fft frogPart) * (fft g))
 </pre>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/ifft2.jpg" />
@@ -444,7 +444,7 @@ For example,
 <pre>
 *Main> let cosine = realPart signal :: GrayImage
 *Main> cosine
-< Image 128x128 >
+&lt; Image 128x128 &gt;
 *Main> display cosine
 </pre>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/cosine.jpg"/>
@@ -469,7 +469,7 @@ For example,
 <pre>
 *Main> let sine = imagPart signal :: GrayImage
 *Main> sine
-< Image 128x128 >
+&lt; Image 128x128 &gt;
 *Main> display sine
 </pre>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/sine.jpg" />
@@ -484,7 +484,7 @@ For example,
 
 <pre>
 *Main> complex cosine sine :: ComplexImage
-< Image 128x128 >
+&lt; Image 128x128 &gt;
 *Main> display (complex cosine sine :: ComplexImage)
 </pre>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/signal.jpg" />
@@ -498,7 +498,7 @@ For example,
 
 <pre>
 *Main> leftToRight' . complexImageToRectangular $ signal
-< Image 128x256 >
+&lt; Image 128x256 &gt;
 *Main> display . leftToRight' . complexImageToRectangular $ signal
 </pre>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/complexsignaltorectangular.jpg"/>
@@ -519,7 +519,7 @@ For example,
 
 <pre>
 *Main> angle signal
-< Image 128x128 >
+&lt; Image 128x128 &gt;
 *Main> display (angle signal :: GrayImage)
 </pre>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/angle.jpg"/>
@@ -531,7 +531,7 @@ representing the component (magnitude, phase) of the image
 
 <pre>
 *Main> complexImageToPolar signal
-(< Image 128x128 >,< Image 128x128 >)
+(&lt; Image 128x128 &gt;,&lt; Image 128x128 &gt;)
 *Main> display . leftToRight' . complexImageToPolar $ signal
 </pre>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/compleximagetopolar.jpg"/>
@@ -543,14 +543,14 @@ For each <i>(i, j)</i> the resulting pixel will be the sum of the pixels from th
 For example,
 
 <pre>
-*Main> callisto <- readImage "images/callisto.pgm"
+*Main> callisto &lt;- readImage "images/callisto.pgm"
 *Main> display callisto
 </pre>
 <p>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/callisto.gif">
 <p>
 <pre>
-*Main> ganymede <- readImage "images/ganymede.pgm"
+*Main> ganymede &lt;- readImage "images/ganymede.pgm"
 *Main> display ganymede
 </pre>
 <p>
@@ -558,7 +558,7 @@ For example,
 <p>
 <pre>
 *Main> callisto + ganymede
-< Image 128x128 >
+&lt; Image 128x128 &gt;
 *Main> display $ callisto + ganymede
 </pre>
 <p>
@@ -612,7 +612,7 @@ For example,
 <pre>
 *Main> let array = listArray ((0,0),(127,127)) [0..] :: Array (Int,Int) Double
 *Main> arrayToImage array :: GrayImage
-< Image 128x128 >
+&lt; Image 128x128 &gt;
 *Main> display (arrayToImage array :: GrayImage)
 </pre>
 <p>
@@ -638,7 +638,7 @@ img at (i,j) and off otherwise.
 Note: there is a variation of <i>(.<)</i> named <i>(>.)</i> where the arguments are flipped.
 
 <pre>
-*Main> stop <- readColorImage "images/stop.ppm"
+*Main> stop &lt;- readColorImage "images/stop.ppm"
 *Main> display stop
 </pre>
 <p>
@@ -771,7 +771,7 @@ file and returns the ColorImage
 For example,
 
 <pre>
-*Main> cacti <- readColorImage "images/cactii.ppm"
+*Main> cacti &lt;- readColorImage "images/cactii.ppm"
 *Main> display cacti
 </pre>
 <p>
