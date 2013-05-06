@@ -3,8 +3,8 @@
 <p>To use unm-hip interactively in ghci, import Data.Image.Interactive. This provides three useful functions: display, setDisplayProgram, and plotHistograms.</p>
 
 
-
-<pre id="makeImage">makeImage :: Image i => Int -> Int -> PixelOp (Pixel i) -> i</pre>
+<div id="makeImage" />
+<pre>makeImage :: Image i => Int -> Int -> PixelOp (Pixel i) -> i</pre>
 
 <p>Given an Int m, Int n, and a PixelOp f, <b>makeImage</b> 
 returns an Image with dimensions m x n and the Pixel value at 
