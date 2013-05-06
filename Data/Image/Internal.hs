@@ -39,6 +39,7 @@ module Data.Image.Internal(-- * Images
 
 --base>=4
 import Data.Monoid
+import Data.List(sort)
 
 --array>=0.4.0.1
 import Data.Array.IArray
@@ -325,11 +326,11 @@ matrixProduct
     <https://raw.github.com/jcollard/unm-hip/master/examples/medianfilter.jpg>
  -}
 medianFilter :: (Image img,
-                 Fractional (Pixel img)) => Int -> Int -> img -> img
+                 Ord (Pixel img)) => Int -> Int -> img -> img
 medianFilter m n img@(dimensions -> (rows, cols)) = makeImage rows cols avg where
   [moff, noff] = map (`div` 2) [m,n]
-  avg r c = (sum px)/(fromIntegral . length $ px) where
-    px = [ ref img i j | 
+  avg r c = px !! ((fromIntegral . length $ px) `div` 2) where
+    px = sort [ ref img i j |  
                    i <- [rm..rm+m], 
                    j <- [cm..cm+n], 
                    i >= 0, i < rows, j >= 0, j < cols]
