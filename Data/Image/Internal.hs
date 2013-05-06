@@ -451,7 +451,7 @@ imageToArray img@(dimensions -> (rows, cols)) = listArray bounds elems where
 
 {-| Given a two dimensional array of Pixel values indexed by
     pairs of Ints where the fst is the row and snd is the column, returns
-    an Image.
+    an Image. 
 
     >>>let img = arrayToImage (listArray ((0,0) (127,127)) [0..]) :: GrayImage
     >>>img
