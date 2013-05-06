@@ -960,7 +960,6 @@ n is the number of connected components in image.
 <p>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/label-stop.gif">
 <p>
-<pre>
 
 <li><pre>distanceTransform :: (Image img, BinaryPixel (Pixel img), Image img', Pixel img' ~ Double) => img -> img'</pre>
 
