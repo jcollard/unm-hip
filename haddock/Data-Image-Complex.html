@@ -74,9 +74,9 @@ window.onload = function () {pageLoad();setSynopsis("mini_Data-Image-Complex.htm
 </code></strong></pre><p><a href="https://raw.github.com/jcollard/unm-hip/master/examples/signal.jpg">https://raw.github.com/jcollard/unm-hip/master/examples/signal.jpg</a>
 </p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>let cosine = realPart signal
 </code></strong></pre><p><a href="https://raw.github.com/jcollard/unm-hip/master/examples/cosine.jpg">https://raw.github.com/jcollard/unm-hip/master/examples/cosine.jpg</a>
-</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>realPart realPart . ifft $ (fft frogpart) * (fft d2g)
+</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>realPart . ifft $ (fft frogpart) * (fft d2g)
 </code></strong></pre><p><a href="https://raw.github.com/jcollard/unm-hip/master/examples/realpart.jpg">https://raw.github.com/jcollard/unm-hip/master/examples/realpart.jpg</a>
-</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>realPart realPart . ifft $ (fft frogpart) * (fft g)
+</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>realPart . ifft $ (fft frogpart) * (fft g)
 </code></strong></pre><p><a href="https://raw.github.com/jcollard/unm-hip/master/examples/realpart2.jpg">https://raw.github.com/jcollard/unm-hip/master/examples/realpart2.jpg</a>
 </p></div></div><div class="top"><p class="src"><a name="v:imagPart" class="def">imagPart</a> :: (<a href="Data-Image-Internal.html#t:Image">Image</a> img, <a href="Data-Image-Complex.html#t:ComplexPixel">ComplexPixel</a> (<a href="Data-Image-Internal.html#t:Pixel">Pixel</a> img), <a href="Data-Image-Internal.html#t:Image">Image</a> img', <a href="Data-Image-Internal.html#t:Pixel">Pixel</a> img' ~ <a href="Data-Image-Complex.html#t:Value">Value</a> (<a href="Data-Image-Internal.html#t:Pixel">Pixel</a> img)) =&gt; img -&gt; img'</p><div class="doc"><p>Given a complex image, returns a real image representing
    the imaginary part of the image
