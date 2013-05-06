@@ -983,7 +983,7 @@ the image with the structuring element.
 Note: There is a version <i>open'</i> that uses the default structuring element [[1,1],[1,1]].
 
 <pre>
-Main*> noise &lt- readColorImage "images/noise.ppm"
+Main*> noise &lt;- readColorImage "images/noise.ppm"
 </pre>
 <p>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/noise.jpg"/>
@@ -1004,7 +1004,7 @@ Main*> display . open $ noisyStop
 
 Given a 2D list consisting solely of pixels representing a structuring 
 element, and a binary image, dilate returns the morphological closing of 
-the <image> with the structuring element. 
+the image with the structuring element. 
 
 Note: There is a version <i>close'</i> that uses the default structuring element [[1,1],[1,1]].
 
