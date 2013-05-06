@@ -986,21 +986,21 @@ Note: There is a version <i>open'</i> that uses the default structuring element 
 <pre>
 Main*> noise <- readColorImage "images/noise.ppm"
 </pre>
-
+<p>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/noise.jpg"/>
-
+<p>
 <pre>
 Main*> let noisyStop = binaryStop ./=. noise
 </pre>
-
+<p>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/noisystop.jpg"/>
-
+<p>
 <pre>
 Main*> display . open $ noisyStop
 </pre>
-
+<p>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/open.jpg" />
-
+<p>
 <li><pre>close :: (Num (Pixel img), Ord (Pixel img), Image img, BinaryPixel (Pixel img)) => [[Pixel img]] -> img -> img</pre>
 
 Given a 2D list consisting solely of pixels representing a structuring 
