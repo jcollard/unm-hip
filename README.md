@@ -3,7 +3,8 @@
 <p>To use unm-hip interactively in ghci, import Data.Image.Interactive. This provides three useful functions: display, setDisplayProgram, and plotHistograms.</p>
 
 
-<li><pre>makeImage :: Image i => Int -> Int -> PixelOp (Pixel i) -> i</pre></li>
+
+<pre id="makeImage">makeImage :: Image i => Int -> Int -> PixelOp (Pixel i) -> i</pre>
 
 <p>Given an Int m, Int n, and a PixelOp f, <b>makeImage</b> 
 returns an Image with dimensions m x n and the Pixel value at 
@@ -35,7 +36,7 @@ harmonicSignal u v m n = exp ((2*pii) * ((u*(fromIntegral m) + v*(fromIntegral n
 <p>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/signal.jpg"/>
 </p>
-<li><pre>readImage :: FilePath -> IO GrayImage</pre></li>
+<pre>readImage :: FilePath -> IO GrayImage</pre>
 Given the file path to a file containing an image
 stored in ASCII <i>.pgm</i> format, <i>readImage</i> reads the file
 and returns the <i>Image</i>. For example,
@@ -47,7 +48,7 @@ and returns the <i>Image</i>. For example,
 <p>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/frog.jpg" />
 </p>
-<li><pre>writeImage :: DisplayFormat df => FilePath -> df -> IO ()</pre></li>
+<pre>writeImage :: DisplayFormat df => FilePath -> df -> IO ()</pre>
 
 Given a filename and an Image, 
 <i>writeImage</i> creates a file representing the image in ASCII
@@ -77,7 +78,7 @@ P2
 .
 </pre>
 
-<li><pre>ref :: Image i => i -> Int -> Int -> Pixel i</pre></li>
+<pre>ref :: Image i => i -> Int -> Int -> Pixel i</pre>
 
 Given an image, a positive int i, and a positive  int j, 
 <i>ref</i> returns the pixel value at location <i>(i, j)</i>. 
@@ -87,14 +88,14 @@ Given an image, a positive int i, and a positive  int j,
 56.0
 </pre>
 
-<li><pre>rows :: Image i => i -> Int</pre></li>
+<pre>rows :: Image i => i -> Int</pre>
 Given an image, rows returns the number of rows of in the image.
 For example,
 <pre>
 *Main> rows frog
 225
 </pre>
-<li><pre>cols :: Image i => i -> Int</pre></li>
+<pre>cols :: Image i => i -> Int</pre>
 
 Given an image, cols returns the number of columns of in the image.
 For example,
@@ -103,7 +104,7 @@ For example,
 *Main> cols frog
 242
 </pre>
-<li><pre>transpose :: Image img => img -> img</pre></li>
+<pre>transpose :: Image img => img -> img</pre>
 
 Given an Image img, returns an image created by interchanging 
 the rows and columns of the image, i.e., the value at location <i>(i, j)</i>
@@ -118,7 +119,7 @@ For example,
 <p>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/transposefrog.jpg" />
 </p>
-<li><pre>convolveRows :: (Num (Pixel img), Image img) => [Pixel img] -> img -> img</pre></li>
+<pre>convolveRows :: (Num (Pixel img), Image img) => [Pixel img] -> img -> img</pre>
 
 Given a list consisting solely of pixel values representing a 1D 
 convolution kernel and an image, convolveRows returns the 1D discrete 
@@ -133,7 +134,7 @@ For example,
 <p>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/convolverows.jpg"/>
 </p>
-<li><pre>convolveCols :: (Num (Pixel img), Image img) => [Pixel img] -> img -> img</pre></li>
+<pre>convolveCols :: (Num (Pixel img), Image img) => [Pixel img] -> img -> img</pre>
 
 Given a list consisting solely of pixel values representing a 1D 
 convolution kernel and an image, convolveCols returns the 1D discrete 
