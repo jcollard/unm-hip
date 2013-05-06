@@ -7,7 +7,7 @@ Stability:         experimental
 Maintainer:	   jcollard@unm.edu
 Category:          Image Processing
 Synopsis:          A Library for the manipulation of images
-Description:       The University of New Mexico's Haskell Image Processing library contains functionality for performing manipulations on binary, gray, color, and complex images. The library was designed for use in UNM's Digital Image Processing class but it is not it's only use.
+Description:       The University of New Mexico's Haskell Image Processing library contains functionality for performing manipulations on binary, gray, color, and complex images. The library was designed for with UNM's Digital Image Processing class in mind but it can be used for a multitude of image processing purposes.
 Cabal-Version:     >= 1.6
 Build-Type:        Simple
 
