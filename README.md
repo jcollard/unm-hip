@@ -704,7 +704,7 @@ same phase as z but the amplitude is decreased by x.
 
 <p>
 
-<pre>medianFilter :: (Fractional (Pixel img), Image img) => Int -> Int -> img -> img</pre>
+<pre>medianFilter :: (Ord (Pixel img), Image img) => Int -> Int -> img -> img</pre>
 
 Given two positive integers, m and n and a an image, 
 medianFilter returns an image with the same dimensions where each 
