@@ -987,19 +987,20 @@ Note: There is a version <i>open'</i> that uses the default structuring element 
 Main*> noise <- readColorImage "images/noise.ppm"
 </pre>
 
-<p><IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/noise.jpg"/></p>
+<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/noise.jpg"/>
 
 <pre>
 Main*> let noisyStop = binaryStop ./=. noise
 </pre>
 
-<p><IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/noisystop.jpg"/></p>
+<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/noisystop.jpg"/>
 
 <pre>
 Main*> display . open $ noisyStop
 </pre>
 
-<p><IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/open.jpg" /></p>
+<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/open.jpg" />
+
 <li><pre>close :: (Num (Pixel img), Ord (Pixel img), Image img, BinaryPixel (Pixel img)) => [[Pixel img]] -> img -> img</pre>
 
 Given a 2D list consisting solely of pixels representing a structuring 
@@ -1011,7 +1012,8 @@ Note: There is a version <i>close'</i> that uses the default structuring element
 <pre>
 Main*>close [[1,1],[1,1]] noisyStop
 </pre>
-<p><IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/close.jpg" /></p>
+
+<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/close.jpg" />
 
 <li><pre>areas :: (Image img, MaxMin (Pixel img), RealFrac (Pixel img)) => img -> V.Vector Double</pre>
 
