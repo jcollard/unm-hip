@@ -1,4 +1,4 @@
-<h1>The University of New Mexico's Haskell Image Processing Library</h1>
+<h2>The University of New Mexico's Haskell Image Processing Library</h2>
 <p>To get started, import Data.Image or Data.Image.Boxed.</p>
 <p>To use unm-hip interactively in ghci, import Data.Image.Interactive. This provides three useful functions: display, setDisplayProgram, and plotHistograms.</p>
 
