@@ -409,7 +409,7 @@ gaussian variance i j =
 </pre>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/fftg.jpg"/>
 <p>
-<pre>Com.ifft :: (Image img, Image img', Com.ComplexPixel (Pixel img), Pixel img' ~ C.Complex (Com.Value (Pixel img))) => img -> img'</pre>
+<pre>ifft :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Complex (Value (Pixel img))) => img -> img'</pre>
 
 Given an image, ifft returns a complex image representing its 2D 
 inverse discrete Fourier transform (DFT). Because the inverse DFT is 
@@ -434,7 +434,7 @@ For example,
 </pre>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/ifft2.jpg" />
 <p>
-<pre>Com.realPart :: (Image img, Image img', Com.ComplexPixel (Pixel img), Pixel img' ~ Com.Value (Pixel img)) => img -> img'</pre>
+<pre>realPart :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Value (Pixel img)) => img -> img'</pre>
 
 Given a complex image, returns a real image representing
     the real part of the image.
@@ -489,7 +489,7 @@ For example,
 </pre>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/signal.jpg" />
 <p>
-<pre>Com.complexImageToRectangular :: (Image img, Image img', Com.ComplexPixel (Pixel img), Pixel img' ~ Com.Value (Pixel img)) => img -> (img', img')</pre>
+<pre>complexImageToRectangular :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Value (Pixel img)) => img -> (img', img')</pre>
 
 Given a complex image, return a pair of real images each representing
 a component of the complex image (real, imaginary).
