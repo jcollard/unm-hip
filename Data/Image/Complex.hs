@@ -149,11 +149,11 @@ ifft img@(dimensions -> (rows, cols)) = makeImage rows cols fftimg where
 
     <https://raw.github.com/jcollard/unm-hip/master/examples/cosine.jpg>
 
-    >>>realPart realPart . ifft $ (fft frogpart) * (fft d2g)
+    >>>realPart . ifft $ (fft frogpart) * (fft d2g)
  
     <https://raw.github.com/jcollard/unm-hip/master/examples/realpart.jpg>
     
-    >>>realPart realPart . ifft $ (fft frogpart) * (fft g)
+    >>>realPart . ifft $ (fft frogpart) * (fft g)
  
     <https://raw.github.com/jcollard/unm-hip/master/examples/realpart2.jpg>
 

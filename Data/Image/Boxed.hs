@@ -368,7 +368,7 @@ colorImageToHSI img = (colorImageHue img, colorImageSaturation img, colorImageIn
 
 {-| Reads in an ASCI PPM file as a ColorImage
     
-    >>>cactii <- readImage "images/cactii.ppm"
+    >>>cactii <- readColorImage "images/cactii.ppm"
 
     <https://raw.github.com/jcollard/unm-hip/master/examples/cactii.jpg>
  -}
