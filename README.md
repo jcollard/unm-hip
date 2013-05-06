@@ -974,16 +974,16 @@ distance.
 <p>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/distancetransform.jpg"/>
 <p>
-<li><pre>open :: (Num (Pixel img), Ord (Pixel img), Image img, BinaryPixel (Pixel img)) => [[Pixel img]] -> img -> img</pre>
+<li><pre> open :: (Num (Pixel img), Ord (Pixel img), Image img, BinaryPixel (Pixel img)) => [[Pixel img]] -> img -> img </pre>
 
 Given a 2D list consisting solely of pixels representing a structuring 
 element, and a binary image, dilate returns the morphological opening of 
-the <image> with the structuring element. 
+the image with the structuring element. 
 
 Note: There is a version <i>open'</i> that uses the default structuring element [[1,1],[1,1]].
 
 <pre>
-Main*> noise <- readColorImage "images/noise.ppm"
+Main*> noise &lt- readColorImage "images/noise.ppm"
 </pre>
 <p>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/noise.jpg"/>
