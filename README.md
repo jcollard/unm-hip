@@ -870,7 +870,7 @@ For example,
 <li><pre>hsiToColorImage :: (GrayImage, GrayImage, GrayImage) -> ColorImage</pre>
 
 Given a triple containing three GrayImages each containing one of the
-color components (hue, saturation, ), returns a ColorImage
+color components (hue, saturation, intensity), returns a ColorImage
 
 For example,
 
