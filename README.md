@@ -379,7 +379,7 @@ must both be powers of two, i.e., 2K where K is an integer.
 For example,
 
 <pre>
-*Main> let logFrog = imageMap log . fft $ frogPart :: ComplexImage
+*Main> let logFrog = magnitude . imageMap log . fft $ frogpart
 *Main> logFrog
 &lt; Image 128x128 &gt;
 *Main> display logFrog
