@@ -11,7 +11,7 @@
 *Main> setDisplayProgram "display" True
 </pre>
 
-<pre>display :: DisplayFormat df => -> IO (Handle, Handle, Handle, ProcessHandle)</pre>
+<pre>display :: DisplayFormat df => df -> IO (Handle, Handle, Handle, ProcessHandle)</pre>
 <p>Makes a call to the current display program to be displayed. If the program cannot read from standard in, a file named .tmp-img is created and used as an argument to the program.</p>
 
 <pre>makeImage :: Image i => Int -> Int -> PixelOp (Pixel i) -> i</pre>
