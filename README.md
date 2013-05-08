@@ -2,6 +2,17 @@
 <p>To get started, import Data.Image or Data.Image.Boxed.</p>
 <p>To use unm-hip interactively in ghci, import Data.Image.Interactive. This provides three useful functions: display, setDisplayProgram, and plotHistograms.</p>
 
+<pre>setDisplayProgram :: String -> Bool -> IO ()</pre>
+<p>Sets the program to use when making a call to display and specifies if the program can accept an image via stdin. If it cannot, then a temporary file will be created and passed as an argument instead. By default, ImageMagick (display) is the default program to use and it is read using stdin.</p>
+
+<pre>
+*Main> setDisplayProgram "gimp" False
+*Main> setDisplayProgram "xv" False
+*Main> setDisplayProgram "display" True
+</pre>
+
+<pre>display :: DisplayFormat df => -> IO (Handle, Handle, Handle, ProcessHandle)</pre>
+<p>Makes a call to the current display program to be displayed. If the program cannot read from standard in, a file named .tmp-img is created and used as an argument to the program.</p>
 
 <pre>makeImage :: Image i => Int -> Int -> PixelOp (Pixel i) -> i</pre>
 
