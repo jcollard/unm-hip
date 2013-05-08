@@ -1,0 +1,4 @@
+Next Release:
+
+unm-hip-0.0.0.0
+Initial release containing functionality for Boxed Images

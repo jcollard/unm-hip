@@ -4,7 +4,7 @@ License:           GPL
 License-File:      LICENSE
 Author:	           Joseph Collard, Stephen Patel, Lance Williams
 Stability:         experimental
-Maintainer:	   jcollard@unm.edu
+Maintainer:	   josephmcollard+unm-hip@gmail.com
 Category:          Image Processing
 Synopsis:          A Library for the manipulation of images
 Description:       The University of New Mexico's Haskell Image Processing library contains functionality for performing manipulations on binary, grayscale, color, and complex images. The library was designed for use in UNM's Digital Image Processing class but it can be used for a wide range of image processing purposes.
