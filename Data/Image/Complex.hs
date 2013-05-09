@@ -102,7 +102,7 @@ makeFilter rows cols func = makeImage rows cols func' where
     
     <https://raw.github.com/jcollard/unm-hip/master/examples/frogpart.jpg>
 
-    >>>imageMap log . fft $ frogpart :: ComplexImage
+    >>>magnitude . imageMap log . fft $ frogpart
 
     <https://raw.github.com/jcollard/unm-hip/master/examples/fft.jpg>  
     

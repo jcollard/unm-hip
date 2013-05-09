@@ -41,7 +41,7 @@ window.onload = function () {pageLoad();setSynopsis("mini_Data-Image-Complex.htm
 </code></strong><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>let frogpart = crop 64 64 128 128 frog
 </code></strong></pre><p><a href="https://raw.github.com/jcollard/unm-hip/master/examples/frog.jpg">https://raw.github.com/jcollard/unm-hip/master/examples/frog.jpg</a>
 </p><p><a href="https://raw.github.com/jcollard/unm-hip/master/examples/frogpart.jpg">https://raw.github.com/jcollard/unm-hip/master/examples/frogpart.jpg</a>
-</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>imageMap log . fft $ frogpart :: ComplexImage
+</p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>magnitude . imageMap log . fft $ frogpart
 </code></strong></pre><p><a href="https://raw.github.com/jcollard/unm-hip/master/examples/fft.jpg">https://raw.github.com/jcollard/unm-hip/master/examples/fft.jpg</a>  
 </p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>fft d2g
 </code></strong></pre><p><a href="https://raw.github.com/jcollard/unm-hip/master/examples/fftd2g.jpg">https://raw.github.com/jcollard/unm-hip/master/examples/fftd2g.jpg</a>  
