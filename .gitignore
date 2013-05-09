@@ -1,4 +1,6 @@
 /dist/
+*.hi
+*.o
 *.*~
 .tmp-img
 Test.hs
