@@ -546,6 +546,18 @@ representing the component (magnitude, phase) of the image
 </pre>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/compleximagetopolar.jpg"/>
 <p>
+<pre>(==) :: (==) :: Eq a => a -> a -> Bool</pre>
+
+Images installed in the Eq type class (Boxed images) may be compared using the (==). This returns True if and only iff the images are of equal dimension and for each pixel (i, j) in the two images are (==).
+
+<pre>(<) :: Ord a => a -> a -> Bool</pre>
+
+Images installed in the Ord type class (Boxed images) may be compared using (<). This returns True if and only iff the images are of equal dimension and for each pixel (i, j) in the two images are (<).
+
+<pre>(>) :: Ord a => a -> a -> Bool</pre>
+
+Images installed in the Ord type class (Boxed images) may be compared using (>). This returns True if and only iff the images are of equal dimension and for each pixel (i, j) in the two images are (>).
+
 <pre>(+) :: Num a => a -> a -> a</pre>
 
 Any two images installed in the Num type class (any two Boxed images) may be added if their dimensions match.
@@ -647,6 +659,12 @@ img at (i,j) and off otherwise.
 
 Note: there is a variation of <i>(.<)</i> named <i>(>.)</i> where the arguments are flipped.
 
+<pre>(>~) :: (Ord (Pixel img), Image img) => Pixel img -> img -> Bool</pre>
+Given a pixel value p and an image img, return True if and only if all
+values in img are less than p.
+
+Note: there is a variation of <i>(>~)</i> named <i>(~<)</i> where the arguments are flipped.
+
 <pre>
 *Main> stop &lt;- readColorImage "images/stop.ppm"
 *Main> display stop
@@ -676,6 +694,13 @@ Note: there is a variation of <i>(<.)</i> named <i>(.<)</i> where the arguments 
 <p>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/binarystop.jpg" />
 <p>
+
+<pre>(<~) :: (Ord (Pixel img), Image img) => Pixel img -> img -> Bool</pre>
+Given a pixel value p and an image img, return True if and only if all
+values in img are greater than p.
+
+Note: there is a variation of <i>(<~)</i> named <i>(~<)</i> where the arguments are flipped.
+
 
 <pre>(.==.) :: (Eq (Pixel img), Image img, BinaryPixel (Pixel img)) => img -> img -> img</pre>
 Given an image with pixels, <i>p</i>, and a pixel, <i>c</i>, returns an image where
