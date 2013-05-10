@@ -69,6 +69,9 @@ import qualified Data.Vector as V
 
 type Vector = V.Vector
 
+-- Error Messages
+differentDimensionsError = error "The images must have the same dimensions."
+
 -- BoxedImage
 -- | BoxedImage is a concrete implementation of Image using a boxed internal structure. This allows for it to be installed nicely in Functor and Applicative.
 data BoxedImage a = Image { rs :: Int,
@@ -112,6 +115,12 @@ instance Fractional a => Fractional (BoxedImage a) where
   (/) = liftA2 (/)
   recip = fmap recip
   fromRational i = pure $ fromRational i
+  
+instance Ord a => Ord (BoxedImage a) where  
+  (<=) img0 img1 
+    | (rows img0) /= (rows img1) = differentDimensionsError
+    | (cols img0) /= (cols img1) = differentDimensionsError
+    | otherwise = and . zipWith (<=) (pixelList img0) . pixelList $ img1
   
 instance Eq a => Eq (BoxedImage a) where
   (==) img0 img1 
