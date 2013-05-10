@@ -48,7 +48,7 @@ harmonicSignal u v m n = exp ((2*pii) * ((u*(fromIntegral m) + v*(fromIntegral n
 </p>
 <pre>readImage :: FilePath -> IO GrayImage</pre>
 Given the file path to a file containing an image
-stored in ASCII <i>.pgm</i> format, <i>readImage</i> reads the file
+stored in ASCII <i>.pgm</i> format, <b>readImage</b> reads the file
 and returns the <i>Image</i>. For example,
 
 <pre>
@@ -61,7 +61,7 @@ and returns the <i>Image</i>. For example,
 <pre>writeImage :: DisplayFormat df => FilePath -> df -> IO ()</pre>
 
 Given a filename and an Image, 
-<i>writeImage</i> creates a file representing the image in ASCII
+<b>writeImage</b> creates a file representing the image in ASCII
 <i>.pgm</i> format for <i>GrayImage</i>s and <i>.ppm</i> for <i>ColorImage</i> and <i>ComplexImage</i>.
 Note: Images saved this way are normalized to integers in the range 0 to 255; 
 this may result in loss of detail.
@@ -91,7 +91,7 @@ P2
 <pre>ref :: Image i => i -> Int -> Int -> Pixel i</pre>
 
 Given an image, a positive int i, and a positive  int j, 
-<i>ref</i> returns the pixel value at location <i>(i, j)</i>. 
+<b>ref</b> returns the pixel value at location <i>(i, j)</i>. 
 
 <pre>
 *Main> ref frog 100 100
@@ -99,7 +99,7 @@ Given an image, a positive int i, and a positive  int j,
 </pre>
 
 <pre>rows :: Image i => i -> Int</pre>
-Given an image, rows returns the number of rows of in the image.
+Given an image, <b>rows</b> returns the number of rows of in the image.
 For example,
 <pre>
 *Main> rows frog
@@ -107,7 +107,7 @@ For example,
 </pre>
 <pre>cols :: Image i => i -> Int</pre>
 
-Given an image, cols returns the number of columns of in the image.
+Given an image, <b>cols</b> returns the number of columns of in the image.
 For example,
 
 <pre>
@@ -116,7 +116,7 @@ For example,
 </pre>
 <pre>transpose :: Image img => img -> img</pre>
 
-Given an Image img, returns an image created by interchanging 
+Given an Image img, <b>transpose</b> returns an image created by interchanging 
 the rows and columns of the image, i.e., the value at location <i>(i, j)</i>
 of the result image is the value of the img at location <i>(j, i)</i>.
 For example,
@@ -132,7 +132,7 @@ For example,
 <pre>convolveRows :: (Num (Pixel img), Image img) => [Pixel img] -> img -> img</pre>
 
 Given a list consisting solely of pixel values representing a 1D 
-convolution kernel and an image, convolveRows returns the 1D discrete 
+convolution kernel and an image, <b>convolveRows</b> returns the 1D discrete 
 periodic convolution of the rows of the image with the kernel.
 For example,
 
@@ -147,7 +147,7 @@ For example,
 <pre>convolveCols :: (Num (Pixel img), Image img) => [Pixel img] -> img -> img</pre>
 
 Given a list consisting solely of pixel values representing a 1D 
-convolution kernel and an image, convolveCols returns the 1D discrete 
+convolution kernel and an image, <b>convolveCols</b> returns the 1D discrete 
 periodic convolution of the columns of the image with the kernel.
 For example,
 
@@ -173,7 +173,7 @@ For example,
 <pre>convolve :: (Num (Pixel img), Image img) => [[Pixel img]] -> img -> img</pre>
 
 Given a 2D list consisting solely of pixels representing a 2D 
-convolution kernel and an image, convolve returns the 2D discrete 
+convolution kernel and an image, <b>convolve</b> returns the 2D discrete 
 periodic convolution of the image with the kernel.
 For example,
 
@@ -186,7 +186,7 @@ For example,
 <p>
 <pre>downsampleCols :: Image img => img -> img</pre>
 
-Given img, downsampleCols returns the image created by discarding 
+Given img, <b>downsampleCols</b> returns the image created by discarding 
 the odd numbered rows, i.e., the value at location (i, j) of the 
 result image is the value of img at location (2i, j).  
 
@@ -202,7 +202,7 @@ For example,
 
 <pre>downsampleRows :: Image img => img -> img</pre>
 
-Given img, downsampleRows returns the image created by discarding the odd 
+Given img, <b>downsampleRows</b> returns the image created by discarding the odd 
     numbered columns, i.e., the value at location (i, j) is the value of img 
     at location (i, 2j).  
 
@@ -227,7 +227,7 @@ For example,
 <p>
 <pre>upsampleCols :: (Monoid (Pixel img), Image img) => img -> img</pre>
 
-Given img, upsampleCols returns an image with twice the number of 
+Given img, <b>upsampleCols</b> returns an image with twice the number of 
 rows where the value at location (i, j) of the result image is the 
 value of img at location (i/2, j) if i is even and mempty otherwise.
 
@@ -243,7 +243,7 @@ For example,
 <p>
 <pre>upsampleRows :: (Monoid (Pixel img), Image img) => img -> img</pre>
 
-Given img, upsampleRows returns an image with twice the number of 
+Given img, <b>upsampleRows</b> returns an image with twice the number of 
 columns where the value at location (i, j) of the result image is 
 the value of img at location (i, j/2) if j is even and 
 mempty otherwise.
@@ -259,7 +259,7 @@ For example,
 <p>
 <pre>upsample :: (Monoid (Pixel img), Image img) => img -> img</pre>
 
-Given img, upsample returns an image with twice the number of
+Given img, <b>upsample</b> returns an image with twice the number of
     rows and columns where the value at location (i, j) of the resulting
     image is the value of img at location (i/2, j/2) if i and jare are even
     and mempty otherwise.
@@ -277,7 +277,7 @@ For example,
 
 <pre>pad :: (Monoid (Pixel img), Image img) => Int -> Int -> img -> img</pre>
 
-Given m, n, and img, pad returns an Image with m rows and n columns 
+Given m, n, and img, <b>pad</b> returns an Image with m rows and n columns 
     where the value at location (i, j) of the result image is the value 
     of img at location (i, j) if i is less than m and j is less than n 
     and mempty otherwise.
@@ -294,7 +294,7 @@ For example,
 </p>
 <pre>crop :: Image img => Int -> Int -> Int -> Int -> img -> img</pre>
 
-Given a i0, j0, m, n, and img, crop returns an image with m rows 
+Given a i0, j0, m, n, and img, <b>crop</b> returns an image with m rows 
 and n columns where the value at location (i, j) of the result 
 image is the value of img at location (i0 + i, j0 + j).  
 
@@ -311,7 +311,8 @@ For example,
 <p>
 <pre>leftToRight :: Image img => img -> img -> img</pre>
 
-Given two images with the same number of rows X and Y,  returns an
+Given two images with the same number of rows X and Y,  <b>leftToRight</b> 
+returns an
 image that is the concatenation of the two images from left to right.
 There is a convenience function, <b>leftToRight'</b> that takes a pair,
 triple, or list of images and displays them left to right.
@@ -327,7 +328,7 @@ For example,
 <p>
 <pre>topToBottom :: Image img => img -> img -> img</pre>
 
-Given two images with the same number of columns X and Y, returns an
+Given two images with the same number of columns X and Y, <b>topToBottom</b> returns an
 image that is the concatenation of the two images from top to bottom.
 There is a convenience function, <b>topToBottom'</b> that takes a pair,
 triple, or list of images and displays them top to bottom.
@@ -346,7 +347,7 @@ For example,
 <pre>makeFilter :: Image img => Int -> Int -> PixelOp (Pixel img) -> img</pre>
 
 Given a positive integer m, a positive integer n, and a function 
-returning a pixel value, makeFilter returns an image with m rows 
+returning a pixel value, <b>makeFilter</b> returns an image with m rows 
 and n columns. Let x equal i if i is less than m/2 and i - m otherwise 
 and let y equal j if j is less than n/2 and j - n otherwise. To match 
 the periodicity of the 2D discrete Fourier spectrum, the value of the 
@@ -382,7 +383,7 @@ laplacianOfGaussian stddev i j =
 <pre>fft :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Complex (Value (Pixel img))) => img -> img'</pre>
 
 Given an image whose pixels can be converted to a complex value, 
-fft returns an image with complex pixels representing its 2D discrete 
+<b>fft</b> returns an image with complex pixels representing its 2D discrete 
 Fourier transform (DFT). Because the DFT is computed using the Fast Fourier 
 Transform (FFT) algorithm, the number of rows and columns of the image 
 must both be powers of two, i.e., 2K where K is an integer.
@@ -422,7 +423,7 @@ gaussian variance i j =
 <p>
 <pre>ifft :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Complex (Value (Pixel img))) => img -> img'</pre>
 
-Given an image, ifft returns a complex image representing its 2D 
+Given an image, <b>ifft</b> returns a complex image representing its 2D 
 inverse discrete Fourier transform (DFT). Because the inverse DFT is 
 computed using the Fast Fourier Transform (FFT) algorithm, the number 
 of rows and columns of <image> must both be powers of two, i.e., 2K 
@@ -472,7 +473,7 @@ For example,
 <p>
 <pre>imagPart :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Value (Pixel img)) => img -> img'</pre>
 
-Given a complex image, returns a real image representing
+Given a complex image, <b>imagPart</b> returns a real image representing
    the imaginary part of the image
 
 For example,
@@ -488,7 +489,7 @@ For example,
 <pre>complex :: (Image img, Image img', Pixel img' ~ C.Complex (Pixel img)) => img -> img -> img'</pre>
 
 Given an image representing the real part of a complex image, and
-an image representing the imaginary part of a complex image, returns
+an image representing the imaginary part of a complex image, <b>complex</b> returns
 a complex image.
 
 For example,
@@ -502,7 +503,7 @@ For example,
 <p>
 <pre>complexImageToRectangular :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Value (Pixel img)) => img -> (img', img')</pre>
 
-Given a complex image, return a pair of real images each representing
+Given a complex image, <b>complexImageToRectangular</b> returns a pair of real images each representing
 a component of the complex image (real, imaginary).
 
 For example,
@@ -522,7 +523,7 @@ the magnitude of the image.
 <p>
 <pre>angle :: (Image img, ComplexPixel (Pixel img), Image img', Pixel img' ~ Value (Pixel img)) => img -> img'</pre>
 
-Given a complex image, returns a real image representing
+Given a complex image, <b>angle</b> returns a real image representing
 the angle of the image.
 
 For example,
@@ -536,7 +537,7 @@ For example,
 <p>
 <pre>complexImageToPolar :: (Image img, ComplexPixel (Pixel img), Image img', Pixel img' ~ Value (Pixel img)) => img -> (img', img')</pre>
 
-Given a complex image, returns a pair of real images each
+Given a complex image, <b>complexImageToPolar</b> returns a pair of real images each
 representing the component (magnitude, phase) of the image
 
 <pre>
@@ -626,7 +627,7 @@ For example,
 <pre>arrayToImage :: Image img => Array (Int, Int) (Pixel img) -> img</pre>
 
  Given a two dimensional array of Pixel values indexed by
-pairs of Ints where the fst is the row and snd is the column, returns
+pairs of Ints where the fst is the row and snd is the column, <b>arrayToImage</b> returns
 an Image.
 
 For example,
@@ -642,7 +643,7 @@ For example,
 <p>
 <pre>imageToArray :: Image img => img -> Array (Int, Int) (Pixel img)</pre>
 
-Given img, returns an two dimensional array of Pixel values 
+Given img, <b>imageToArray</b> returns an two dimensional array of Pixel values 
 indexed by pairs of Ints where the fst is the row and snd is the column.
 
 <pre>
@@ -725,14 +726,14 @@ shiftRight s img = makeImage (rows img) (cols img) shift where
 
 <pre>normalize :: (Fractional (Pixel img), MaxMin (Pixel img), Image img) => img -> img</pre>
 
-Given img, normalize returns an image with the same dimensions 
+Given img, <b>normalize</b> returns an image with the same dimensions 
 where the values have been normalized to lie in the interval [0, 1].
 
 <p>
 
 <pre>shrink :: (Num a, Image img, ComplexPixel (Pixel img), Image img', Pixel img' ~ C.Complex (Value (Pixel img))) => a -> img -> img'</pre>
 
-Given a complex image and a real positive number x, shrink returns 
+Given a complex image and a real positive number x, <b>shrink</b> returns 
 a complex image with the same dimensions. Let z be the value of the 
 image at location (i, j). The value of the complex result image at 
 location (i, j) is zero if |z| < x, otherwise the result has the 
@@ -743,7 +744,7 @@ same phase as z but the amplitude is decreased by x.
 <pre>medianFilter :: (Ord (Pixel img), Image img) => Int -> Int -> img -> img</pre>
 
 Given two positive integers, m and n and a an image, 
-medianFilter returns an image with the same dimensions where each 
+<b>medianFilter</b> returns an image with the same dimensions where each 
 pixel (i, j) in <image> is replaced by the pixel with median value 
 in the neighborhood of size m times n centered on (i, j).
 
@@ -770,7 +771,7 @@ and 2) the value of the next pixel.
 <pre>matrixProduct :: (Num (Pixel img), Image img) => img -> img -> img</pre>
 
 Given an image X1 and an image X2, where the number of columns of X1 
-equals the number of rows of X2, matrixProduct returns an image 
+equals the number of rows of X2, <b>matrixProduct</b> returns an image 
 representing the matrix product of X1 and X2. 
 
 <pre>
@@ -784,7 +785,7 @@ representing the matrix product of X1 and X2.
 
 Given a function of a pixel value of type <i>a</i> to a pixel value of type 
 <i>b</i>, and an image containing pixel values of type <i>a</i>, 
-imageMap returns an image of type <i>b</i> where each pixel in the result
+<b>imageMap</b> returns an image of type <i>b</i> where each pixel in the result
 image is the result of appyling the function to each pixel in the given image.
 
 Note: Boxed images are in typeclass <i>Functor</i> and <i>Applicative</i> it
@@ -800,7 +801,7 @@ is recommended you use <i>fmap</i> instead of imageMap for Boxed images.
 <pre>readColorImage :: FilePath -> IO ColorImage</pre>
 
 Given the file path to a file containing an image
-stored in ASCII <i>.ppm</i> format, <i>readColorImage</i> reads the
+stored in ASCII <i>.ppm</i> format, <b>readColorImage</b> reads the
 file and returns the ColorImage
 
 For example,
@@ -815,7 +816,7 @@ For example,
 
 <pre>colorImageRed :: ColorImage -> GrayImage</pre>
 
-Given a ColorImage, returns a GrayImage representing the Red color component
+Given a ColorImage, <b>colorImageRed</b> returns a GrayImage representing the Red color component
 
 For example,
 
@@ -828,7 +829,7 @@ For example,
 <p>
 <pre>colorImageGreen :: ColorImage -> GrayImage</pre>
 
-Given a ColorImage, returns a GrayImage representing the Green color component
+Given a ColorImage, <b>colorImageGreen</b> returns a GrayImage representing the Green color component
 
 For example,
 
@@ -841,7 +842,7 @@ For example,
 <p>
 <pre>colorImageBlue :: ColorImage -> GrayImage</pre>
 
-Given a ColorImage, returns a GrayImage representing the Blue color component
+Given a ColorImage, <b>colorImageBlue</b> returns a GrayImage representing the Blue color component
 
 For example,
 
@@ -855,7 +856,7 @@ For example,
 <pre>rgbToColorImage :: (GrayImage, GrayImage, GrayImage) -> ColorImage</pre>
 
 Given a triple containing three GrayImages each containing one of the
-    color components (red, green, blue), returns a ColorImage
+    color components (red, green, blue), <b>rgbToColorImage</b> returns a ColorImage
 
 <pre>
 *Main> display . rgbToColorImage $ (red,green,blue)
@@ -865,7 +866,7 @@ Given a triple containing three GrayImages each containing one of the
 <p>
 <pre>colorImageToRGB :: ColorImage -> (GrayImage, GrayImage, GrayImage)</pre>
 
-Given a ColorImage, returns a triple containing three GrayImages each
+Given a ColorImage, <b>colorImageToRGB</b> returns a triple containing three GrayImages each
     containing one of the color components (red, green, blue)
 
 For example,
@@ -878,7 +879,7 @@ For example,
 <p>
 <pre>colorImageToHSI :: ColorImage -> (GrayImage, GrayImage, GrayImage)</pre>
 
-Given a ColorImage, returns a triple containing three GrayImages each
+Given a ColorImage, <b>colorImageToHSI</b> returns a triple containing three GrayImages each
     containing one of the components (hue, saturation, intensity)
 
 For example,
@@ -905,7 +906,7 @@ For example,
 <pre>hsiToColorImage :: (GrayImage, GrayImage, GrayImage) -> ColorImage</pre>
 
 Given a triple containing three GrayImages each containing one of the
-color components (hue, saturation, intensity), returns a ColorImage
+color components (hue, saturation, intensity), <b>hsiToColorImage</b> returns a ColorImage
 
 For example,
 
@@ -918,7 +919,7 @@ For example,
 
 <pre>makeHotImage :: GrayImage -> ColorImage</pre>
 
-Given a GrayImage, makeHotImage returns a ColorImage with the same 
+Given a GrayImage, <b>makeHotImage</b> returns a ColorImage with the same 
 dimensions. The R, G, B values of the result image at (i, j) are 
 determined by using the value of the ColorImage at (i, j) to index 
 three lookup tables. These lookup tables implement a false coloring 
@@ -934,7 +935,7 @@ intermediate values to shades of red, orange, and yellow (in that order).
 <pre>dilate :: (Eq (Pixel img), Num (Pixel img), Image img, BinaryPixel (Pixel img)) => [[Pixel img]] -> img -> img</pre>
 
 Given a 2D list consisting solely of pixels representing a structuring 
-    element, and a binary image, dilate returns the morphological dilation of 
+    element, and a binary image, <b>dilate</b> returns the morphological dilation of 
     the <image> with the structuring element. 
 
 Note: There is a <i>dilate'</i> function that uses a default
@@ -955,7 +956,7 @@ structure = [[0, 0, 1, 0, 0],
 <pre>erode :: (Eq (Pixel img), Num (Pixel img), Image img, BinaryPixel (Pixel img)) => [[Pixel img]] -> img -> img</pre>
 
 Given a 2D list consisting solely of pixels representing a structuring 
-element, and a binary image, erode returns the morphological erosion of 
+element, and a binary image, <b>erode</b> returns the morphological erosion of 
 the <image> with the structuring element. 
 
 Note: There is a <i>erode'</i> function that uses a default structuring element of [[1,1], [1,1]].
@@ -969,7 +970,7 @@ For example,
 <p>
 <pre>outline :: (Image img, BinaryPixel (Pixel img), Eq (Pixel img)) => img -> img</pre>
 
-Given an image, outline returns an image where edge pixels are 
+Given an image, <b>outline</b> returns an image where edge pixels are 
 set to the value on and non-edge pixels are set to the value off. 
 Pixel (i, j) is an edge pixel iff its value is different than the value 
 of either pixel (i, j+1) or pixel (i+1, j).
@@ -984,7 +985,7 @@ Note: There is an <i>outline'</i> that allows the for the non-edge and edge pixe
 <p>
 <pre>label :: (Image img, BinaryPixel (Pixel img)) => img -> GrayImage</pre>
 
-Given a binary image, label returns an image where pixels in 
+Given a binary image, <b>label</b> returns an image where pixels in 
 distinct connected components (based on 4-neighbor connectivity) 
 have distinct integer values. These values range from 1 to n where 
 n is the number of connected components in image.
@@ -998,7 +999,7 @@ n is the number of connected components in image.
 
 <pre>distanceTransform :: (Image img, BinaryPixel (Pixel img)) => img -> GrayImage</pre>
 
-Given a binary image, distanceTransform returns an image 
+Given a binary image, <b>distanceTransform</b> returns an image 
 representing the 2D distance transform of the image.
 The distance transform is accurate to within a 2% error for euclidean
 distance.
@@ -1012,7 +1013,7 @@ distance.
 <pre> open :: (Eq (Pixel img), Num (Pixel img), Image img, BinaryPixel (Pixel img)) => [[Pixel img]] -> img -> img</pre>
 
 Given a 2D list consisting solely of pixels representing a structuring 
-element, and a binary image, dilate returns the morphological opening of 
+element, and a binary image, <b>open</b> returns the morphological opening of 
 the image with the structuring element. 
 
 Note: There is a version <i>open'</i> that uses the default structuring element [[1,1],[1,1]].
@@ -1038,7 +1039,7 @@ Main*> display . open $ noisyStop
 <pre>close :: (Eq (Pixel img), Num (Pixel img), Image img, BinaryPixel (Pixel img)) => [[Pixel img]] -> img -> img</pre>
 
 Given a 2D list consisting solely of pixels representing a structuring 
-element, and a binary image, dilate returns the morphological closing of 
+element, and a binary image, <b>close</b> returns the morphological closing of 
 the image with the structuring element. 
 
 Note: There is a version <i>close'</i> that uses the default structuring element [[1,1],[1,1]].
@@ -1051,7 +1052,7 @@ Main*>close [[1,1],[1,1]] noisyStop
 
 <pre>areas :: (Image img, MaxMin (Pixel img), RealFrac (Pixel img)) => img -> V.Vector Double</pre>
 
-Given an image, areas returns a vector where the n-th component equals 
+Given an image, <b>areas</b> returns a vector where the n-th component equals 
 the number of pixels with value n. If image is the result of applying 
 label to a binary image, then the vector represents the areas of the 
 connected-components of the binary-image. If not, areas returns 
@@ -1066,7 +1067,7 @@ fromList [9676.0,1033.0,1201.0,6.0,718.0,4.0,0.0,1036.0]
 
 <pre>perimeters :: (Image img, MaxMin (Pixel img), Pixel img ~ Double) => img -> V.Vector Double</pre>
 
-Given an image, perimeters returns a vector where the n-th component 
+Given an image, <b>perimeters</b> returns a vector where the n-th component 
 equals the number of pixels with value n which are adjacent to pixels 
 of value 0 and the 0-th component equals the sum of the other components. 
 If image is the result of applying label to a binary image, then the 
@@ -1083,7 +1084,7 @@ fromList [1072.0,304.0,322.0,6.0,184.0,4.0,0.0,252.0]
 <pre>centersOfMass :: (Image img, MaxMin (Pixel img), Pixel img ~ Double) => img -> [(Double, Double)]</pre>
 
 Given an image, the result of applying label to a binary-image, 
-centersOfMass returns a vector where the n-th component is a tuple 
+<b>centersOfMass</b> returns a vector where the n-th component is a tuple 
 representing the average row and column indices of pixels of the 
 n-th connected-component of the image.
 
@@ -1097,7 +1098,7 @@ For example,
 <pre>boundingBoxes :: (Image img, MaxMin (Pixel img), Pixel img ~ Double) => img -> [(Int, Int, Int, Int)]</pre>
 
 Given an image, the result of applying label to a binary-image, 
-boundingBoxes returns a vector where the n-th component is a four 
+<b>boundingBoxes</b> returns a vector where the n-th component is a four 
 element tuple representing the minimum and maximum row and column 
 indices of pixels of the n-th connected-component of the image.
 
