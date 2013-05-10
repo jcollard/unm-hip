@@ -25,6 +25,7 @@ module Data.Image.Binary(-- * Binary Images
                          (/=.), (./=),
                          compareImage,
                          (.<.), (.>.), (.==.), (./=.),
+                         applyMask,
                          -- * Binary Morphology
                          erode, erode',
                          dilate, dilate',
@@ -43,6 +44,7 @@ module Data.Image.Binary(-- * Binary Images
 import Control.Monad
 import Control.Monad.ST
 import Data.STRef
+import Data.Monoid
 
 --containers>=0.5.0.0
 import qualified Data.Map as M
@@ -278,6 +280,16 @@ compareImage comp img0@(dimensions -> (rows, cols)) img1 = makeImage rows cols b
   img r c = if p0 /= p1 then on else off where
     p0 = ref img0 r c
     p1 = ref img1 r c
+
+{-| Given a binary image to use as a mask and an image to mask,
+    mask applies the mask to the image.
+ -}
+applyMask :: (Image img,
+         Monoid (Pixel img),
+         Image mask,
+         BinaryPixel (Pixel mask)) => mask -> img -> img
+applyMask mask img@(dimensions -> (rows, cols)) = makeImage rows cols mask' where
+  mask' r c = if (toBinary (ref mask r c)) then (ref img r c) else mempty
 
 {-| Given a 2D list consisting solely of pixels representing a structuring 
     element, and a binary image, erode returns the morphological erosion of 
