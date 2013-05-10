@@ -244,6 +244,12 @@ colorOp op (toRGB -> (a, b, c)) (toRGB -> (d, e, f)) = RGB (op a d, op b e, op c
 type ComplexImage = BoxedImage Complex
 type Complex = C.Complex Double
 
+instance BinaryPixel Complex where
+  toBinary (0.0 C.:+ 0.0) = False
+  toBinary _ = True
+  on = (1.0 C.:+ 0.0)
+  off = (0.0 C.:+ 0.0)
+
 instance DisplayFormat ComplexImage where
   format (complexImageToColorImage -> rgb) = toPPM rgb
 
