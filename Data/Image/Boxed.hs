@@ -112,6 +112,12 @@ instance Fractional a => Fractional (BoxedImage a) where
   (/) = liftA2 (/)
   recip = fmap recip
   fromRational i = pure $ fromRational i
+  
+instance Eq a => Eq (BoxedImage a) where
+  (==) img0 img1 
+    | (rows img0) /= (rows img1) = False
+    | (cols img0) /= (cols img1) = False
+    | otherwise = and . zipWith (==) (pixelList img0) $ pixelList img1
 
 -- GrayImage
 {-| A concrete instance of Image representing a gray scale image.
