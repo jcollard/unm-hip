@@ -283,6 +283,13 @@ compareImage comp img0@(dimensions -> (rows, cols)) img1 = makeImage rows cols b
 
 {-| Given a binary image to use as a mask and an image to mask,
     mask applies the mask to the image.
+
+    >>>let fmask = frog .< 150
+    >>>applyMask fmask frog
+    < Image 225x242 >
+
+    <https://raw.github.com/jcollard/unm-hip/master/examples/fmask.jpg>
+    <https://raw.github.com/jcollard/unm-hip/master/examples/applyMask.jpg>
  -}
 applyMask :: (Image img,
          Monoid (Pixel img),
