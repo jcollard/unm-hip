@@ -35,6 +35,7 @@ module Data.Image.Internal(-- * Images
                            normalize,
                            imageFold,
                            imageMap,
+                           (~>), (~<), (<~), (>~),
                            -- * Resizing Images
                            pad,
                            crop,
@@ -488,4 +489,31 @@ arrayToImage arr = makeImage rows cols ref where
   rows = rmax - rmin + 1
   cols = cmax - cmin + 1
   ref r c = arr ! (r, c)
-  
+   
+{-| Given an image and a pixel value, returns True if and only            
+    if all values in the image are less than the pixel value.
+ -}
+(~<) :: (Image img,
+         Ord (Pixel img)) => img -> Pixel img -> Bool
+(~<) img px = and . zipWith (<) (repeat px) . pixelList $ img
+
+{-| Given an image and a pixel value, returns True if and only
+    if all values in the image are greater than the pixel value.
+ -}
+(~>) :: (Image img,
+         Ord (Pixel img)) => img -> Pixel img -> Bool
+(~>) img px = and . zipWith (>) (repeat px) . pixelList $ img
+
+{-| Given a pixel value and an image, returns True if and only if
+    all values in the image are less than the pixel value.
+ -}
+(>~) :: (Image img,
+         Ord (Pixel img)) => Pixel img -> img -> Bool
+(>~) = flip (~<)
+
+{-| Given a pixel value and an image, returns True if and only if
+    all values in the image are greater than the pixel value.
+ -}
+(<~) :: (Image img,
+         Ord (Pixel img)) => Pixel img -> img -> Bool
+(<~) = flip (~>)
