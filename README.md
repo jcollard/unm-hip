@@ -162,7 +162,7 @@ For example,
 <pre>
 *Main> let dx = convolveRows [1, -1] frog
 *Main> let dy = convolveCols [1, -1] frog
-*Main> let grad = imageMap sqrt ((dx .*. dx) .+. (dy .*. dy)) :: GrayImage
+*Main> let grad = imageMap sqrt ((dx * dx) + (dy * dy)) :: GrayImage
 *Main> grad
 &lt; Image 225x242 &gt;
 *Main> display grad
@@ -680,7 +680,7 @@ Note: there is a variation of <i>(<.)</i> named <i>(.<)</i> where the arguments 
 <pre>(.==.) :: (Eq (Pixel img), Image img, BinaryPixel (Pixel img)) => img -> img -> img</pre>
 Given an image with pixels, <i>p</i>, and a pixel, <i>c</i>, returns an image where
 each pixel has the value 1 iff <i>p = c</i> and 0 otherwise.
-Note: there is a variation of <i>(==.)</i> named <i>(.==)</i> where the arguments are flipped.
+Note: there is a variation of <i>(==.)</i> named <i>(.==)</i> in which each pixel in the image is compared to a single specified Pixel.
 
 <pre>
 shiftRight :: Image img => Int -> img -> img
