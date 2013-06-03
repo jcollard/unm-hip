@@ -462,7 +462,7 @@ For example,
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/cosine.jpg"/>
 <p>
 <pre>
-*Main> display . realPart realPart . ifft $ (fft frogpart) * (fft d2g)
+*Main> display . realPart . ifft $ (fft frogpart) * (fft d2g)
 </pre>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/realpart.jpg"/>
 <p>
