@@ -705,7 +705,7 @@ Note: there is a variation of <i>(<~)</i> named <i>(~<)</i> where the arguments 
 
 <pre>(.==.) :: (Eq (Pixel img), Image img, BinaryPixel (Pixel img)) => img -> img -> img</pre>
 Given an image with pixels, <i>p</i>, and a pixel, <i>c</i>, returns an image where
-each pixel has the value 1 iff <i>p = c</i> and 0 otherwise.
+each pixel has the value 1 if and only iff <i>p = c</i> and 0 otherwise.
 Note: there is a variation of <i>(==.)</i> named <i>(.==)</i> in which each pixel in the image is compared to a single specified Pixel.
 
 <pre>
@@ -972,7 +972,7 @@ For example,
 
 Given an image, <b>outline</b> returns an image where edge pixels are 
 set to the value on and non-edge pixels are set to the value off. 
-Pixel (i, j) is an edge pixel iff its value is different than the value 
+Pixel (i, j) is an edge pixel if and only iff its value is different than the value 
 of either pixel (i, j+1) or pixel (i+1, j).
 
 Note: There is an <i>outline'</i> that allows the for the non-edge and edge pixel values to be specified.
