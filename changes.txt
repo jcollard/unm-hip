@@ -1,4 +1,7 @@
-Next Release:
+unm-hip-0.0.0.1
+ - Added an error if fft or ifft are used with a non power of 2 image
+ - Fixed error in equivalence labeling in label
+ - Made consistent if and only if through out documentation
  - Fixed typo in Complex.hs haddock under fft.
 
 unm-hip-0.0.0.0
