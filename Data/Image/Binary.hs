@@ -460,13 +460,27 @@ getLabels img@(dimensions -> (rows, cols)) = runST $ do
   
   --Relabel with Lowest Equivalence
   eq <- readSTRef equivalences
+  let eq' = buildEquivalence eq
   forM_ [ (r, c) | r <- [0..rows-1], c <- [0..cols-1] ] (\ (r, c) -> do
     if toBinary . ref img r $ c then do
       currLabel <- VM.read labels (r*cols + c)
-      let newLabel = (eq M.! currLabel)
+      let newLabel = (eq' M.! currLabel)
       VM.write labels (r*cols + c) newLabel
       else return ())
   V.freeze labels
+  
+buildEquivalence :: M.Map Double Double -> M.Map Double Double
+buildEquivalence map = buildEquivalence' (M.keys map) map M.empty
+
+buildEquivalence' :: [Double] -> M.Map Double Double -> M.Map Double Double -> M.Map Double Double
+buildEquivalence' [] _ acc = acc
+buildEquivalence' (k:ks) lookup acc = buildEquivalence' ks lookup (M.insert k equiv acc) where
+  equiv = findEquivalence lookup k
+
+findEquivalence :: M.Map Double Double -> Double -> Double
+findEquivalence eqLookup key = val' where
+  val = eqLookup M.! key
+  val' = if val == key then key else findEquivalence eqLookup val
 
 writeLabel labels cols r c smn equiv = do
   oldMap <- readSTRef equiv

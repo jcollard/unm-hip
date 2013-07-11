@@ -118,7 +118,8 @@ fft :: (Image img,
         ComplexPixel (Pixel img),
         Image img',
         Pixel img' ~ C.Complex (Value (Pixel img))) => img -> img'
-fft img@(dimensions -> (rows, cols)) = makeImage rows cols fftimg where
+fft img@(dimensions -> (rows, cols)) = check where
+  check = if (isPowerOfTwo rows && isPowerOfTwo cols) then makeImage rows cols fftimg else error "Image is not a power of 2 in rows and cols"
   fftimg r c = fft' V.! (r*cols + c)
   vector = V.map toComplex . V.fromList . pixelList $ img
   fft' = fftv rows cols vector
@@ -141,7 +142,8 @@ ifft :: (Image img,
         ComplexPixel (Pixel img),
         Image img',
         Pixel img' ~ C.Complex (Value (Pixel img))) => img -> img'
-ifft img@(dimensions -> (rows, cols)) = makeImage rows cols fftimg where
+ifft img@(dimensions -> (rows, cols)) = check where
+  check = if (isPowerOfTwo rows && isPowerOfTwo cols) then makeImage rows cols fftimg else error "Image is not a power of 2 in rows and cols"
   fftimg r c = fft' V.! (r*cols + c)
   vector = V.map toComplex . V.fromList . pixelList $ img
   fft' = ifftv rows cols vector
