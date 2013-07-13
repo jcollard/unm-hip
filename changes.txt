@@ -1,3 +1,6 @@
+Next Release
+ - Adjusted the label function to reduce to the lowest label values. This results in "better" output for areas, boundingBoxes, and centersOfMass
+
 unm-hip-0.0.0.1
  - Added an error if fft or ifft are used with a non power of 2 image
  - Fixed error in equivalence labeling in label

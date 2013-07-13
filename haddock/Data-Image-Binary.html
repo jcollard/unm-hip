@@ -156,7 +156,7 @@ window.onload = function () {pageLoad();setSynopsis("mini_Data-Image-Binary.html
     connected-components of the binary-image. If not, areas returns 
     the histogram of the image.
 </p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>areas . label $ binaryStop
-</code></strong>fromList [9241.0,1149.0,1323.0,5.0,809.0,3.0,1144.0]
+</code></strong>fromList [9241.0,1149.0,1323.0,809.0,1144.0]
 </pre></div></div><div class="top"><p class="src"><a name="v:perimeters" class="def">perimeters</a> :: (<a href="Data-Image-Internal.html#t:Image">Image</a> img, <a href="Data-Image-Internal.html#t:MaxMin">MaxMin</a> (<a href="Data-Image-Internal.html#t:Pixel">Pixel</a> img), <a href="Data-Image-Internal.html#t:Pixel">Pixel</a> img ~ Double) =&gt; img -&gt; Vector Double</p><div class="doc"><p>Given an image, perimeters returns a vector where the n-th component 
     equals the number of pixels with value n which are adjacent to pixels 
     of value 0 and the 0-th component equals the sum of the other components. 
@@ -164,19 +164,19 @@ window.onload = function () {pageLoad();setSynopsis("mini_Data-Image-Binary.html
     vector represents the perimeters of the connected-components of the 
     binary-image.
 </p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>perimeters . label $ binaryStop
-</code></strong>fromList [1082.0,307.0,323.0,5.0,184.0,3.0,260.0]
+</code></strong>fromList [1082.0,312.0,326.0,184.0,260.0]
 </pre></div></div><div class="top"><p class="src"><a name="v:boundingBoxes" class="def">boundingBoxes</a> :: (<a href="Data-Image-Internal.html#t:Image">Image</a> img, <a href="Data-Image-Internal.html#t:MaxMin">MaxMin</a> (<a href="Data-Image-Internal.html#t:Pixel">Pixel</a> img), <a href="Data-Image-Internal.html#t:Pixel">Pixel</a> img ~ Double) =&gt; img -&gt; [(Int, Int, Int, Int)]</p><div class="doc"><p>Given an image, the result of applying label to a binary-image, 
     boundingBoxes returns a vector where the n-th component is a four 
     element tuple representing the minimum and maximum row and column 
     indices of pixels of the n-th connected-component of the image.
 </p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>boundingBoxes . label $ binaryStop
-</code></strong>[(10,8,73,41),(10,75,74,110),(12,12,16,16),(11,42,72,73),(13,80,15,82),(11,117,72,150)]
+</code></strong>[(10,8,73,41),(10,75,74,110),(11,42,72,73),(11,117,72,150)]
 </pre></div></div><div class="top"><p class="src"><a name="v:centersOfMass" class="def">centersOfMass</a> :: (<a href="Data-Image-Internal.html#t:Image">Image</a> img, <a href="Data-Image-Internal.html#t:MaxMin">MaxMin</a> (<a href="Data-Image-Internal.html#t:Pixel">Pixel</a> img), <a href="Data-Image-Internal.html#t:Pixel">Pixel</a> img ~ Double) =&gt; img -&gt; [(Double, Double)]</p><div class="doc"><p>Given an image, the result of applying label to a binary-image, 
     centersOfMass returns a vector where the n-th component is a tuple 
     representing the average row and column indices of pixels of the 
     n-th connected-component of the image.
 </p><pre class="screen"><code class="prompt">&gt;&gt;&gt; </code><strong class="userinput"><code>centersOfMass . label $ binaryStop
-</code></strong>[(42.391644908616186,24.70409051348999),(41.80952380952381,92.23431594860166),(14.0,14.0),(35.31025957972806,57.595797280593324),(14.0,81.0),(35.59178321678322,129.90734265734267)]
+</code></strong>[(42.2686308492201,24.657712305025996),(41.74660633484163,92.20889894419307),(35.31025957972806,57.595797280593324),(35.583406113537116,129.9170305676856)]
 </pre></div></div><div class="top"><p class="src"><a name="v:distanceTransform" class="def">distanceTransform</a> :: (<a href="Data-Image-Internal.html#t:Image">Image</a> img, <a href="Data-Image-Binary.html#t:BinaryPixel">BinaryPixel</a> (<a href="Data-Image-Internal.html#t:Pixel">Pixel</a> img), <a href="Data-Image-Internal.html#t:Image">Image</a> img', <a href="Data-Image-Internal.html#t:Pixel">Pixel</a> img' ~ Double) =&gt; img -&gt; img'</p><div class="doc"><p>Given a binary image, distanceTransform returns an image 
     representing the 2D distance transform of the image.
     The distance transform is accurate to within a 2% error for euclidean

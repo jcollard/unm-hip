@@ -1062,7 +1062,7 @@ For example,
 
 <pre>
 *Main> areas . label $ binaryStop
-fromList [9676.0,1033.0,1201.0,6.0,718.0,4.0,0.0,1036.0]
+fromList [9240.0,1154.0,1326.0,809.0,1145.0]
 </pre>
 
 <pre>perimeters :: (Image img, MaxMin (Pixel img), Pixel img ~ Double) => img -> V.Vector Double</pre>
@@ -1078,7 +1078,7 @@ For example,
 
 <pre>
 *Main> perimeters . label $ binaryStop
-fromList [1072.0,304.0,322.0,6.0,184.0,4.0,0.0,252.0]
+fromList [1082.0,312.0,326.0,184.0,260.0]
 </pre>
 
 <pre>centersOfMass :: (Image img, MaxMin (Pixel img), Pixel img ~ Double) => img -> [(Double, Double)]</pre>
@@ -1092,7 +1092,7 @@ For example,
 
 <pre>
 *Main> centersOfMass . label $ binaryStop
-[(42.373668925459825,24.764762826718297),(41.76935886761032,92.25978351373855),(14.5,14.5),(35.139275766016716,57.46239554317549),(14.5,81.5),(NaN,NaN),(35.69015444015444,130.08590733590734)]
+[(42.2686308492201,24.657712305025996),(41.74660633484163,92.20889894419307),(35.31025957972806,57.595797280593324),(35.583406113537116,129.9170305676856)]
 </pre>
 
 <pre>boundingBoxes :: (Image img, MaxMin (Pixel img), Pixel img ~ Double) => img -> [(Int, Int, Int, Int)]</pre>
@@ -1106,5 +1106,5 @@ For example,
 
 <pre>
 *Main> boundingBoxes . label $ binaryStop
-[(10,8,73,40),(10,75,73,109),(12,12,17,17),(11,43,72,72),(13,80,16,83),(86,159,0,0),(12,118,72,150)]
+[(10,8,73,41),(10,75,74,110),(11,42,72,73),(11,117,72,150)]
 </pre>
