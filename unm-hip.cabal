@@ -1,5 +1,5 @@
 Name:              unm-hip
-Version:       	   0.0.0.2
+Version:       	   0.0.0.3
 License:           GPL
 License-File:      LICENSE
 Author:	           Joseph Collard, Stephen Patel, Lance Williams
@@ -8,6 +8,12 @@ Maintainer:	   josephmcollard+unm-hip@gmail.com
 Category:          Image Processing
 Synopsis:          A Library for the manipulation of images
 Description:       The University of New Mexico's Haskell Image Processing library contains functionality for performing manipulations on binary, grayscale, color, and complex images. The library was designed for use in UNM's Digital Image Processing class but it can be used for a wide range of image processing purposes.
+                   .
+                   [Changes]
+                   .
+                   [unm-hip-0.0.0.3]
+                   .
+                     * Exported the Data.Image.Arithmetic module
 Cabal-Version:     >= 1.6
 Build-Type:        Simple
 
@@ -25,6 +31,7 @@ Library
                   ViewPatterns
 
   Exposed-Modules:Data.Image,
+                  Data.Image.Arithmetic,
                   Data.Image.Binary,
                   Data.Image.Boxed,
                   Data.Image.Complex,

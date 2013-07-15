@@ -1,4 +1,7 @@
-Next Release
+unm-hip-0.0.0.3
+ - Exported the Data.Image.Arithmetic module
+
+unm-hip-0.0.0.2
  - Adjusted the label function to reduce to the lowest label values. This results in "better" output for areas, boundingBoxes, and centersOfMass
  - Added the Arithmetic module that provides support for arithmetic operations on images using scalar values.
 
