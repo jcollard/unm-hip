@@ -21,6 +21,7 @@ module Data.Image.Boxed(
   -- * Gray Images
   GrayImage, Gray, readImage, 
   grayToComplex, makeHotImage,
+  ref', 
   -- * Color Images
   ColorImage, Color(..), readColorImage,
   colorImageRed, colorImageGreen, colorImageBlue,
@@ -39,6 +40,8 @@ module Data.Image.Boxed(
   -- * Binary Images
   distanceTransform, label,
   -- * Additional Modules
+    -- | Contains functionality for performing arithmetic operations on images with scalar values.
+  module Data.Image.Arithmetic,
     -- | Contains functionality related to Binary Images
   module Data.Image.Binary,  
   -- | Contains functionality for convolution of images
@@ -48,6 +51,7 @@ module Data.Image.Boxed(
   -- | Contains functionality for writing images and displaying with an external program
   module Data.Image.IO) where
  
+import Data.Image.Arithmetic
 import Data.Image.Binary hiding (distanceTransform, label)
 import qualified Data.Image.Binary as Bin
 import qualified Data.Image.Complex as CI
@@ -462,6 +466,28 @@ makeHotImage img = fmap (toHot max min) img where
     g = if px < 0.333333333 then 0.0 else
           if px < 0.666666667 then (px - 0.333333333)*3 else 1.0
     b = if px < 0.666666667 then 0.0 else (px - 0.666666667)*3
+
+{-| Performs bilinear interpolation of a GrayImage at the coordinates provided. -}
+ref' :: GrayImage -> Double -> Double -> Double
+ref' im x y = if inside im x y then interpolate im x y else 0
+
+inside im x y = x >= 0 && y >= 0 && y < r - 1 && x < c - 1
+  where r = fromIntegral $ rows im
+        c = fromIntegral $ cols im
+
+interpolate :: GrayImage -> Double -> Double -> Double
+interpolate im x y = (f01 - f00)*x' + (f10 - f00)*y' + (f11 + f00 - f10 - f01)*x'*y' + f00
+  where x' = x - (fromIntegral i0);
+        y' = y - (fromIntegral j0);
+        f00 = ref im i0 j0
+        f01 = ref im i0 j1
+        f10 = ref im i1 j0
+        f11 = ref im i1 j1
+        i1 = i0 + 1
+        j1 = j0 + 1
+        i0 = floor x
+        j0 = floor y
+
 
 {-| Given a complex image, returns a real image representing
     the real part of the image.

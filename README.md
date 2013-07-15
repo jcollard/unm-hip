@@ -98,6 +98,18 @@ Given an image, a positive int i, and a positive  int j,
 56.0
 </pre>
 
+<pre>ref' :: ref' :: GrayImage -> Double -> Double -> Double</pre>
+
+Given a GreyImage, a positive double i, and a positive double j, 
+<b>ref</b> returns the bilinear interpolated 
+pixel value at location <i>(i, j)</i>. 
+
+<pre>
+*Main> ref frog 100 100
+56.0
+</pre>
+
+
 <pre>rows :: Image i => i -> Int</pre>
 Given an image, <b>rows</b> returns the number of rows of in the image.
 For example,
