@@ -162,6 +162,12 @@ toBinaryImage pred img@(dimensions -> (rows, cols)) = makeImage rows cols bin wh
 (.==) img num = toBinaryImage pred img where
   pred p = p == num
 
+(===.)
+  :: (Eq (Pixel img0), Image img0, BinaryPixel (Pixel img1), Image img1) =>
+     Pixel img0 -> img0 -> img1
+(===.) px img@(dimensions -> (rows, cols)) = makeImage rows cols bin where
+  bin r c = if (ref img r c) == px then on else off
+
 {-| Given a Pixel p and an image img, return a Binary image where the
     pixel at (i, j) is on if the corresponding pixel in img at (i,j) is equal
     to p and off otherwise.

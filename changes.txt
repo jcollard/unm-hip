@@ -1,3 +1,16 @@
+Version #: 0.1.0.4
+           ^ ^ ^ ^
+           | | | --- Bug fixes / improvements to existing code
+           | | ----- New functions / features
+           | |------ Break in backwards compatibilty
+           |-------- Change in stability
+
+unm-hip-0.1.0.4
+ - Re-export Data.Complex in Data.Image.Complex
+ - Added instance RealFloat a => Ord (C.Complex a) where
+ - fixed a bug in Normalize that was producing images with NaN pixel values
+ - Removed (~) class of functions to reduce confusion. (Break backwards compatability)
+
 unm-hip-0.0.0.3
  - Exported the Data.Image.Arithmetic module
 

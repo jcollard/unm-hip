@@ -35,7 +35,6 @@ module Data.Image.Internal(-- * Images
                            normalize,
                            imageFold,
                            imageMap,
-                           (~>), (~<), (<~), (>~),
                            -- * Resizing Images
                            pad,
                            crop,
@@ -365,12 +364,14 @@ medianFilter m n img@(dimensions -> (rows, cols)) = makeImage rows cols avg wher
  -}
 normalize :: (Image img,
               MaxMin (Pixel img),
-              Fractional (Pixel img)) => img -> img
-normalize img@(dimensions -> (rows, cols)) = makeImage rows cols map where
-  map r c = scale * ((ref img r c) - min)
-  (min, max) = (minimal px, maximal px)
-  scale = 1 / (max - min)
-  px = pixelList img
+              RealFloat (Pixel img)) => img -> img
+normalize img@(dimensions -> (rows, cols)) = check  where
+  check = if isNaN scale then blank else makeImage rows cols map where
+    blank = makeImage rows cols (\ _ _ -> 0)
+    map r c = scale * ((ref img r c) - min)
+    (min, max) = (minimal px, maximal px)
+    scale = 1 / (max - min)
+    px = pixelList img
 
 {-| Folds over the pixels of the provided image 
  
@@ -489,31 +490,3 @@ arrayToImage arr = makeImage rows cols ref where
   rows = rmax - rmin + 1
   cols = cmax - cmin + 1
   ref r c = arr ! (r, c)
-   
-{-| Given an image and a pixel value, returns True if and only            
-    if all values in the image are less than the pixel value.
- -}
-(~<) :: (Image img,
-         Ord (Pixel img)) => img -> Pixel img -> Bool
-(~<) img px = and . zipWith (<) (repeat px) . pixelList $ img
-
-{-| Given an image and a pixel value, returns True if and only
-    if all values in the image are greater than the pixel value.
- -}
-(~>) :: (Image img,
-         Ord (Pixel img)) => img -> Pixel img -> Bool
-(~>) img px = and . zipWith (>) (repeat px) . pixelList $ img
-
-{-| Given a pixel value and an image, returns True if and only if
-    all values in the image are less than the pixel value.
- -}
-(>~) :: (Image img,
-         Ord (Pixel img)) => Pixel img -> img -> Bool
-(>~) = flip (~<)
-
-{-| Given a pixel value and an image, returns True if and only if
-    all values in the image are greater than the pixel value.
- -}
-(<~) :: (Image img,
-         Ord (Pixel img)) => Pixel img -> img -> Bool
-(<~) = flip (~>)

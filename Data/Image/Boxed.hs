@@ -263,6 +263,9 @@ colorOp op (toRGB -> (a, b, c)) (toRGB -> (d, e, f)) = RGB (op a d, op b e, op c
 type ComplexImage = BoxedImage Complex
 type Complex = C.Complex Double
 
+instance RealFloat a => Ord (C.Complex a) where
+  compare x y = compare (C.magnitude x) (C.magnitude y)
+
 instance BinaryPixel Complex where
   toBinary (0.0 C.:+ 0.0) = False
   toBinary _ = True

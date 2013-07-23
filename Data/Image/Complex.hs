@@ -29,7 +29,8 @@ module Data.Image.Complex(-- * Complex Images
                           angle,
                           shrink,
                           complexImageToRectangular,
-                          complexImageToPolar) where
+                          complexImageToPolar,
+                          module Data.Complex) where
 
 import Data.Image.Internal(Image(..), PixelOp, imageMap,dimensions)
 
