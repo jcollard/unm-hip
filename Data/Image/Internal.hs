@@ -366,7 +366,7 @@ normalize :: (Image img,
               MaxMin (Pixel img),
               RealFloat (Pixel img)) => img -> img
 normalize img@(dimensions -> (rows, cols)) = check  where
-  check = if isNaN scale then blank else makeImage rows cols map where
+  check = if isInfinite scale then blank else makeImage rows cols map where
     blank = makeImage rows cols (\ _ _ -> 0)
     map r c = scale * ((ref img r c) - min)
     (min, max) = (minimal px, maximal px)

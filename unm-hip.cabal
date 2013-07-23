@@ -1,5 +1,5 @@
 Name:              unm-hip
-Version:       	   0.1.0.4
+Version:       	   0.1.1.5
 License:           GPL
 License-File:      LICENSE
 Author:	           Joseph Collard, Stephen Patel, Lance Williams
@@ -11,13 +11,7 @@ Description:       The University of New Mexico's Haskell Image Processing libra
                    .
                    [Changes]
                    .
-                     * Export the Data.Complex module from Data.Image.Complex
-                   .
-                     * Added instance RealFloat a => Ord (C.Complex a) where
-                   .
                      * Fixed a bug in normalize that was producing images with NaN pixel values
-                   .
-                     * Removed (~) class of functions to reduce confusion.
 Cabal-Version:     >= 1.6
 Build-Type:        Simple
 
