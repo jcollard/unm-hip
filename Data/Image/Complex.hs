@@ -46,6 +46,7 @@ import qualified Data.Vector as V
 class RealFloat (Value px) => ComplexPixel px where
   type Value px :: *
   toComplex ::  px -> C.Complex (Value px)
+  fromComplex :: C.Complex (Value px) -> px
   
 {-| Given a positive integer m, a positive integer n, and a function 
     returning a pixel value, makeFilter returns an image with m rows 
@@ -274,12 +275,10 @@ complexImageToRectangular img = (realPart img, imagPart img)
    
  -}
 shrink :: (Image img,
-           ComplexPixel (Pixel img), 
-           Image img',
-           Pixel img' ~ C.Complex (Value (Pixel img))) => (Value (Pixel img)) -> img -> img'
+           ComplexPixel (Pixel img)) => (Value (Pixel img)) -> img -> img
 shrink x img@(dimensions -> (rows, cols)) = 
   makeImage rows cols shrink' where
-    shrink' r c = helper px where
+    shrink' r c = fromComplex . helper $ px where
       px = toComplex . ref img r $ c
       helper px
         | (C.magnitude px) < x = 0.0 C.:+ 0.0

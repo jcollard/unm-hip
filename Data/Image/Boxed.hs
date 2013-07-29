@@ -163,6 +163,7 @@ instance BinaryPixel Gray where
 instance CI.ComplexPixel Gray where
   type Value Gray = Double
   toComplex i =  i C.:+ 0.0
+  fromComplex (r C.:+ i) = r
 
 instance Monoid Gray where
   mempty = 0.0
@@ -279,6 +280,7 @@ instance DisplayFormat ComplexImage where
 instance CI.ComplexPixel Complex where
   type Value Complex = Double
   toComplex = id
+  fromComplex = id
 
 complexImageToColorImage :: ComplexImage -> ColorImage
 complexImageToColorImage img = fmap rgb img where
@@ -593,8 +595,7 @@ complexImageToRectangular = CI.complexImageToRectangular
    
  -}
 shrink :: (Image img,
-           CI.ComplexPixel (Pixel img),
-           CI.Value (Pixel img) ~ Double) => Double -> img -> ComplexImage 
+           CI.ComplexPixel (Pixel img)) => (CI.Value (Pixel img)) -> img -> img
 shrink = CI.shrink
 
 {-| Given an image whose pixels can be converted to a complex value, 
