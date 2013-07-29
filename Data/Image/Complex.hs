@@ -273,21 +273,21 @@ complexImageToRectangular img = (realPart img, imagPart img)
     same phase as z but the amplitude is decreased by x.
    
  -}
-shrink :: (Num a,
-           Image img,
+shrink :: (Image img,
            ComplexPixel (Pixel img), 
            Image img',
-           Pixel img' ~ C.Complex (Value (Pixel img))) => a -> img -> img'
-shrink x img@(dimensions -> (rows, cols)) = makeImage rows cols shrink' where
-  shrink' r c = helper px where
-    px = toComplex . ref img r $ c
-    helper px
-      | (C.magnitude px) < x = 0.0 C.:+ 0.0
-      | otherwise = real C.:+ imag where
-        mag = C.magnitude px
-        x = (mag - x)/mag
-        real = x*(C.realPart px)
-        imag = x*(C.imagPart px)
+           Pixel img' ~ C.Complex (Value (Pixel img))) => (Value (Pixel img)) -> img -> img'
+shrink x img@(dimensions -> (rows, cols)) = 
+  makeImage rows cols shrink' where
+    shrink' r c = helper px where
+      px = toComplex . ref img r $ c
+      helper px
+        | (C.magnitude px) < x = 0.0 C.:+ 0.0
+        | otherwise = real C.:+ imag where
+          mag = C.magnitude px
+          x' = (mag - x)/mag
+          real = x'*(C.realPart px)
+          imag = x'*(C.imagPart px)
 
 
 type Vector a = V.Vector (Complex a)

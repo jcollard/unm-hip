@@ -1,12 +1,14 @@
-Version #: 0.1.1.4
+Version #: 0.2.1.5
            ^ ^ ^ ^
            | | | --- Bug fixes / improvements to existing code
            | | ----- New functions / features
            | |------ Break in backwards compatibilty
            |-------- Change in stability
 
-Next Release: + 0.0.0.1
+unm-hip-0.2.1.5
  - fixed a bug in normalize that was producing images with NaN pixel values
+ - fixed a bug in shrink that was producing an infinite loop. Resulting in the type signature changing
+ - Updated the convenience `shrink` function in Boxed.hs to explicitly take a double as it is the pixel type required from the input image.
 
 unm-hip-0.1.1.4
  - Re-export Data.Complex in Data.Image.Complex

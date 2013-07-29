@@ -88,7 +88,8 @@ instance Image (BoxedImage a) where
   cols = cs
   ref i r c = (pixels i) V.! (r * (cols i) + c)
   makeImage rows cols f = Image rows cols (V.fromList px) where
-    px = [ f r c | r <- [0..rows-1], c <- [0..cols-1]]
+    px | rows < 1 || cols < 1 = error "Invalid dimensions" 
+       | otherwise = [ f r c | r <- [0..rows-1], c <- [0..cols-1]]
   pixelList = V.toList . pixels
   imageOp = liftA2
 
@@ -591,10 +592,9 @@ complexImageToRectangular = CI.complexImageToRectangular
     same phase as z but the amplitude is decreased by x.
    
  -}
-shrink :: (Num a,
-           Image img,
+shrink :: (Image img,
            CI.ComplexPixel (Pixel img),
-           CI.Value (Pixel img) ~ Double) => a -> img -> ComplexImage 
+           CI.Value (Pixel img) ~ Double) => Double -> img -> ComplexImage 
 shrink = CI.shrink
 
 {-| Given an image whose pixels can be converted to a complex value, 
