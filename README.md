@@ -704,7 +704,7 @@ Note: there is a variation of <i>(.<)</i> named <i>(>.)</i> where the arguments 
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/binarystop.jpg"/>
 <p>
 
-<pre>(<.) :: (Ord (Pixel img), Image img, BinaryPixel (Pixel img)) => Pixel img -> img -> img</pre>
+<pre>(&lt;.) :: (Ord (Pixel img), Image img, BinaryPixel (Pixel img)) => Pixel img -> img -> img</pre>
 Given a Pixel p and an image img, return a Binary image where the
     pixel at (i, j) is on if p is less than the corresponding pixel in 
     img at (i,j) and off otherwise.
