@@ -687,7 +687,7 @@ Given a Pixel p and an image img, return a Binary image where the
 pixel at (i, j) is on if p is greater than the corresponding pixel in 
 img at (i,j) and off otherwise.
 
-Note: there is a variation of <i>(.<)</i> named <i>(>.)</i> where the arguments are flipped.
+Note: there is a variation of <i>(.&lt;)</i> named <i>(>.)</i> where the arguments are flipped.
 
 <pre>
 *Main> stop &lt;- readColorImage "images/stop.ppm"
@@ -709,7 +709,7 @@ Given a Pixel p and an image img, return a Binary image where the
     pixel at (i, j) is on if p is less than the corresponding pixel in 
     img at (i,j) and off otherwise.
 
-Note: there is a variation of <i>(<.)</i> named <i>(.<)</i> where the arguments are flipped.
+Note: there is a variation of <i>(&lt;.)</i> named <i>(.&lt;)</i> where the arguments are flipped.
 
 <pre>
 *Main> let binaryStop = (r + g + b) .< 400
@@ -719,11 +719,11 @@ Note: there is a variation of <i>(<.)</i> named <i>(.<)</i> where the arguments 
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/binarystop.jpg" />
 <p>
 
-<pre>(<~) :: (Ord (Pixel img), Image img) => Pixel img -> img -> Bool</pre>
+<pre>(&lt;~) :: (Ord (Pixel img), Image img) => Pixel img -> img -> Bool</pre>
 Given a pixel value p and an image img, return True if and only if all
 values in img are greater than p.
 
-Note: there is a variation of <i>(<~)</i> named <i>(~<)</i> where the arguments are flipped.
+Note: there is a variation of <i>(&lt;~)</i> named <i>(~&lt;)</i> where the arguments are flipped.
 
 
 <pre>(.==.) :: (Eq (Pixel img), Image img, BinaryPixel (Pixel img)) => img -> img -> img</pre>
