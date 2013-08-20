@@ -561,15 +561,15 @@ representing the component (magnitude, phase) of the image
 <p>
 <pre>(==) :: (==) :: Eq a => a -> a -> Bool</pre>
 
-Images installed in the Eq type class (Boxed images) may be compared using the (==). This returns True if and only iff the images are of equal dimension and for each pixel (i, j) in the two images are (==).
+Images installed in the Eq type class (Boxed images) may be compared using the (==). This returns True if and only if the images are of equal dimension and for each pixel (i, j) in the two images are (==).
 
 <pre>(&lt;) :: Ord a => a -> a -> Bool</pre>
 
-Images installed in the Ord type class (Boxed images) may be compared using (&lt;). This returns True if and only iff the images are of equal dimension and for each pixel (i, j) in the two images are (&lt;).
+Images installed in the Ord type class (Boxed images) may be compared using (&lt;). This returns True if and only if the images are of equal dimension and for each pixel (i, j) in the two images are (&lt;).
 
 <pre>(&gt;) :: Ord a => a -> a -> Bool</pre>
 
-Images installed in the Ord type class (Boxed images) may be compared using (&gt;). This returns True if and only iff the images are of equal dimension and for each pixel (i, j) in the two images are (&gt;).
+Images installed in the Ord type class (Boxed images) may be compared using (&gt;). This returns True if and only if the images are of equal dimension and for each pixel (i, j) in the two images are (&gt;).
 
 <pre>(+) :: Num a => a -> a -> a</pre>
 
@@ -728,7 +728,7 @@ Note: there is a variation of <i>(&lt;~)</i> named <i>(~&lt;)</i> where the argu
 
 <pre>(.==.) :: (Eq (Pixel img), Image img, BinaryPixel (Pixel img)) => img -> img -> img</pre>
 Given an image with pixels, <i>p</i>, and a pixel, <i>c</i>, returns an image where
-each pixel has the value 1 if and only iff <i>p = c</i> and 0 otherwise.
+each pixel has the value 1 if and only if <i>p = c</i> and 0 otherwise.
 Note: there is a variation of <i>(==.)</i> named <i>(.==)</i> in which each pixel in the image is compared to a single specified Pixel.
 
 <pre>
@@ -995,7 +995,7 @@ For example,
 
 Given an image, <b>outline</b> returns an image where edge pixels are 
 set to the value on and non-edge pixels are set to the value off. 
-Pixel (i, j) is an edge pixel if and only iff its value is different than the value 
+Pixel (i, j) is an edge pixel if and only if its value is different than the value 
 of either pixel (i, j+1) or pixel (i+1, j).
 
 Note: There is an <i>outline'</i> that allows the for the non-edge and edge pixel values to be specified.
