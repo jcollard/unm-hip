@@ -563,13 +563,13 @@ representing the component (magnitude, phase) of the image
 
 Images installed in the Eq type class (Boxed images) may be compared using the (==). This returns True if and only iff the images are of equal dimension and for each pixel (i, j) in the two images are (==).
 
-<pre>(<) :: Ord a => a -> a -> Bool</pre>
+<pre>(&lt;) :: Ord a => a -> a -> Bool</pre>
 
-Images installed in the Ord type class (Boxed images) may be compared using (<). This returns True if and only iff the images are of equal dimension and for each pixel (i, j) in the two images are (<).
+Images installed in the Ord type class (Boxed images) may be compared using (&lt;). This returns True if and only iff the images are of equal dimension and for each pixel (i, j) in the two images are (&lt;).
 
-<pre>(>) :: Ord a => a -> a -> Bool</pre>
+<pre>(&gt;) :: Ord a => a -> a -> Bool</pre>
 
-Images installed in the Ord type class (Boxed images) may be compared using (>). This returns True if and only iff the images are of equal dimension and for each pixel (i, j) in the two images are (>).
+Images installed in the Ord type class (Boxed images) may be compared using (&gt;). This returns True if and only iff the images are of equal dimension and for each pixel (i, j) in the two images are (&gt;).
 
 <pre>(+) :: Num a => a -> a -> a</pre>
 
@@ -599,6 +599,11 @@ For example,
 <p>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/sum.gif">
 <p>
+
+<pre>(+.) :: (Num (Pixel i), Image i) => Pixel i -> i -> i</pre>
+Given a pixel value and an image, performs scalar addition to each pixel in an image and returns the result. Note: there is a flipped version of this function (.+).
+
+<p>
 <pre>(-) :: Num a => a -> a -> a</pre>
 
 Any two images installed in the Num type class (any two Boxed images) may be subtracted if their dimensions match.
@@ -610,6 +615,10 @@ For example,
 </pre>
 <p>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/difference.gif">
+<p>
+<pre>(-.) :: (Num (Pixel i), Image i) => Pixel i -> i -> i</pre>
+Given a pixel value and an image, performs scalar subtraction to each pixel in an image and returns the result. Note: there is a flipped version of this function (.-).
+
 <p>
 <pre>(*) :: Num a => a -> a -> a</pre>
 
@@ -623,6 +632,11 @@ For example,
 <p>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/product.gif">
 <p>
+
+<pre>(*.) :: (Num (Pixel i), Image i) => Pixel i -> i -> i</pre>
+Given a pixel value and an image, performs scalar multiplication to each pixel in an image and returns the result. Note: there is a flipped version of this function (.*).
+
+<p>
 <pre>(/) :: Fractional a => a -> a -> a</pre>
 
 Any two images installed in the Num type class (any two Boxed images) may be divided if their dimensions match.
@@ -635,7 +649,10 @@ For example,
 <p>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/quotient.gif">
 <p>
+<pre>(/.) :: (Fractional (Pixel i), Image i) => Pixel i -> i -> i</pre>
+Given a pixel value and an image, performs scalar division to each pixel in an image and returns the result. Note: there is a flipped version of this function (./).
 
+<p>
 <pre>arrayToImage :: Image img => Array (Int, Int) (Pixel img) -> img</pre>
 
  Given a two dimensional array of Pixel values indexed by
@@ -671,12 +688,6 @@ pixel at (i, j) is on if p is greater than the corresponding pixel in
 img at (i,j) and off otherwise.
 
 Note: there is a variation of <i>(.<)</i> named <i>(>.)</i> where the arguments are flipped.
-
-<pre>(>~) :: (Ord (Pixel img), Image img) => Pixel img -> img -> Bool</pre>
-Given a pixel value p and an image img, return True if and only if all
-values in img are less than p.
-
-Note: there is a variation of <i>(>~)</i> named <i>(~<)</i> where the arguments are flipped.
 
 <pre>
 *Main> stop &lt;- readColorImage "images/stop.ppm"
