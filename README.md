@@ -98,6 +98,18 @@ Given an image, a positive int i, and a positive  int j,
 56.0
 </pre>
 
+<pre>ref' :: ref' :: GrayImage -> Double -> Double -> Double</pre>
+
+Given a GreyImage, a positive double i, and a positive double j, 
+<b>ref</b> returns the bilinear interpolated 
+pixel value at location <i>(i, j)</i>. 
+
+<pre>
+*Main> ref frog 100 100
+56.0
+</pre>
+
+
 <pre>rows :: Image i => i -> Int</pre>
 Given an image, <b>rows</b> returns the number of rows of in the image.
 For example,
@@ -551,13 +563,13 @@ representing the component (magnitude, phase) of the image
 
 Images installed in the Eq type class (Boxed images) may be compared using the (==). This returns True if and only if the images are of equal dimension and for each pixel (i, j) in the two images are (==).
 
-<pre>(<) :: Ord a => a -> a -> Bool</pre>
+<pre>(&lt;) :: Ord a => a -> a -> Bool</pre>
 
-Images installed in the Ord type class (Boxed images) may be compared using (<). This returns True if and only if the images are of equal dimension and for each pixel (i, j) in the two images are (<).
+Images installed in the Ord type class (Boxed images) may be compared using (&lt;). This returns True if and only if the images are of equal dimension and for each pixel (i, j) in the two images are (&lt;).
 
-<pre>(>) :: Ord a => a -> a -> Bool</pre>
+<pre>(&gt;) :: Ord a => a -> a -> Bool</pre>
 
-Images installed in the Ord type class (Boxed images) may be compared using (>). This returns True if and only if the images are of equal dimension and for each pixel (i, j) in the two images are (>).
+Images installed in the Ord type class (Boxed images) may be compared using (&gt;). This returns True if and only if the images are of equal dimension and for each pixel (i, j) in the two images are (&gt;).
 
 <pre>(+) :: Num a => a -> a -> a</pre>
 
@@ -587,6 +599,11 @@ For example,
 <p>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/sum.gif">
 <p>
+
+<pre>(+.) :: (Num (Pixel i), Image i) => Pixel i -> i -> i</pre>
+Given a pixel value and an image, performs scalar addition to each pixel in an image and returns the result. Note: there is a flipped version of this function (.+).
+
+<p>
 <pre>(-) :: Num a => a -> a -> a</pre>
 
 Any two images installed in the Num type class (any two Boxed images) may be subtracted if their dimensions match.
@@ -598,6 +615,10 @@ For example,
 </pre>
 <p>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/difference.gif">
+<p>
+<pre>(-.) :: (Num (Pixel i), Image i) => Pixel i -> i -> i</pre>
+Given a pixel value and an image, performs scalar subtraction to each pixel in an image and returns the result. Note: there is a flipped version of this function (.-).
+
 <p>
 <pre>(*) :: Num a => a -> a -> a</pre>
 
@@ -611,6 +632,11 @@ For example,
 <p>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/product.gif">
 <p>
+
+<pre>(*.) :: (Num (Pixel i), Image i) => Pixel i -> i -> i</pre>
+Given a pixel value and an image, performs scalar multiplication to each pixel in an image and returns the result. Note: there is a flipped version of this function (.*).
+
+<p>
 <pre>(/) :: Fractional a => a -> a -> a</pre>
 
 Any two images installed in the Num type class (any two Boxed images) may be divided if their dimensions match.
@@ -623,7 +649,10 @@ For example,
 <p>
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/quotient.gif">
 <p>
+<pre>(/.) :: (Fractional (Pixel i), Image i) => Pixel i -> i -> i</pre>
+Given a pixel value and an image, performs scalar division to each pixel in an image and returns the result. Note: there is a flipped version of this function (./).
 
+<p>
 <pre>arrayToImage :: Image img => Array (Int, Int) (Pixel img) -> img</pre>
 
  Given a two dimensional array of Pixel values indexed by
@@ -658,13 +687,7 @@ Given a Pixel p and an image img, return a Binary image where the
 pixel at (i, j) is on if p is greater than the corresponding pixel in 
 img at (i,j) and off otherwise.
 
-Note: there is a variation of <i>(.<)</i> named <i>(>.)</i> where the arguments are flipped.
-
-<pre>(>~) :: (Ord (Pixel img), Image img) => Pixel img -> img -> Bool</pre>
-Given a pixel value p and an image img, return True if and only if all
-values in img are less than p.
-
-Note: there is a variation of <i>(>~)</i> named <i>(~<)</i> where the arguments are flipped.
+Note: there is a variation of <i>(.&lt;)</i> named <i>(>.)</i> where the arguments are flipped.
 
 <pre>
 *Main> stop &lt;- readColorImage "images/stop.ppm"
@@ -681,12 +704,12 @@ Note: there is a variation of <i>(>~)</i> named <i>(~<)</i> where the arguments 
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/binarystop.jpg"/>
 <p>
 
-<pre>(<.) :: (Ord (Pixel img), Image img, BinaryPixel (Pixel img)) => Pixel img -> img -> img</pre>
+<pre>(&lt;.) :: (Ord (Pixel img), Image img, BinaryPixel (Pixel img)) => Pixel img -> img -> img</pre>
 Given a Pixel p and an image img, return a Binary image where the
     pixel at (i, j) is on if p is less than the corresponding pixel in 
     img at (i,j) and off otherwise.
 
-Note: there is a variation of <i>(<.)</i> named <i>(.<)</i> where the arguments are flipped.
+Note: there is a variation of <i>(&lt;.)</i> named <i>(.&lt;)</i> where the arguments are flipped.
 
 <pre>
 *Main> let binaryStop = (r + g + b) .< 400
@@ -696,11 +719,11 @@ Note: there is a variation of <i>(<.)</i> named <i>(.<)</i> where the arguments 
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/binarystop.jpg" />
 <p>
 
-<pre>(<~) :: (Ord (Pixel img), Image img) => Pixel img -> img -> Bool</pre>
+<pre>(&lt;~) :: (Ord (Pixel img), Image img) => Pixel img -> img -> Bool</pre>
 Given a pixel value p and an image img, return True if and only if all
 values in img are greater than p.
 
-Note: there is a variation of <i>(<~)</i> named <i>(~<)</i> where the arguments are flipped.
+Note: there is a variation of <i>(&lt;~)</i> named <i>(~&lt;)</i> where the arguments are flipped.
 
 
 <pre>(.==.) :: (Eq (Pixel img), Image img, BinaryPixel (Pixel img)) => img -> img -> img</pre>
@@ -1062,7 +1085,7 @@ For example,
 
 <pre>
 *Main> areas . label $ binaryStop
-fromList [9676.0,1033.0,1201.0,6.0,718.0,4.0,0.0,1036.0]
+fromList [9240.0,1154.0,1326.0,809.0,1145.0]
 </pre>
 
 <pre>perimeters :: (Image img, MaxMin (Pixel img), Pixel img ~ Double) => img -> V.Vector Double</pre>
@@ -1078,7 +1101,7 @@ For example,
 
 <pre>
 *Main> perimeters . label $ binaryStop
-fromList [1072.0,304.0,322.0,6.0,184.0,4.0,0.0,252.0]
+fromList [1082.0,312.0,326.0,184.0,260.0]
 </pre>
 
 <pre>centersOfMass :: (Image img, MaxMin (Pixel img), Pixel img ~ Double) => img -> [(Double, Double)]</pre>
@@ -1092,7 +1115,7 @@ For example,
 
 <pre>
 *Main> centersOfMass . label $ binaryStop
-[(42.373668925459825,24.764762826718297),(41.76935886761032,92.25978351373855),(14.5,14.5),(35.139275766016716,57.46239554317549),(14.5,81.5),(NaN,NaN),(35.69015444015444,130.08590733590734)]
+[(42.2686308492201,24.657712305025996),(41.74660633484163,92.20889894419307),(35.31025957972806,57.595797280593324),(35.583406113537116,129.9170305676856)]
 </pre>
 
 <pre>boundingBoxes :: (Image img, MaxMin (Pixel img), Pixel img ~ Double) => img -> [(Int, Int, Int, Int)]</pre>
@@ -1106,5 +1129,5 @@ For example,
 
 <pre>
 *Main> boundingBoxes . label $ binaryStop
-[(10,8,73,40),(10,75,73,109),(12,12,17,17),(11,43,72,72),(13,80,16,83),(86,159,0,0),(12,118,72,150)]
+[(10,8,73,41),(10,75,74,110),(11,42,72,73),(11,117,72,150)]
 </pre>

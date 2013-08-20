@@ -29,7 +29,8 @@ module Data.Image.Complex(-- * Complex Images
                           angle,
                           shrink,
                           complexImageToRectangular,
-                          complexImageToPolar) where
+                          complexImageToPolar,
+                          module Data.Complex) where
 
 import Data.Image.Internal(Image(..), PixelOp, imageMap,dimensions)
 
@@ -45,6 +46,7 @@ import qualified Data.Vector as V
 class RealFloat (Value px) => ComplexPixel px where
   type Value px :: *
   toComplex ::  px -> C.Complex (Value px)
+  fromComplex :: C.Complex (Value px) -> px
   
 {-| Given a positive integer m, a positive integer n, and a function 
     returning a pixel value, makeFilter returns an image with m rows 
@@ -118,7 +120,8 @@ fft :: (Image img,
         ComplexPixel (Pixel img),
         Image img',
         Pixel img' ~ C.Complex (Value (Pixel img))) => img -> img'
-fft img@(dimensions -> (rows, cols)) = makeImage rows cols fftimg where
+fft img@(dimensions -> (rows, cols)) = check where
+  check = if (isPowerOfTwo rows && isPowerOfTwo cols) then makeImage rows cols fftimg else error "Image is not a power of 2 in rows and cols"
   fftimg r c = fft' V.! (r*cols + c)
   vector = V.map toComplex . V.fromList . pixelList $ img
   fft' = fftv rows cols vector
@@ -141,7 +144,8 @@ ifft :: (Image img,
         ComplexPixel (Pixel img),
         Image img',
         Pixel img' ~ C.Complex (Value (Pixel img))) => img -> img'
-ifft img@(dimensions -> (rows, cols)) = makeImage rows cols fftimg where
+ifft img@(dimensions -> (rows, cols)) = check where
+  check = if (isPowerOfTwo rows && isPowerOfTwo cols) then makeImage rows cols fftimg else error "Image is not a power of 2 in rows and cols"
   fftimg r c = fft' V.! (r*cols + c)
   vector = V.map toComplex . V.fromList . pixelList $ img
   fft' = ifftv rows cols vector
@@ -270,21 +274,19 @@ complexImageToRectangular img = (realPart img, imagPart img)
     same phase as z but the amplitude is decreased by x.
    
  -}
-shrink :: (Num a,
-           Image img,
-           ComplexPixel (Pixel img), 
-           Image img',
-           Pixel img' ~ C.Complex (Value (Pixel img))) => a -> img -> img'
-shrink x img@(dimensions -> (rows, cols)) = makeImage rows cols shrink' where
-  shrink' r c = helper px where
-    px = toComplex . ref img r $ c
-    helper px
-      | (C.magnitude px) < x = 0.0 C.:+ 0.0
-      | otherwise = real C.:+ imag where
-        mag = C.magnitude px
-        x = (mag - x)/mag
-        real = x*(C.realPart px)
-        imag = x*(C.imagPart px)
+shrink :: (Image img,
+           ComplexPixel (Pixel img)) => (Value (Pixel img)) -> img -> img
+shrink x img@(dimensions -> (rows, cols)) = 
+  makeImage rows cols shrink' where
+    shrink' r c = fromComplex . helper $ px where
+      px = toComplex . ref img r $ c
+      helper px
+        | (C.magnitude px) < x = 0.0 C.:+ 0.0
+        | otherwise = real C.:+ imag where
+          mag = C.magnitude px
+          x' = (mag - x)/mag
+          real = x'*(C.realPart px)
+          imag = x'*(C.imagPart px)
 
 
 type Vector a = V.Vector (Complex a)

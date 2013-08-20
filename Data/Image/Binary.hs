@@ -162,6 +162,12 @@ toBinaryImage pred img@(dimensions -> (rows, cols)) = makeImage rows cols bin wh
 (.==) img num = toBinaryImage pred img where
   pred p = p == num
 
+(===.)
+  :: (Eq (Pixel img0), Image img0, BinaryPixel (Pixel img1), Image img1) =>
+     Pixel img0 -> img0 -> img1
+(===.) px img@(dimensions -> (rows, cols)) = makeImage rows cols bin where
+  bin r c = if (ref img r c) == px then on else off
+
 {-| Given a Pixel p and an image img, return a Binary image where the
     pixel at (i, j) is on if the corresponding pixel in img at (i,j) is equal
     to p and off otherwise.
@@ -460,13 +466,48 @@ getLabels img@(dimensions -> (rows, cols)) = runST $ do
   
   --Relabel with Lowest Equivalence
   eq <- readSTRef equivalences
+  let eq' = reduceEquivalence . buildEquivalence $ eq
   forM_ [ (r, c) | r <- [0..rows-1], c <- [0..cols-1] ] (\ (r, c) -> do
     if toBinary . ref img r $ c then do
       currLabel <- VM.read labels (r*cols + c)
-      let newLabel = (eq M.! currLabel)
+      let newLabel = (eq' M.! currLabel)
       VM.write labels (r*cols + c) newLabel
       else return ())
   V.freeze labels
+  
+reduceEquivalence :: M.Map Double Double -> M.Map Double Double
+reduceEquivalence map = reduceEquivalence' (M.keys map) map reduced M.empty where 
+  reduced = reductionMap (M.elems map)
+
+reductionMap :: [Double] -> M.Map Double Double
+reductionMap = reductionMap' M.empty 1
+
+reductionMap' :: M.Map Double Double -> Double -> [Double] -> M.Map Double Double
+reductionMap' acc _ [] = acc
+reductionMap' acc nextLabel (l:ls) = reductionMap' acc' nextLabel' ls where
+  acc' = if containsL then acc else M.insert l nextLabel acc
+  nextLabel' = if containsL then nextLabel else (nextLabel+1)
+  containsL = M.member l acc
+
+reduceEquivalence' :: [Double] -> M.Map Double Double -> M.Map Double Double -> M.Map Double Double -> M.Map Double Double
+reduceEquivalence' [] _ _ acc = acc
+reduceEquivalence' (k:ks) orig lookup acc = reduceEquivalence' ks orig lookup acc' where
+  acc' = M.insert k val' acc
+  val = orig M.! k
+  val' = lookup M.! val
+
+buildEquivalence :: M.Map Double Double -> M.Map Double Double
+buildEquivalence map = buildEquivalence' (M.keys map) map M.empty
+
+buildEquivalence' :: [Double] -> M.Map Double Double -> M.Map Double Double -> M.Map Double Double
+buildEquivalence' [] _ acc = acc
+buildEquivalence' (k:ks) lookup acc = buildEquivalence' ks lookup (M.insert k equiv acc) where
+  equiv = findEquivalence lookup k
+
+findEquivalence :: M.Map Double Double -> Double -> Double
+findEquivalence eqLookup key = val' where
+  val = eqLookup M.! key
+  val' = if val == key then key else findEquivalence eqLookup val
 
 writeLabel labels cols r c smn equiv = do
   oldMap <- readSTRef equiv
@@ -510,7 +551,7 @@ neighbor labels rows cols r c
     the histogram of the image.
 
     >>> areas . label $ binaryStop
-    fromList [9241.0,1149.0,1323.0,5.0,809.0,3.0,1144.0]
+    fromList [9241.0,1149.0,1323.0,809.0,1144.0]
  -}
 areas :: (Image img,
          MaxMin (Pixel img),
@@ -530,7 +571,7 @@ areas img@(dimensions -> (rows, cols)) = runST $ do
     binary-image.
 
     >>>perimeters . label $ binaryStop
-    fromList [1082.0,307.0,323.0,5.0,184.0,3.0,260.0]
+    fromList [1082.0,312.0,326.0,184.0,260.0]
  -}
 perimeters :: (Image img,
                MaxMin (Pixel img),
@@ -561,7 +602,7 @@ neighborList img@(dimensions -> (rows, cols)) r c =
     indices of pixels of the n-th connected-component of the image.
 
     >>>boundingBoxes . label $ binaryStop
-    [(10,8,73,41),(10,75,74,110),(12,12,16,16),(11,42,72,73),(13,80,15,82),(11,117,72,150)]
+    [(10,8,73,41),(10,75,74,110),(11,42,72,73),(11,117,72,150)]
  -}
 boundingBoxes :: (Image img,
                   MaxMin (Pixel img),
@@ -614,7 +655,8 @@ toQuads = toQuads' [] where
     n-th connected-component of the image.
 
     >>>centersOfMass . label $ binaryStop
-    [(42.391644908616186,24.70409051348999),(41.80952380952381,92.23431594860166),(14.0,14.0),(35.31025957972806,57.595797280593324),(14.0,81.0),(35.59178321678322,129.90734265734267)]
+    [(42.2686308492201,24.657712305025996),(41.74660633484163,92.20889894419307),(35.31025957972806,57.595797280593324),(35.583406113537116,129.9170305676856)]
+
  -}
 centersOfMass :: (Image img,
                   MaxMin (Pixel img),

@@ -21,6 +21,7 @@ module Data.Image.Boxed(
   -- * Gray Images
   GrayImage, Gray, readImage, 
   grayToComplex, makeHotImage,
+  ref', 
   -- * Color Images
   ColorImage, Color(..), readColorImage,
   colorImageRed, colorImageGreen, colorImageBlue,
@@ -39,6 +40,8 @@ module Data.Image.Boxed(
   -- * Binary Images
   distanceTransform, label,
   -- * Additional Modules
+    -- | Contains functionality for performing arithmetic operations on images with scalar values.
+  module Data.Image.Arithmetic,
     -- | Contains functionality related to Binary Images
   module Data.Image.Binary,  
   -- | Contains functionality for convolution of images
@@ -48,6 +51,7 @@ module Data.Image.Boxed(
   -- | Contains functionality for writing images and displaying with an external program
   module Data.Image.IO) where
  
+import Data.Image.Arithmetic
 import Data.Image.Binary hiding (distanceTransform, label)
 import qualified Data.Image.Binary as Bin
 import qualified Data.Image.Complex as CI
@@ -84,7 +88,8 @@ instance Image (BoxedImage a) where
   cols = cs
   ref i r c = (pixels i) V.! (r * (cols i) + c)
   makeImage rows cols f = Image rows cols (V.fromList px) where
-    px = [ f r c | r <- [0..rows-1], c <- [0..cols-1]]
+    px | rows < 1 || cols < 1 = error "Invalid dimensions" 
+       | otherwise = [ f r c | r <- [0..rows-1], c <- [0..cols-1]]
   pixelList = V.toList . pixels
   imageOp = liftA2
 
@@ -158,6 +163,7 @@ instance BinaryPixel Gray where
 instance CI.ComplexPixel Gray where
   type Value Gray = Double
   toComplex i =  i C.:+ 0.0
+  fromComplex (r C.:+ i) = r
 
 instance Monoid Gray where
   mempty = 0.0
@@ -259,6 +265,9 @@ colorOp op (toRGB -> (a, b, c)) (toRGB -> (d, e, f)) = RGB (op a d, op b e, op c
 type ComplexImage = BoxedImage Complex
 type Complex = C.Complex Double
 
+instance RealFloat a => Ord (C.Complex a) where
+  compare x y = compare (C.magnitude x) (C.magnitude y)
+
 instance BinaryPixel Complex where
   toBinary (0.0 C.:+ 0.0) = False
   toBinary _ = True
@@ -271,6 +280,7 @@ instance DisplayFormat ComplexImage where
 instance CI.ComplexPixel Complex where
   type Value Complex = Double
   toComplex = id
+  fromComplex = id
 
 complexImageToColorImage :: ComplexImage -> ColorImage
 complexImageToColorImage img = fmap rgb img where
@@ -463,6 +473,28 @@ makeHotImage img = fmap (toHot max min) img where
           if px < 0.666666667 then (px - 0.333333333)*3 else 1.0
     b = if px < 0.666666667 then 0.0 else (px - 0.666666667)*3
 
+{-| Performs bilinear interpolation of a GrayImage at the coordinates provided. -}
+ref' :: GrayImage -> Double -> Double -> Double
+ref' im x y = if inside im x y then interpolate im x y else 0
+
+inside im x y = x >= 0 && y >= 0 && y < r - 1 && x < c - 1
+  where r = fromIntegral $ rows im
+        c = fromIntegral $ cols im
+
+interpolate :: GrayImage -> Double -> Double -> Double
+interpolate im x y = (f01 - f00)*x' + (f10 - f00)*y' + (f11 + f00 - f10 - f01)*x'*y' + f00
+  where x' = x - (fromIntegral i0);
+        y' = y - (fromIntegral j0);
+        f00 = ref im i0 j0
+        f01 = ref im i0 j1
+        f10 = ref im i1 j0
+        f11 = ref im i1 j1
+        i1 = i0 + 1
+        j1 = j0 + 1
+        i0 = floor x
+        j0 = floor y
+
+
 {-| Given a complex image, returns a real image representing
     the real part of the image.
 
@@ -562,10 +594,8 @@ complexImageToRectangular = CI.complexImageToRectangular
     same phase as z but the amplitude is decreased by x.
    
  -}
-shrink :: (Num a,
-           Image img,
-           CI.ComplexPixel (Pixel img),
-           CI.Value (Pixel img) ~ Double) => a -> img -> ComplexImage 
+shrink :: (Image img,
+           CI.ComplexPixel (Pixel img)) => (CI.Value (Pixel img)) -> img -> img
 shrink = CI.shrink
 
 {-| Given an image whose pixels can be converted to a complex value, 

@@ -1,4 +1,35 @@
-Next Release:
+Version #: 0.3.1.5
+           ^ ^ ^ ^
+           | | | --- Bug fixes / improvements to existing code
+           | | ----- New functions / features
+           | |------ Break in backwards compatibilty
+           |-------- Change in stability
+
+unm-hip-0.3.1.5: 
+  - Modified shrink such that it now will work with Images that have a ComplexPixel type and return the same type of image. This seems more intuitive and allow users to use it with GrayImages and get GrayImages back. If the user want to use it specifically with Complex values, they will already have a ComplexImage and thus it is a non issue and the type does not need to be coerced.
+
+unm-hip-0.2.1.5
+ - fixed a bug in normalize that was producing images with NaN pixel values
+ - fixed a bug in shrink that was producing an infinite loop. Resulting in the type signature changing
+ - Updated the convenience `shrink` function in Boxed.hs to explicitly take a double as it is the pixel type required from the input image.
+
+unm-hip-0.1.1.4
+ - Re-export Data.Complex in Data.Image.Complex
+ - Added instance RealFloat a => Ord (C.Complex a) where
+ - fixed a bug in Normalize that was producing images with NaN pixel values
+ - Removed (~) class of functions to reduce confusion. (Break backwards compatability)
+
+unm-hip-0.0.0.3
+ - Exported the Data.Image.Arithmetic module
+
+unm-hip-0.0.0.2
+ - Adjusted the label function to reduce to the lowest label values. This results in "better" output for areas, boundingBoxes, and centersOfMass
+ - Added the Arithmetic module that provides support for arithmetic operations on images using scalar values.
+
+unm-hip-0.0.0.1
+ - Added an error if fft or ifft are used with a non power of 2 image
+ - Fixed error in equivalence labeling in label
+ - Made consistent if and only if through out documentation
  - Fixed typo in Complex.hs haddock under fft.
 
 unm-hip-0.0.0.0
