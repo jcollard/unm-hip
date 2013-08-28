@@ -5,6 +5,9 @@ Version #: 0.3.1.5
            | |------ Break in backwards compatibilty
            |-------- Change in stability
 
+unm-hip-0.3.1.6:
+  - Fixed typo in documentation
+
 unm-hip-0.3.1.5: 
   - Modified shrink such that it now will work with Images that have a ComplexPixel type and return the same type of image. This seems more intuitive and allow users to use it with GrayImages and get GrayImages back. If the user want to use it specifically with Complex values, they will already have a ComplexImage and thus it is a non issue and the type does not need to be coerced.
 
