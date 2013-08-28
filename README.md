@@ -2,7 +2,9 @@
 To get started, import Data.Image or Data.Image.Boxed.
 To use unm-hip interactively in ghci, import Data.Image.Interactive. This provides three useful functions: display, setDisplayProgram, and plotHistograms.
 
-    setDisplayProgram :: String -> Bool -> IO ()</pre>
+```haskell
+setDisplayProgram :: String -> Bool -> IO ()
+```
 
 Sets the program to use when making a call to display and specifies if the program can accept an image via stdin. If it cannot, then a temporary file will be created and passed as an argument instead. By default, ImageMagick (display) is the default program to use and it is read using stdin.
 
@@ -17,51 +19,59 @@ display :: DisplayFormat df => df -> IO (Handle, Handle, Handle, ProcessHandle)
 
 Makes a call to the current display program to be displayed. If the program cannot read from standard in, a file named .tmp-img is created and used as an argument to the program.
 
-    makeImage :: Image i => Int -> Int -> PixelOp (Pixel i) -> i
+```haskell
+makeImage :: Image i => Int -> Int -> PixelOp (Pixel i) -> i
+```
 
 Given an Int m, Int n, and a PixelOp f, **makeImage**
 returns an Image with dimensions m x n and the Pixel value at 
 each (i, j) is (f i j)
 
-
-    *Main> let grad = makeImage 128 128 (\ r c -> fromIntegral (r + c)) :: GrayImage
-    *Main> grad
-    < Image 128x128 >
-    *Main> display grad
+```haskell
+*Main> let grad = makeImage 128 128 (\ r c -> fromIntegral (r + c)) :: GrayImage
+*Main> grad
+< Image 128x128 >
+*Main> display grad
+```
 
 
 ![gradient][] 
 
+```haskell
+pii :: Complex Double
+pii = 0 :+ pi
 
+harmonicSignal :: Double -> Double -> Int -> Int -> Complex Double
+harmonicSignal u v m n = exp ((2*pii) * ((u*(fromIntegral m) + v*(fromIntegral n)) :+ 0))
 
-    pii :: Complex Double
-    pii = 0 :+ pi
-    
-    harmonicSignal :: Double -> Double -> Int -> Int -> Complex Double
-    harmonicSignal u v m n = exp ((2*pii) * ((u*(fromIntegral m) + v*(fromIntegral n)) :+ 0))
-    
-    *Main> let signal = makeImage 128 128 (harmonicSignal (3 / 128) (2 / 128)) :: ComplexImage
-    *Main> signal
-    *Main> signal
-    < Image 128x128 >
-    *Main> display signal
+*Main> let signal = makeImage 128 128 (harmonicSignal (3 / 128) (2 / 128)) :: ComplexImage
+*Main> signal
+*Main> signal
+< Image 128x128 >
+*Main> display signal
+```
 
 ![signal][]
 
-    readImage :: FilePath -> IO GrayImage
+```haskell
+readImage :: FilePath -> IO GrayImage
+```
 
 Given the file path to a file containing an image
 stored in ASCII *.pgm* format, **readImage** reads the file
 and returns the *Image*. For example,
 
-
-    *Main> frog &lt;- readImage "images/frog.pgm"
-    *Main> display frog
+```haskell
+*Main> frog &lt;- readImage "images/frog.pgm"
+*Main> display frog
+```
 
 
 ![frog][]
 
-    writeImage :: DisplayFormat df => FilePath -> df -> IO ()
+```haskell
+writeImage :: DisplayFormat df => FilePath -> df -> IO ()
+```
 
 Given a filename and an Image, 
 **writeImage** creates a file representing the image in ASCII
@@ -69,8 +79,9 @@ Given a filename and an Image,
 Note: Images saved this way are normalized to integers in the range 0 to 255; 
 this may result in loss of detail.
 
-
-    *Main> writeImage "frog.pgm" frog
+```haskell
+*Main> writeImage "frog.pgm" frog
+```
 
 creates a file which looks like this:
 
@@ -89,117 +100,135 @@ creates a file which looks like this:
     .
     .
     .
-
-    ref :: Image i => i -> Int -> Int -> Pixel i
+	
+```haskell
+ref :: Image i => i -> Int -> Int -> Pixel i
+```
 
 Given an image, a positive int i, and a positive  int j, 
 **ref** returns the pixel value at location *(i, j)*.
 
+```haskell
+*Main> ref frog 100 100
+56.0
 
-    *Main> ref frog 100 100
-    56.0
 
-
-    ref' :: ref' :: GrayImage -> Double -> Double -> Double
+ref' :: ref' :: GrayImage -> Double -> Double -> Double
+```
 
 Given a GrayImage, a positive double i, and a positive double j, 
 **ref'** returns the bilinear interpolated 
 pixel value at location *(i, j)*. 
 
+```haskell
+*Main> ref' frog 100 100
+56.0
 
-    *Main> ref' frog 100 100
-    56.0
 
 
-
-    rows :: Image i => i -> Int
+rows :: Image i => i -> Int
+```
 
 Given an image, **rows** returns the number of rows of in the image.
 For example,
 
-    *Main> rows frog
-    225
+```haskell
+*Main> rows frog
+225
 
-    cols :: Image i => i -> Int
+cols :: Image i => i -> Int
+```
 
 Given an image, **cols** returns the number of columns of in the image.
 For example,
 
+```haskell
+*Main> cols frog
+242
 
-    *Main> cols frog
-    242
-
-    transpose :: Image img => img -> img
+transpose :: Image img => img -> img
+```
 
 Given an Image img, **transpose** returns an image created by interchanging 
 the rows and columns of the image, i.e., the value at location *(i, j)*
 of the result image is the value of the img at location *(j, i)*.
 For example,
 
-
-    *Main> transpose frog
-    < Image 242x225 >
-    *Main> display . transpose $ frog
+```haskell
+*Main> transpose frog
+< Image 242x225 >
+*Main> display . transpose $ frog
+```
 
 
 ![transposeFrog][]
 
-    convolveRows :: (Num (Pixel img), Image img) => [Pixel img] -> img -> img
+```haskell
+convolveRows :: (Num (Pixel img), Image img) => [Pixel img] -> img -> img
+```
 
 Given a list consisting solely of pixel values representing a 1D 
 convolution kernel and an image, **convolveRows** returns the 1D discrete 
 periodic convolution of the rows of the image with the kernel.
 For example,
 
-
-    *Main> convolveRows [1, -1] frog
-    < Image 225x242 >
-    *Main> display . convolveRows [1, -1] $ frog
-
+```haskell
+*Main> convolveRows [1, -1] frog
+< Image 225x242 >
+*Main> display . convolveRows [1, -1] $ frog
+```
 
 ![convolverows][]
 
-    convolveCols :: (Num (Pixel img), Image img) => [Pixel img] -> img -> img
+```haskell
+convolveCols :: (Num (Pixel img), Image img) => [Pixel img] -> img -> img
+```
 
 Given a list consisting solely of pixel values representing a 1D 
 convolution kernel and an image, **convolveCols** returns the 1D discrete 
 periodic convolution of the columns of the image with the kernel.
 For example,
 
-
-    *Main> convolveCols [1, -1] frog
-    < Image 225x242 >
-    *Main> display . convolveCols [1, -1] $ frog
+```haskell
+*Main> convolveCols [1, -1] frog
+< Image 225x242 >
+*Main> display . convolveCols [1, -1] $ frog
+```
 
 
 ![convolvecols][]
 
-
-    *Main> let dx = convolveRows [1, -1] frog
-    *Main> let dy = convolveCols [1, -1] frog
-    *Main> let grad = imageMap sqrt ((dx * dx) + (dy * dy)) :: GrayImage
-    *Main> grad
-    < Image 225x242 >
-    *Main> display grad
-
+```haskell
+*Main> let dx = convolveRows [1, -1] frog
+*Main> let dy = convolveCols [1, -1] frog
+*Main> let grad = imageMap sqrt ((dx * dx) + (dy * dy)) :: GrayImage
+*Main> grad
+< Image 225x242 >
+*Main> display grad
+```
 
 ![convolvedxdy][]
 
-    convolve :: (Num (Pixel img), Image img) => \[\[Pixel img\]\] -> img -> img
+```haskell
+convolve :: (Num (Pixel img), Image img) => \[\[Pixel img\]\] -> img -> img
+```
 
 Given a 2D list consisting solely of pixels representing a 2D 
 convolution kernel and an image, **convolve** returns the 2D discrete 
 periodic convolution of the image with the kernel.
 For example,
 
-
-    *Main> convolve [[1, 1, 1], [1, -8, 1], [1, 1, 1]] frog
-    < Image 225x242 >
-    *Main> display . convolve [[1, 1, 1], [1, -8, 1], [1, 1, 1]] $ frog
+```haskell
+*Main> convolve [[1, 1, 1], [1, -8, 1], [1, 1, 1]] frog
+< Image 225x242 >
+*Main> display . convolve [[1, 1, 1], [1, -8, 1], [1, 1, 1]] $ frog
+```
 
 ![convolve][]
 
-    downsampleCols :: Image img => img -> img
+```haskell
+downsampleCols :: Image img => img -> img
+```
 
 Given img, **downsampleCols** returns the image created by discarding 
 the odd numbered rows, i.e., the value at location (i, j) of the 
@@ -207,14 +236,17 @@ result image is the value of img at location (2i, j).
 
 For example,
 
-
-    *Main> downsampleCols frog
-    < Image 112x242 >
-    *Main> display . downsampleCols $ frog
+```haskell
+*Main> downsampleCols frog
+< Image 112x242 >
+*Main> display . downsampleCols $ frog
+```
 
 ![downsampleColsFrog][]
 
-    downsampleRows :: Image img => img -> img
+```haskell
+downsampleRows :: Image img => img -> img
+```
 
 Given img, **downsampleRows** returns the image created by discarding the odd 
 numbered columns, i.e., the value at location (i, j) is the value of img
@@ -222,23 +254,28 @@ at location (i, 2j).
 
 For example,
 
-
-    *Main> downsampleRows frog
-    < Image 225x121 >
-    *Main> display . downsampleRows $ frog
+```haskell
+*Main> downsampleRows frog
+< Image 225x121 >
+*Main> display . downsampleRows $ frog
+```
 
 ![downsampleRowsFrog][]
 
-    downsample :: Image img => img -> img
+```haskell
+downsample :: Image img => img -> img
 
-    *Main> let tinyFrog = downsample frog
-    *Main> tinyFrog
-    < Image 112x121 >
-    *Main> display tinyFrog
+*Main> let tinyFrog = downsample frog
+*Main> tinyFrog
+< Image 112x121 >
+*Main> display tinyFrog
+```
 
 ![downsampleFrog][]
 
-    upsampleCols :: (Monoid (Pixel img), Image img) => img -> img
+```haskell
+upsampleCols :: (Monoid (Pixel img), Image img) => img -> img
+```
 
 Given img, **upsampleCols** returns an image with twice the number of 
 rows where the value at location (i, j) of the result image is the 
@@ -246,15 +283,17 @@ value of img at location (i/2, j) if i is even and mempty otherwise.
 
 For example,
 
-
-    *Main> upsampleCols tinyFrog
-    < Image 224x121 >
-    *Main> display . upsampleCols $ tinyFrog
-
+```haskell
+*Main> upsampleCols tinyFrog
+< Image 224x121 >
+*Main> display . upsampleCols $ tinyFrog
+```
 
 ![upsampleCols][]
 
-    upsampleRows :: (Monoid (Pixel img), Image img) => img -> img
+```haskell
+upsampleRows :: (Monoid (Pixel img), Image img) => img -> img
+```
 
 Given img, **upsampleRows** returns an image with twice the number of 
 columns where the value at location (i, j) of the result image is 
@@ -263,14 +302,17 @@ mempty otherwise.
 
 For example,
 
-
-    *Main> upsampleRows tinyFrog
-    < Image 112x242 >
-    *Main> display . upsampleRows $ tinyFrog
+```haskell
+*Main> upsampleRows tinyFrog
+< Image 112x242 >
+*Main> display . upsampleRows $ tinyFrog
+```
 
 ![upsampleRows][]
 
-    upsample :: (Monoid (Pixel img), Image img) => img -> img
+```haskell
+upsample :: (Monoid (Pixel img), Image img) => img -> img
+```
 
 Given img, **upsample** returns an image with twice the number of
 rows and columns where the value at location (i, j) of the resulting
@@ -279,16 +321,17 @@ and mempty otherwise.
 
 For example,
 
-
-    *Main> upsample tinyFrog
-    < Image 224x242 >
-    *Main> display . upsample $ tinyFrog
-
+```haskell
+*Main> upsample tinyFrog
+< Image 224x242 >
+*Main> display . upsample $ tinyFrog
+```
 
 ![upsample][]
 
-
-    pad :: (Monoid (Pixel img), Image img) => Int -> Int -> img -> img
+```haskell
+pad :: (Monoid (Pixel img), Image img) => Int -> Int -> img -> img
+```
 
 Given m, n, and img, **pad** returns an Image with m rows and n columns 
 where the value at location (i, j) of the result image is the value 
@@ -297,15 +340,17 @@ and mempty otherwise.
 
 For example,
 
-
-    *Main> pad 200 200 tinyFrog
-    < Image 200x200 >
-    *Main> display . pad 200 200 $ tinyFrog
-
+```haskell
+*Main> pad 200 200 tinyFrog
+< Image 200x200 >
+*Main> display . pad 200 200 $ tinyFrog
+```
 
 ![padFrog][]
 
-    crop :: Image img => Int -> Int -> Int -> Int -> img -> img
+```haskell
+crop :: Image img => Int -> Int -> Int -> Int -> img -> img
+```
 
 Given a i0, j0, m, n, and img, **crop** returns an image with m rows 
 and n columns where the value at location (i, j) of the result 
@@ -313,16 +358,18 @@ image is the value of img at location (i0 + i, j0 + j).
 
 For example,
 
-
-    *Main> let frogPart = crop 64 64 128 128 frog
-    *Main> frogPart
-    < Image 128x128 >
-    *Main> display frogPart
-
+```haskell
+*Main> let frogPart = crop 64 64 128 128 frog
+*Main> frogPart
+< Image 128x128 >
+*Main> display frogPart
+```
 
 ![cropFrog][]
 
-    leftToRight :: Image img => img -> img -> img<
+```haskell
+leftToRight :: Image img => img -> img -> img<
+```
 
 Given two images with the same number of rows X and Y,  **leftToRight** 
 returns an image that is the concatenation of the two images from left to right.
@@ -331,15 +378,17 @@ triple, or list of images and displays them left to right.
 
 For example,
 
-
-    *Main> leftToRight tinyFrog tinyFrog
-    < Image 112x242 >
-    *Main> display . leftToRight tinyFrog $ tinyFrog
-
+```haskell
+*Main> leftToRight tinyFrog tinyFrog
+< Image 112x242 >
+*Main> display . leftToRight tinyFrog $ tinyFrog
+```
 
 ![leftToRight][]
 
-    topToBottom :: Image img => img -> img -> img
+```haskell
+topToBottom :: Image img => img -> img -> img
+```
 
 Given two images with the same number of columns X and Y, **topToBottom** returns an
 image that is the concatenation of the two images from top to bottom.
@@ -348,16 +397,18 @@ triple, or list of images and displays them top to bottom.
 
 For example,
 
-
-    *Main> topToBottom tinyFrog tinyFrog
-    < Image 224x121 >
-    *Main> display . topToBottom tinyFrog $ tinyFrog
+```haskell
+*Main> topToBottom tinyFrog tinyFrog
+< Image 224x121 >
+*Main> display . topToBottom tinyFrog $ tinyFrog
+```
 
 
 ![topToBottom][]
 
-
-    makeFilter :: Image img => Int -> Int -> PixelOp (Pixel img) -> img
+```haskell
+makeFilter :: Image img => Int -> Int -> PixelOp (Pixel img) -> img
+```
 
 Given a positive integer m, a positive integer n, and a function 
 returning a pixel value, **makeFilter** returns an image with m rows 
@@ -371,16 +422,16 @@ function to -1 and -1.
 
 For example,
 
-
-    *Main Data.Complex> let filter = makeFilter 128 128 (\ i j -> fromIntegral (i + j)) :: GrayImage
-    *Main Data.Complex> filter
-    < Image 128x128 >
-    *Main Data.Complex> display filter
-
+```haskell
+*Main Data.Complex> let filter = makeFilter 128 128 (\ i j -> fromIntegral (i + j)) :: GrayImage
+*Main Data.Complex> filter
+< Image 128x128 >
+*Main Data.Complex> display filter
+```
 
 ![makeFilter][]
 
-
+```haskell
     laplacianOfGaussian stddev i j =
       let r = fromIntegral (i*i + j*j)
           x = (r / 2.0) / stddev 
@@ -390,6 +441,7 @@ For example,
     *Main Data.Complex> d2g
     < Image 128x128 >
     *Main Data.Complex> display d2g
+```
 
 
 ![d2g][]
