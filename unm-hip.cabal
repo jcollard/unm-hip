@@ -1,5 +1,5 @@
 Name:              unm-hip
-Version:       	   0.3.1.5
+Version:       	   0.3.1.6
 License:           GPL
 License-File:      LICENSE
 Author:	           Joseph Collard, Stephen Patel, Lance Williams
@@ -11,7 +11,7 @@ Description:       The University of New Mexico's Haskell Image Processing libra
                    .
                    [Changes]
                    .
-                    * Modified shrink such that it now will work with Images that have a ComplexPixel type and return the same type of image. This seems more intuitive and allow users to use it with GrayImages and get GrayImages back. If the user want to use it specifically with Complex values, they will already have a ComplexImage and thus it is a non issue and the type does not need to be coerced.
+                    * Fixed typo in documentation
 Cabal-Version:     >= 1.6
 Build-Type:        Simple
 
