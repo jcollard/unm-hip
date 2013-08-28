@@ -100,12 +100,12 @@ Given an image, a positive int i, and a positive  int j,
 
 <pre>ref' :: ref' :: GrayImage -> Double -> Double -> Double</pre>
 
-Given a GreyImage, a positive double i, and a positive double j, 
-<b>ref</b> returns the bilinear interpolated 
+Given a GrayImage, a positive double i, and a positive double j, 
+<b>ref'</b> returns the bilinear interpolated 
 pixel value at location <i>(i, j)</i>. 
 
 <pre>
-*Main> ref frog 100 100
+*Main> ref' frog 100 100
 56.0
 </pre>
 
