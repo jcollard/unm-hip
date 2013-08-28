@@ -432,21 +432,23 @@ For example,
 ![makeFilter][]
 
 ```haskell
-    laplacianOfGaussian stddev i j =
-      let r = fromIntegral (i*i + j*j)
-          x = (r / 2.0) / stddev 
-      in (((-pi) / stddev) / stddev) * (1 - x) * (exp (-x))
-    
-    *Main Data.Complex> let d2g = makeFilter 128 128 (laplacianOfGaussian 8) :: ComplexImage
-    *Main Data.Complex> d2g
-    < Image 128x128 >
-    *Main Data.Complex> display d2g
+laplacianOfGaussian stddev i j =
+  let r = fromIntegral (i*i + j*j)
+  x = (r / 2.0) / stddev 
+  in (((-pi) / stddev) / stddev) * (1 - x) * (exp (-x))
+
+*Main Data.Complex> let d2g = makeFilter 128 128 (laplacianOfGaussian 8) :: ComplexImage
+*Main Data.Complex> d2g
+< Image 128x128 >
+*Main Data.Complex> display d2g
 ```
 
 
 ![d2g][]
 
-    fft :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Complex (Value (Pixel img))) => img -> img'
+```haskell
+fft :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Complex (Value (Pixel img))) => img -> img'
+```
 
 Given an image whose pixels can be converted to a complex value, 
 **fft** returns an image with complex pixels representing its 2D discrete 
@@ -456,41 +458,48 @@ must both be powers of two, i.e., 2K where K is an integer.
 
 For example,
 
-
-    *Main> let logFrog = magnitude . imageMap log . fft $ frogpart
-    *Main> logFrog
-    < Image 128x128 >
-    *Main> display logFrog
-
+```haskell
+*Main> let logFrog = magnitude . imageMap log . fft $ frogpart
+*Main> logFrog
+< Image 128x128 >
+*Main> display logFrog
+```
 
 ![fft][]
 
-
-    *Main> fft d2g
-    < Image 128x128 >
-    *Main> display . fft $ d2g
-
+```haskell
+*Main> fft d2g
+< Image 128x128 >
+*Main> display . fft $ d2g
+```
 
 ![fftd2g][]
 
-    gaussian variance i j =
-      let r = fromIntegral (i*i + j*j)
-          x = (r / (2*pi)) / variance
-      in exp (-x)
-    *Main> let g = makeFilter 128 128 (gaussian 8) :: GrayImage
-    *Main> display g
+```haskell
+gaussian variance i j =
+  let r = fromIntegral (i*i + j*j)
+  x = (r / (2*pi)) / variance
+  in exp (-x)
+
+*Main> let g = makeFilter 128 128 (gaussian 8) :: GrayImage
+*Main> display g
+```
 
 
 ![g][]
 
-    *Main> fft g 
-    < Image 128x128 >
-    *Main> display . fft $ g
+```haskell
+*Main> fft g 
+< Image 128x128 >
+*Main> display . fft $ g
+```
 
 
 ![fftg][]
 
-    ifft :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Complex (Value (Pixel img))) => img -> img'
+```haskell
+ifft :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Complex (Value (Pixel img))) => img -> img'
+```
 
 Given an image, **ifft** returns a complex image representing its 2D 
 inverse discrete Fourier transform (DFT). Because the inverse DFT is 
@@ -500,67 +509,76 @@ where K is an integer.
 
 For example,
 
+```haskell
+*Main> ifft ((fft frogPart) * (fft d2g))
 
-    *Main> ifft ((fft frogPart) * (fft d2g))
-    
-    < Image 128x128 >
-    *Main> display $ ifft ((fft frogPart) * (fft d2g))
+< Image 128x128 >
+*Main> display $ ifft ((fft frogPart) * (fft d2g))
+```
 
 
 ![ifft][]
 
-
-    *Main> ifft ((fft frogPart) * (fft g))
-    < Image 128x128 >
-    *Main> display $ ifft ((fft frogPart) * (fft g))
-
+```haskell
+*Main> ifft ((fft frogPart) * (fft g))
+< Image 128x128 >
+*Main> display $ ifft ((fft frogPart) * (fft g))
+```
 
 ![ifft2][]
 
-    realPart :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Value (Pixel img)) => img -> img'
+```haskell
+realPart :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Value (Pixel img)) => img -> img'
+```
 
 Given a complex image, returns a real image representing
 the real part of the image.
 
 For example,
 
-
-    *Main> let cosine = realPart signal :: GrayImage
-    *Main> cosine
-    < Image 128x128 >
-    *Main> display cosine
-
+```haskell
+*Main> let cosine = realPart signal :: GrayImage
+*Main> cosine
+< Image 128x128 >
+*Main> display cosine
+```
 
 ![consine][]
 
-
-    *Main> display . realPart . ifft $ (fft frogpart) * (fft d2g)
+```haskell
+*Main> display . realPart . ifft $ (fft frogpart) * (fft d2g)
+```
 
 ![realPart][]
 
-
-    *Main> display . realPart . ifft $ (fft frogpart) * (fft g)
-
+```haskell
+*Main> display . realPart . ifft $ (fft frogpart) * (fft g)
+```
 
 ![realPart2][]
 
-    imagPart :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Value (Pixel img)) => img -> img'
+```haskell
+imagPart :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Value (Pixel img)) => img -> img'
+```
 
 Given a complex image, **imagPart** returns a real image representing
 the imaginary part of the image.
 
 For example,
 
-
-    *Main> let sine = imagPart signal :: GrayImage
-    *Main> sine
-    < Image 128x128 >
-    *Main> display sine
+```haskell
+*Main> let sine = imagPart signal :: GrayImage
+*Main> sine
+< Image 128x128 >
+*Main> display sine
+```
 
 
 ![sine][]
 
-    complex :: (Image img, Image img', Pixel img' ~ C.Complex (Pixel img)) => img -> img -> img'
+```haskell
+complex :: (Image img, Image img', Pixel img' ~ C.Complex (Pixel img)) => img -> img -> img'
+```
 
 Given an image representing the real part of a complex image, and
 an image representing the imaginary part of a complex image, **complex** returns
@@ -568,68 +586,82 @@ a complex image.
 
 For example,
 
-
-    *Main> complex cosine sine :: ComplexImage
-    < Image 128x128 >
-    *Main> display (complex cosine sine :: ComplexImage)
-
+```haskell
+*Main> complex cosine sine :: ComplexImage
+< Image 128x128 >
+*Main> display (complex cosine sine :: ComplexImage)
+```
 
 ![signal][]
 
-    complexImageToRectangular :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Value (Pixel img)) => img -> (img', img')
+```haskell
+complexImageToRectangular :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Value (Pixel img)) => img -> (img', img')
+```
 
 Given a complex image, **complexImageToRectangular** returns a pair of real images each representing
 a component of the complex image (real, imaginary).
 
 For example,
 
-
-    *Main> leftToRight' . complexImageToRectangular $ signal
-    < Image 128x256 >
-    *Main> display . leftToRight' . complexImageToRectangular $ signal
+```haskell
+*Main> leftToRight' . complexImageToRectangular $ signal
+< Image 128x256 >
+*Main> display . leftToRight' . complexImageToRectangular $ signal
+```
 
 ![complesSignalToRectangular][]
 
-    magnitude :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Value (Pixel img)) => img -> img'
+```haskell
+magnitude :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Value (Pixel img)) => img -> img'
+```
 
 Given a complex image, returns a real image representing
 the magnitude of the image.
 
-
-    angle :: (Image img, ComplexPixel (Pixel img), Image img', Pixel img' ~ Value (Pixel img)) => img -> img'
+```haskell
+angle :: (Image img, ComplexPixel (Pixel img), Image img', Pixel img' ~ Value (Pixel img)) => img -> img'
+```
 
 Given a complex image, **angle** returns a real image representing
 the angle of the image.
 
 For example,
 
-
-    *Main> angle signal
-    < Image 128x128 >
-    *Main> display (angle signal :: GrayImage)
+```haskell
+*Main> angle signal
+< Image 128x128 >
+*Main> display (angle signal :: GrayImage)
+```
 
 ![angle][]
 
-    complexImageToPolar :: (Image img, ComplexPixel (Pixel img), Image img', Pixel img' ~ Value (Pixel img)) => img -> (img', img')
+```haskell
+complexImageToPolar :: (Image img, ComplexPixel (Pixel img), Image img', Pixel img' ~ Value (Pixel img)) => img -> (img', img')
+```
 
 Given a complex image, **complexImageToPolar** returns a pair of real images each
 representing the component (magnitude, phase) of the image
 
-
-    *Main> complexImageToPolar signal
-    (< Image 128x128 >,< Image 128x128 >)
-    *Main> display . leftToRight' . complexImageToPolar $ signal
+```haskell
+*Main> complexImageToPolar signal
+(< Image 128x128 >,< Image 128x128 >)
+*Main> display . leftToRight' . complexImageToPolar $ signal
+```
 
 
 ![complexImageToPolar][]
 
-    (==) :: (==) :: Eq a => a -> a -> Bool
+```haskell
+(==) :: (==) :: Eq a => a -> a -> Bool
+```
 
-Images installed in the Eq type class (Boxed images) may be compared using the `(==)`. This returns True if and only if the images are of equal dimension and for each pixel (i, j) in the two images are (==).
+Images installed in the Eq type class (Boxed images) may be compared using the (==). This returns True if and only if the images are of equal dimension and for each pixel (i, j) in the two images are (==).
 
-<pre>(&lt;) :: Ord a => a -> a -> Bool</pre>
+```haskell
+(<) :: Ord a => a -> a -> Bool
+```
 
-Images installed in the Ord type class (Boxed images) may be compared using (&lt;). This returns True if and only if the images are of equal dimension and for each pixel (i, j) in the two images are (&lt;).
+Images installed in the Ord type class (Boxed images) may be compared using `(<)`. This returns True if and only if the images are of equal dimension and for each pixel (i, j) in the two images are `(<)`.
 
 <pre>(&gt;) :: Ord a => a -> a -> Bool</pre>
 
