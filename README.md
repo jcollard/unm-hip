@@ -6,13 +6,14 @@ To use unm-hip interactively in ghci, import Data.Image.Interactive. This provid
 
 Sets the program to use when making a call to display and specifies if the program can accept an image via stdin. If it cannot, then a temporary file will be created and passed as an argument instead. By default, ImageMagick (display) is the default program to use and it is read using stdin.
 
+```haskell
+*Main> setDisplayProgram "gimp" False
+*Main> setDisplayProgram "xv" False
+*Main> setDisplayProgram "display" True
 
-    *Main> setDisplayProgram "gimp" False
-    *Main> setDisplayProgram "xv" False
-    *Main> setDisplayProgram "display" True
 
-
-    display :: DisplayFormat df => df -> IO (Handle, Handle, Handle, ProcessHandle)
+display :: DisplayFormat df => df -> IO (Handle, Handle, Handle, ProcessHandle)
+```
 
 Makes a call to the current display program to be displayed. If the program cannot read from standard in, a file named .tmp-img is created and used as an argument to the program.
 
