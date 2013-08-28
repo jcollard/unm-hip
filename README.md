@@ -211,157 +211,155 @@ For example,
     < Image 112x242 >
     *Main> display . downsampleCols $ frog
 
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/downsamplecolsfrog.jpg"/>
-<p>
+![downsampleColsFrog][]
 
-<pre>downsampleRows :: Image img => img -> img</pre>
+    downsampleRows :: Image img => img -> img
 
-Given img, <b>downsampleRows</b> returns the image created by discarding the odd 
-    numbered columns, i.e., the value at location (i, j) is the value of img 
-    at location (i, 2j).  
+Given img, **downsampleRows** returns the image created by discarding the odd 
+numbered columns, i.e., the value at location (i, j) is the value of img
+at location (i, 2j).
 
 For example,
 
-<pre>
-*Main> downsampleRows frog
-&lt; Image 225x121 &gt;
-*Main> display . downsampleRows $ frog
-</pre>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/downsamplerowsfrog.jpg"/>
-<p>
-<pre>downsample :: Image img => img -> img</pre>
 
-<pre>
-*Main> let tinyFrog = downsample frog
-*Main> tinyFrog
-&lt; Image 112x121 &gt;
-*Main> display tinyFrog
-</pre>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/downsamplefrog.jpg" />
-<p>
-<pre>upsampleCols :: (Monoid (Pixel img), Image img) => img -> img</pre>
+    *Main> downsampleRows frog
+    < Image 225x121 >
+    *Main> display . downsampleRows $ frog
 
-Given img, <b>upsampleCols</b> returns an image with twice the number of 
+![downsampleRowsFrog][]
+
+    downsample :: Image img => img -> img
+
+    *Main> let tinyFrog = downsample frog
+    *Main> tinyFrog
+    < Image 112x121 >
+    *Main> display tinyFrog
+
+![downsampleFrog][]
+
+    upsampleCols :: (Monoid (Pixel img), Image img) => img -> img
+
+Given img, **upsampleCols** returns an image with twice the number of 
 rows where the value at location (i, j) of the result image is the 
 value of img at location (i/2, j) if i is even and mempty otherwise.
 
 For example,
 
-<pre>
-*Main> upsampleCols tinyFrog
-&lt; Image 224x121 &gt;
-*Main> display . upsampleCols $ tinyFrog
-</pre>
-<p>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/upsamplecols.jpg" />
-<p>
-<pre>upsampleRows :: (Monoid (Pixel img), Image img) => img -> img</pre>
 
-Given img, <b>upsampleRows</b> returns an image with twice the number of 
+    *Main> upsampleCols tinyFrog
+    < Image 224x121 >
+    *Main> display . upsampleCols $ tinyFrog
+
+
+![upsampleCols][]
+
+    upsampleRows :: (Monoid (Pixel img), Image img) => img -> img
+
+Given img, **upsampleRows** returns an image with twice the number of 
 columns where the value at location (i, j) of the result image is 
 the value of img at location (i, j/2) if j is even and 
 mempty otherwise.
 
 For example,
 
-<pre>
-*Main> upsampleRows tinyFrog
-&lt; Image 112x242 &gt;
-*Main> display . upsampleRows $ tinyFrog
-</pre>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/upsamplerows.jpg"/>
-<p>
-<pre>upsample :: (Monoid (Pixel img), Image img) => img -> img</pre>
 
-Given img, <b>upsample</b> returns an image with twice the number of
-    rows and columns where the value at location (i, j) of the resulting
-    image is the value of img at location (i/2, j/2) if i and jare are even
-    and mempty otherwise.
+    *Main> upsampleRows tinyFrog
+    < Image 112x242 >
+    *Main> display . upsampleRows $ tinyFrog
 
-For example,
+![upsampleRows][]
 
-<pre>
-*Main> upsample tinyFrog
-&lt; Image 224x242 &gt;
-*Main> display . upsample $ tinyFrog
-</pre>
-<p>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/upsample.jpg"/>
-<p>
+    upsample :: (Monoid (Pixel img), Image img) => img -> img
 
-<pre>pad :: (Monoid (Pixel img), Image img) => Int -> Int -> img -> img</pre>
-
-Given m, n, and img, <b>pad</b> returns an Image with m rows and n columns 
-    where the value at location (i, j) of the result image is the value 
-    of img at location (i, j) if i is less than m and j is less than n 
-    and mempty otherwise.
+Given img, **upsample** returns an image with twice the number of
+rows and columns where the value at location (i, j) of the resulting
+image is the value of img at location (i/2, j/2) if i and jare are even
+and mempty otherwise.
 
 For example,
 
-<pre>
-*Main> pad 200 200 tinyFrog
-&lt; Image 200x200 &gt;
-*Main> display . pad 200 200 $ tinyFrog
-</pre>
-<p>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/padfrog.jpg"/>
-</p>
-<pre>crop :: Image img => Int -> Int -> Int -> Int -> img -> img</pre>
 
-Given a i0, j0, m, n, and img, <b>crop</b> returns an image with m rows 
+    *Main> upsample tinyFrog
+    < Image 224x242 >
+    *Main> display . upsample $ tinyFrog
+
+
+![upsample][]
+
+
+    pad :: (Monoid (Pixel img), Image img) => Int -> Int -> img -> img
+
+Given m, n, and img, **pad** returns an Image with m rows and n columns 
+where the value at location (i, j) of the result image is the value 
+of img at location (i, j) if i is less than m and j is less than n 
+and mempty otherwise.
+
+For example,
+
+
+    *Main> pad 200 200 tinyFrog
+    < Image 200x200 >
+    *Main> display . pad 200 200 $ tinyFrog
+
+
+![padFrog][]
+
+    crop :: Image img => Int -> Int -> Int -> Int -> img -> img
+
+Given a i0, j0, m, n, and img, **crop** returns an image with m rows 
 and n columns where the value at location (i, j) of the result 
 image is the value of img at location (i0 + i, j0 + j).  
 
 For example,
 
-<pre>
-*Main> let frogPart = crop 64 64 128 128 frog
-*Main> frogPart
-&lt; Image 128x128 &gt;
-*Main> display frogPart
-</pre>
-<p>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/cropfrog.jpg"/>
-<p>
-<pre>leftToRight :: Image img => img -> img -> img</pre>
 
-Given two images with the same number of rows X and Y,  <b>leftToRight</b> 
-returns an
-image that is the concatenation of the two images from left to right.
-There is a convenience function, <b>leftToRight'</b> that takes a pair,
+    *Main> let frogPart = crop 64 64 128 128 frog
+    *Main> frogPart
+    < Image 128x128 >
+    *Main> display frogPart
+
+
+![cropFrog][]
+
+    leftToRight :: Image img => img -> img -> img<
+
+Given two images with the same number of rows X and Y,  **leftToRight** 
+returns an image that is the concatenation of the two images from left to right.
+There is a convenience function, **leftToRight'** that takes a pair,
 triple, or list of images and displays them left to right.
 
 For example,
 
-<pre>
-*Main> leftToRight tinyFrog tinyFrog
-&lt; Image 112x242 &gt;
-*Main> display . leftToRight tinyFrog $ tinyFrog
-</pre>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/lefttoright.jpg"/>
-<p>
-<pre>topToBottom :: Image img => img -> img -> img</pre>
 
-Given two images with the same number of columns X and Y, <b>topToBottom</b> returns an
+    *Main> leftToRight tinyFrog tinyFrog
+    < Image 112x242 >
+    *Main> display . leftToRight tinyFrog $ tinyFrog
+
+
+![leftToRight][]
+
+    topToBottom :: Image img => img -> img -> img
+
+Given two images with the same number of columns X and Y, **topToBottom** returns an
 image that is the concatenation of the two images from top to bottom.
-There is a convenience function, <b>topToBottom'</b> that takes a pair,
+There is a convenience function, **topToBottom'** that takes a pair,
 triple, or list of images and displays them top to bottom.
 
 For example,
 
-<pre>
-*Main> topToBottom tinyFrog tinyFrog
-&lt; Image 224x121 &gt;
-*Main> display . topToBottom tinyFrog $ tinyFrog
-</pre>
-<p>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/toptobottom.jpg">
-</p>
 
-<pre>makeFilter :: Image img => Int -> Int -> PixelOp (Pixel img) -> img</pre>
+    *Main> topToBottom tinyFrog tinyFrog
+    < Image 224x121 >
+    *Main> display . topToBottom tinyFrog $ tinyFrog
+
+
+![topToBottom][]
+
+
+    makeFilter :: Image img => Int -> Int -> PixelOp (Pixel img) -> img
 
 Given a positive integer m, a positive integer n, and a function 
-returning a pixel value, <b>makeFilter</b> returns an image with m rows 
+returning a pixel value, **makeFilter** returns an image with m rows 
 and n columns. Let x equal i if i is less than m/2 and i - m otherwise 
 and let y equal j if j is less than n/2 and j - n otherwise. To match 
 the periodicity of the 2D discrete Fourier spectrum, the value of the 
@@ -372,198 +370,209 @@ function to -1 and -1.
 
 For example,
 
-<pre>
-*Main Data.Complex> let filter = makeFilter 128 128 (\ i j -> fromIntegral (i + j)) :: GrayImage
-*Main Data.Complex> filter
-&lt; Image 128x128 &gt;
-*Main Data.Complex> display filter
-</pre>
-<p>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/makefilter.jpg" />
-<p>
-<pre>
-laplacianOfGaussian stddev i j =
-  let r = fromIntegral (i*i + j*j)
-      x = (r / 2.0) / stddev 
-  in (((-pi) / stddev) / stddev) * (1 - x) * (exp (-x))
 
-*Main Data.Complex> let d2g = makeFilter 128 128 (laplacianOfGaussian 8) :: ComplexImage
-*Main Data.Complex> d2g
-&lt; Image 128x128 &gt;
-*Main Data.Complex> display d2g
-</pre>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/d2g.jpg" />
-<p>
-<pre>fft :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Complex (Value (Pixel img))) => img -> img'</pre>
+    *Main Data.Complex> let filter = makeFilter 128 128 (\ i j -> fromIntegral (i + j)) :: GrayImage
+    *Main Data.Complex> filter
+    < Image 128x128 >
+    *Main Data.Complex> display filter
+
+
+![makeFilter][]
+
+
+    laplacianOfGaussian stddev i j =
+      let r = fromIntegral (i*i + j*j)
+          x = (r / 2.0) / stddev 
+      in (((-pi) / stddev) / stddev) * (1 - x) * (exp (-x))
+    
+    *Main Data.Complex> let d2g = makeFilter 128 128 (laplacianOfGaussian 8) :: ComplexImage
+    *Main Data.Complex> d2g
+    < Image 128x128 >
+    *Main Data.Complex> display d2g
+
+
+![d2g][]
+
+    fft :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Complex (Value (Pixel img))) => img -> img'
 
 Given an image whose pixels can be converted to a complex value, 
-<b>fft</b> returns an image with complex pixels representing its 2D discrete 
+**fft** returns an image with complex pixels representing its 2D discrete 
 Fourier transform (DFT). Because the DFT is computed using the Fast Fourier 
 Transform (FFT) algorithm, the number of rows and columns of the image 
 must both be powers of two, i.e., 2K where K is an integer.
 
 For example,
 
-<pre>
-*Main> let logFrog = magnitude . imageMap log . fft $ frogpart
-*Main> logFrog
-&lt; Image 128x128 &gt;
-*Main> display logFrog
-</pre>
-<p>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/fft.jpg"/>
-<p>
-<pre>
-*Main> fft d2g
-&lt; Image 128x128 &gt;
-*Main> display . fft $ d2g
-</pre>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/fftd2g.jpg" />
-<pre>
-gaussian variance i j =          
-  let r = fromIntegral (i*i + j*j)
-      x = (r / (2*pi)) / variance
-  in exp (-x)
-*Main> let g = makeFilter 128 128 (gaussian 8) :: GrayImage
-*Main> display g
-</pre>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/g.jpg"/>
-<pre>
-*Main> fft g 
-&lt; Image 128x128 &gt;
-*Main> display . fft $ g
-</pre>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/fftg.jpg"/>
-<p>
-<pre>ifft :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Complex (Value (Pixel img))) => img -> img'</pre>
 
-Given an image, <b>ifft</b> returns a complex image representing its 2D 
+    *Main> let logFrog = magnitude . imageMap log . fft $ frogpart
+    *Main> logFrog
+    < Image 128x128 >
+    *Main> display logFrog
+
+
+![fft][]
+
+
+    *Main> fft d2g
+    < Image 128x128 >
+    *Main> display . fft $ d2g
+
+
+![fftd2g][]
+
+    gaussian variance i j =
+      let r = fromIntegral (i*i + j*j)
+          x = (r / (2*pi)) / variance
+      in exp (-x)
+    *Main> let g = makeFilter 128 128 (gaussian 8) :: GrayImage
+    *Main> display g
+
+
+![g][]
+
+    *Main> fft g 
+    < Image 128x128 >
+    *Main> display . fft $ g
+
+
+![fftg][]
+
+    ifft :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Complex (Value (Pixel img))) => img -> img'
+
+Given an image, **ifft** returns a complex image representing its 2D 
 inverse discrete Fourier transform (DFT). Because the inverse DFT is 
 computed using the Fast Fourier Transform (FFT) algorithm, the number 
-of rows and columns of <image> must both be powers of two, i.e., 2K 
+of rows and columns of &lt;image&gt; must both be powers of two, i.e., 2K 
 where K is an integer. 
 
 For example,
 
-<pre>
-*Main> ifft ((fft frogPart) * (fft d2g))
 
-&lt; Image 128x128 &gt;
-*Main> display $ ifft ((fft frogPart) * (fft d2g))
-</pre>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/ifft.jpg"/>
-<p>
-<pre>
-*Main> ifft ((fft frogPart) * (fft g))
-&lt; Image 128x128 &gt;
-*Main> display $ ifft ((fft frogPart) * (fft g))
-</pre>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/ifft2.jpg" />
-<p>
-<pre>realPart :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Value (Pixel img)) => img -> img'</pre>
+    *Main> ifft ((fft frogPart) * (fft d2g))
+    
+    < Image 128x128 >
+    *Main> display $ ifft ((fft frogPart) * (fft d2g))
+
+
+![ifft][]
+
+
+    *Main> ifft ((fft frogPart) * (fft g))
+    < Image 128x128 >
+    *Main> display $ ifft ((fft frogPart) * (fft g))
+
+
+![ifft2][]
+
+    realPart :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Value (Pixel img)) => img -> img'
 
 Given a complex image, returns a real image representing
-    the real part of the image.
+the real part of the image.
 
 For example,
 
-<pre>
-*Main> let cosine = realPart signal :: GrayImage
-*Main> cosine
-&lt; Image 128x128 &gt;
-*Main> display cosine
-</pre>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/cosine.jpg"/>
-<p>
-<pre>
-*Main> display . realPart . ifft $ (fft frogpart) * (fft d2g)
-</pre>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/realpart.jpg"/>
-<p>
-<pre>
-*Main> display . realPart . ifft $ (fft frogpart) * (fft g)
-</pre>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/realpart2.jpg" />
-<p>
-<pre>imagPart :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Value (Pixel img)) => img -> img'</pre>
 
-Given a complex image, <b>imagPart</b> returns a real image representing
-   the imaginary part of the image
+    *Main> let cosine = realPart signal :: GrayImage
+    *Main> cosine
+    < Image 128x128 >
+    *Main> display cosine
+
+
+![consine][]
+
+
+    *Main> display . realPart . ifft $ (fft frogpart) * (fft d2g)
+
+![realPart][]
+
+
+    *Main> display . realPart . ifft $ (fft frogpart) * (fft g)
+
+
+![realPart2][]
+
+    imagPart :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Value (Pixel img)) => img -> img'
+
+Given a complex image, **imagPart** returns a real image representing
+the imaginary part of the image.
 
 For example,
 
-<pre>
-*Main> let sine = imagPart signal :: GrayImage
-*Main> sine
-&lt; Image 128x128 &gt;
-*Main> display sine
-</pre>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/sine.jpg" />
-<p>
-<pre>complex :: (Image img, Image img', Pixel img' ~ C.Complex (Pixel img)) => img -> img -> img'</pre>
+
+    *Main> let sine = imagPart signal :: GrayImage
+    *Main> sine
+    < Image 128x128 >
+    *Main> display sine
+
+
+![sine][]
+
+    complex :: (Image img, Image img', Pixel img' ~ C.Complex (Pixel img)) => img -> img -> img'
 
 Given an image representing the real part of a complex image, and
-an image representing the imaginary part of a complex image, <b>complex</b> returns
+an image representing the imaginary part of a complex image, **complex** returns
 a complex image.
 
 For example,
 
-<pre>
-*Main> complex cosine sine :: ComplexImage
-&lt; Image 128x128 &gt;
-*Main> display (complex cosine sine :: ComplexImage)
-</pre>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/signal.jpg" />
-<p>
-<pre>complexImageToRectangular :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Value (Pixel img)) => img -> (img', img')</pre>
 
-Given a complex image, <b>complexImageToRectangular</b> returns a pair of real images each representing
+    *Main> complex cosine sine :: ComplexImage
+    < Image 128x128 >
+    *Main> display (complex cosine sine :: ComplexImage)
+
+
+![signal][]
+
+    complexImageToRectangular :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Value (Pixel img)) => img -> (img', img')
+
+Given a complex image, **complexImageToRectangular** returns a pair of real images each representing
 a component of the complex image (real, imaginary).
 
 For example,
 
-<pre>
-*Main> leftToRight' . complexImageToRectangular $ signal
-&lt; Image 128x256 &gt;
-*Main> display . leftToRight' . complexImageToRectangular $ signal
-</pre>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/complexsignaltorectangular.jpg"/>
-<p>
-<pre>magnitude :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Value (Pixel img)) => img -> img'</pre>
+
+    *Main> leftToRight' . complexImageToRectangular $ signal
+    < Image 128x256 >
+    *Main> display . leftToRight' . complexImageToRectangular $ signal
+
+![complesSignalToRectangular][]
+
+    magnitude :: (Image img, Image img', ComplexPixel (Pixel img), Pixel img' ~ Value (Pixel img)) => img -> img'
 
 Given a complex image, returns a real image representing
 the magnitude of the image.
 
-<p>
-<pre>angle :: (Image img, ComplexPixel (Pixel img), Image img', Pixel img' ~ Value (Pixel img)) => img -> img'</pre>
 
-Given a complex image, <b>angle</b> returns a real image representing
+    angle :: (Image img, ComplexPixel (Pixel img), Image img', Pixel img' ~ Value (Pixel img)) => img -> img'
+
+Given a complex image, **angle** returns a real image representing
 the angle of the image.
 
 For example,
 
-<pre>
-*Main> angle signal
-&lt; Image 128x128 &gt;
-*Main> display (angle signal :: GrayImage)
-</pre>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/angle.jpg"/>
-<p>
-<pre>complexImageToPolar :: (Image img, ComplexPixel (Pixel img), Image img', Pixel img' ~ Value (Pixel img)) => img -> (img', img')</pre>
 
-Given a complex image, <b>complexImageToPolar</b> returns a pair of real images each
+    *Main> angle signal
+    < Image 128x128 >
+    *Main> display (angle signal :: GrayImage)
+
+![angle][]
+
+    complexImageToPolar :: (Image img, ComplexPixel (Pixel img), Image img', Pixel img' ~ Value (Pixel img)) => img -> (img', img')
+
+Given a complex image, **complexImageToPolar** returns a pair of real images each
 representing the component (magnitude, phase) of the image
 
-<pre>
-*Main> complexImageToPolar signal
-(&lt; Image 128x128 &gt;,&lt; Image 128x128 &gt;)
-*Main> display . leftToRight' . complexImageToPolar $ signal
-</pre>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/compleximagetopolar.jpg"/>
-<p>
-<pre>(==) :: (==) :: Eq a => a -> a -> Bool</pre>
 
-Images installed in the Eq type class (Boxed images) may be compared using the (==). This returns True if and only if the images are of equal dimension and for each pixel (i, j) in the two images are (==).
+    *Main> complexImageToPolar signal
+    (< Image 128x128 >,< Image 128x128 >)
+    *Main> display . leftToRight' . complexImageToPolar $ signal
+
+
+![complexImageToPolar][]
+
+    (==) :: (==) :: Eq a => a -> a -> Bool
+
+Images installed in the Eq type class (Boxed images) may be compared using the `(==)`. This returns True if and only if the images are of equal dimension and for each pixel (i, j) in the two images are (==).
 
 <pre>(&lt;) :: Ord a => a -> a -> Bool</pre>
 
@@ -1142,3 +1151,28 @@ For example,
 [convolvecols]: https://raw.github.com/jcollard/unm-hip/master/examples/convolvecols.jpg "convolvecols"
 [convolvedxdy]: https://raw.github.com/jcollard/unm-hip/master/examples/convolvedxdy.jpg "convolvedxdy"
 [convolve]: https://raw.github.com/jcollard/unm-hip/master/examples/convolve.jpg "convolve"
+[downsampleColsFrog]: https://raw.github.com/jcollard/unm-hip/master/examples/downsamplecolsfrog.jpg "downsampleColsFrog"
+[downsampleRowsFrog]: https://raw.github.com/jcollard/unm-hip/master/examples/downsamplerowsfrog.jpg "downsampleRowsFrog"
+[downsampleFrog]: https://raw.github.com/jcollard/unm-hip/master/examples/downsamplefrog.jpg "downsampleFrog"
+[upsampleCols]: https://raw.github.com/jcollard/unm-hip/master/examples/upsamplecols.jpg "upsampleCols"
+[upsampleRows]: https://raw.github.com/jcollard/unm-hip/master/examples/upsamplerows.jpg "upsampleRows"
+[upsample]: https://raw.github.com/jcollard/unm-hip/master/examples/upsample.jpg "upsample"
+[padFrog]: https://raw.github.com/jcollard/unm-hip/master/examples/padfrog.jpg "padFrog"
+[cropFrog]: https://raw.github.com/jcollard/unm-hip/master/examples/cropfrog.jpg "cropFrog"
+[leftToRight]: https://raw.github.com/jcollard/unm-hip/master/examples/lefttoright.jpg "leftToRight"
+[topToBottom]: https://raw.github.com/jcollard/unm-hip/master/examples/toptobottom.jpg "topToBottom"
+[makeFilter]: https://raw.github.com/jcollard/unm-hip/master/examples/makefilter.jpg "makeFilter"
+[d2g]: https://raw.github.com/jcollard/unm-hip/master/examples/d2g.jpg "d2g"
+[fft]: https://raw.github.com/jcollard/unm-hip/master/examples/fft.jpg "fft"
+[fftd2g]: https://raw.github.com/jcollard/unm-hip/master/examples/fftd2g.jpg "fftd2g"
+[g]: https://raw.github.com/jcollard/unm-hip/master/examples/g.jpg "g"
+[fftg]: https://raw.github.com/jcollard/unm-hip/master/examples/fftg.jpg "fftg"
+[ifft]: https://raw.github.com/jcollard/unm-hip/master/examples/ifft.jpg "ifft"
+[ifft2]: https://raw.github.com/jcollard/unm-hip/master/examples/ifft2.jpg "ifft2"
+[consine]: https://raw.github.com/jcollard/unm-hip/master/examples/cosine.jpg "consine"
+[realPart]: https://raw.github.com/jcollard/unm-hip/master/examples/realpart.jpg "realPart"
+[realPart2]: https://raw.github.com/jcollard/unm-hip/master/examples/realpart2.jpg "realPart2"
+[sine]: https://raw.github.com/jcollard/unm-hip/master/examples/sine.jpg "sine"
+[complexSignalToRectangular]: https://raw.github.com/jcollard/unm-hip/master/examples/complexsignaltorectangular.jpg "complexSignalToRectangular"
+[angle]: https://raw.github.com/jcollard/unm-hip/master/examples/angle.jpg "angle"
+[complexImageToPolar]: https://raw.github.com/jcollard/unm-hip/master/examples/compleximagetopolar.jpg "complexImageToPolar"
