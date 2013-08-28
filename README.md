@@ -1,12 +1,12 @@
 ## University of New Mexico's Haskell Image Processing Library##
-To get started, import Data.Image or Data.Image.Boxed.
-To use unm-hip interactively in ghci, import Data.Image.Interactive. This provides three useful functions: display, setDisplayProgram, and plotHistograms.
+To get started, import `Data.Image` or `Data.Image.Boxed`.
+To use unm-hip interactively in ghci, import `Data.Image.Interactive`. This provides three useful functions: `display`, `setDisplayProgram`, and `plotHistograms`.
 
 ```haskell
 setDisplayProgram :: String -> Bool -> IO ()
 ```
 
-Sets the program to use when making a call to display and specifies if the program can accept an image via stdin. If it cannot, then a temporary file will be created and passed as an argument instead. By default, ImageMagick (display) is the default program to use and it is read using stdin.
+Sets the program to use when making a call to `display` and specifies if the program can accept an image via stdin. If it cannot, then a temporary file will be created and passed as an argument instead. By default, ImageMagick (`display`) is the default program to use and it is read using stdin.
 
 ```haskell
 *Main> setDisplayProgram "gimp" False
@@ -23,8 +23,8 @@ Makes a call to the current display program to be displayed. If the program cann
 makeImage :: Image i => Int -> Int -> PixelOp (Pixel i) -> i
 ```
 
-Given an Int m, Int n, and a PixelOp f, **makeImage**
-returns an Image with dimensions m x n and the Pixel value at 
+Given an `Int` m, `Int` n, and a `PixelOp` f, `makeImage`
+returns an Image with dimensions m x n and the `Pixel` value at 
 each (i, j) is (f i j)
 
 ```haskell
@@ -57,9 +57,7 @@ harmonicSignal u v m n = exp ((2*pii) * ((u*(fromIntegral m) + v*(fromIntegral n
 readImage :: FilePath -> IO GrayImage
 ```
 
-Given the file path to a file containing an image
-stored in ASCII *.pgm* format, **readImage** reads the file
-and returns the *Image*. For example,
+Given the file path to a file containing an image stored in ASCII *.pgm* format, `readImage` reads the file and returns the *Image*. For example,
 
 ```haskell
 *Main> frog &lt;- readImage "images/frog.pgm"
@@ -74,8 +72,8 @@ writeImage :: DisplayFormat df => FilePath -> df -> IO ()
 ```
 
 Given a filename and an Image, 
-**writeImage** creates a file representing the image in ASCII
-*.pgm* format for *GrayImage*s and *.ppm* for *ColorImage* and *ComplexImage*.
+`writeImage` creates a file representing the image in ASCII
+*.pgm* format for `GrayImage`s and *.ppm* for `ColorImage` and `ComplexImage`.
 Note: Images saved this way are normalized to integers in the range 0 to 255; 
 this may result in loss of detail.
 
@@ -105,8 +103,8 @@ creates a file which looks like this:
 ref :: Image i => i -> Int -> Int -> Pixel i
 ```
 
-Given an image, a positive int i, and a positive  int j, 
-**ref** returns the pixel value at location *(i, j)*.
+Given an image, a positive `Int` i, and a positive `Int` j, 
+`ref` returns the `Pixel` value at location *(i, j)*.
 
 ```haskell
 *Main> ref frog 100 100
@@ -116,9 +114,9 @@ Given an image, a positive int i, and a positive  int j,
 ref' :: ref' :: GrayImage -> Double -> Double -> Double
 ```
 
-Given a GrayImage, a positive double i, and a positive double j, 
-**ref'** returns the bilinear interpolated 
-pixel value at location *(i, j)*. 
+Given a `GrayImage`, a positive `Double` i, and a positive `Double` j, 
+`ref'` returns the bilinear interpolated 
+`Pixel` value at location *(i, j)*. 
 
 ```haskell
 *Main> ref' frog 100 100
@@ -129,7 +127,7 @@ pixel value at location *(i, j)*.
 rows :: Image i => i -> Int
 ```
 
-Given an image, **rows** returns the number of rows of in the image.
+Given an `Image`, `rows` returns the number of rows of in the `Image`.
 For example,
 
 ```haskell
@@ -139,7 +137,7 @@ For example,
 cols :: Image i => i -> Int
 ```
 
-Given an image, **cols** returns the number of columns of in the image.
+Given an `Image`, `cols` returns the number of columns of in the `Image`.
 For example,
 
 ```haskell
@@ -149,16 +147,15 @@ For example,
 transpose :: Image img => img -> img
 ```
 
-Given an Image img, **transpose** returns an image created by interchanging 
-the rows and columns of the image, i.e., the value at location *(i, j)*
-of the result image is the value of the img at location *(j, i)*.
+Given an `Image` **img**, `transpose` returns an `Image` created by interchanging the rows and columns of the `Image`, i.e., the value at location *(i, j)* of the result `Image` is the value of the **img** at location *(j, i)*.
+
 For example,
 
 ```haskell
 *Main> transpose frog
 < Image 242x225 >
 *Main> display . transpose $ frog
-```
+
 
 
 ![transposeFrog][]
@@ -167,9 +164,10 @@ For example,
 convolveRows :: (Num (Pixel img), Image img) => [Pixel img] -> img -> img
 ```
 
-Given a list consisting solely of pixel values representing a 1D 
-convolution kernel and an image, **convolveRows** returns the 1D discrete 
-periodic convolution of the rows of the image with the kernel.
+Given a list consisting solely of `Pixel` values representing a 1D 
+convolution kernel and an `Image`, **convolveRows** returns the 1D discrete 
+periodic convolution of the rows of the `Image` with the kernel.
+
 For example,
 
 ```haskell
@@ -184,9 +182,10 @@ For example,
 convolveCols :: (Num (Pixel img), Image img) => [Pixel img] -> img -> img
 ```
 
-Given a list consisting solely of pixel values representing a 1D 
-convolution kernel and an image, **convolveCols** returns the 1D discrete 
-periodic convolution of the columns of the image with the kernel.
+Given a list consisting solely of `Pixel` values representing a 1D 
+convolution kernel and an `Image`, **convolveCols** returns the 1D discrete 
+periodic convolution of the columns of the `Image` with the kernel.
+
 For example,
 
 ```haskell
@@ -213,9 +212,8 @@ For example,
 convolve :: (Num (Pixel img), Image img) => \[\[Pixel img\]\] -> img -> img
 ```
 
-Given a 2D list consisting solely of pixels representing a 2D 
-convolution kernel and an image, **convolve** returns the 2D discrete 
-periodic convolution of the image with the kernel.
+Given a 2D list consisting solely of `Pixel`s representing a 2D convolution kernel and an `Image`, **convolve** returns the 2D discrete periodic convolution of the `Image` with the kernel.
+
 For example,
 
 ```haskell
@@ -230,9 +228,9 @@ For example,
 downsampleCols :: Image img => img -> img
 ```
 
-Given img, **downsampleCols** returns the image created by discarding 
-the odd numbered rows, i.e., the value at location (i, j) of the 
-result image is the value of img at location (2i, j).  
+Given **img**, `downsampleCols` returns the image created by discarding 
+the odd numbered rows, i.e., the value at location *(i, j)* of the 
+result image is the value of **img** at location *(2i, j)*.
 
 For example,
 
@@ -248,9 +246,9 @@ For example,
 downsampleRows :: Image img => img -> img
 ```
 
-Given img, **downsampleRows** returns the image created by discarding the odd 
-numbered columns, i.e., the value at location (i, j) is the value of img
-at location (i, 2j).
+Given **img**, `downsampleRows` returns the image created by discarding the odd 
+numbered columns, i.e., the value at location *(i, j)* is the value of **img**
+at location *(i, 2j)*.
 
 For example,
 
@@ -277,9 +275,9 @@ downsample :: Image img => img -> img
 upsampleCols :: (Monoid (Pixel img), Image img) => img -> img
 ```
 
-Given img, **upsampleCols** returns an image with twice the number of 
-rows where the value at location (i, j) of the result image is the 
-value of img at location (i/2, j) if i is even and mempty otherwise.
+Given **img**, `upsampleCols` returns an `Image` with twice the number of 
+rows where the value at location *(i, j)* of the result `Image` is the 
+value of **img** at location *(i/2, j)* if *i* is even and `mempty` otherwise.
 
 For example,
 
@@ -295,10 +293,10 @@ For example,
 upsampleRows :: (Monoid (Pixel img), Image img) => img -> img
 ```
 
-Given img, **upsampleRows** returns an image with twice the number of 
-columns where the value at location (i, j) of the result image is 
-the value of img at location (i, j/2) if j is even and 
-mempty otherwise.
+Given **img**, *upsampleRows* returns an `Image` with twice the number of 
+columns where the value at location *(i, j)* of the result `Image` is 
+the value of **img** at location *(i, j/2)* if *j* is even and 
+`mempty` otherwise.
 
 For example,
 
@@ -314,10 +312,10 @@ For example,
 upsample :: (Monoid (Pixel img), Image img) => img -> img
 ```
 
-Given img, **upsample** returns an image with twice the number of
-rows and columns where the value at location (i, j) of the resulting
-image is the value of img at location (i/2, j/2) if i and jare are even
-and mempty otherwise.
+Given **img**, `upsample` returns an`Image` with twice the number of
+rows and columns where the value at location *(i, j)* of the resulting
+image is the value of **img** at location *(i/2, j/2)* if *i* and *j* are are even
+and `mempty` otherwise.
 
 For example,
 
@@ -663,30 +661,34 @@ Images installed in the Eq type class (Boxed images) may be compared using the (
 
 Images installed in the Ord type class (Boxed images) may be compared using `(<)`. This returns True if and only if the images are of equal dimension and for each pixel (i, j) in the two images are `(<)`.
 
-<pre>(&gt;) :: Ord a => a -> a -> Bool</pre>
+```haskell
+(>) :: Ord a => a -> a -> Bool
+```
 
-Images installed in the Ord type class (Boxed images) may be compared using (&gt;). This returns True if and only if the images are of equal dimension and for each pixel (i, j) in the two images are (&gt;).
+Images installed in the Ord type class (Boxed images) may be compared using `(>)`. This returns True if and only if the images are of equal dimension and for each pixel (i, j) in the two images are `(>)`.
 
-<pre>(+) :: Num a => a -> a -> a</pre>
+```haskell
+(+) :: Num a => a -> a -> a
+```
 
-Any two images installed in the Num type class (any two Boxed images) may be added if their dimensions match.
-For each <i>(i, j)</i> the resulting pixel will be the sum of the pixels from the given images.
+Any two images installed in the `Num` type class (any two Boxed images) may be added if their dimensions match.
+For each *(i, j)* the resulting pixel will be the sum of the pixels from the given images.
 For example,
 
-<pre>
-*Main> callisto &lt;- readImage "images/callisto.pgm"
+```haskell
+*Main> callisto <- readImage "images/callisto.pgm"
 *Main> display callisto
-</pre>
-<p>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/callisto.gif">
-<p>
-<pre>
-*Main> ganymede &lt;- readImage "images/ganymede.pgm"
+```
+
+![callisto][]
+
+```haskell
+*Main> ganymede <- readImage "images/ganymede.pgm"
 *Main> display ganymede
-</pre>
-<p>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/ganymede.gif">
-<p>
+```
+
+![ganymede][]
+
 <pre>
 *Main> callisto + ganymede
 &lt; Image 128x128 &gt;
@@ -1261,3 +1263,5 @@ For example,
 [complexSignalToRectangular]: https://raw.github.com/jcollard/unm-hip/master/examples/complexsignaltorectangular.jpg "complexSignalToRectangular"
 [angle]: https://raw.github.com/jcollard/unm-hip/master/examples/angle.jpg "angle"
 [complexImageToPolar]: https://raw.github.com/jcollard/unm-hip/master/examples/compleximagetopolar.jpg "complexImageToPolar"
+[callisto]: https://raw.github.com/jcollard/unm-hip/master/examples/callisto.gif "callisto"
+[ganymede]: https://raw.github.com/jcollard/unm-hip/master/examples/ganymede.gif "ganymede"
