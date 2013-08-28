@@ -1,214 +1,216 @@
-<h2>The University of New Mexico's Haskell Image Processing Library</h2>
-<p>To get started, import Data.Image or Data.Image.Boxed.</p>
-<p>To use unm-hip interactively in ghci, import Data.Image.Interactive. This provides three useful functions: display, setDisplayProgram, and plotHistograms.</p>
+## University of New Mexico's Haskell Image Processing Library##
+To get started, import Data.Image or Data.Image.Boxed.
+To use unm-hip interactively in ghci, import Data.Image.Interactive. This provides three useful functions: display, setDisplayProgram, and plotHistograms.
 
-<pre>setDisplayProgram :: String -> Bool -> IO ()</pre>
-<p>Sets the program to use when making a call to display and specifies if the program can accept an image via stdin. If it cannot, then a temporary file will be created and passed as an argument instead. By default, ImageMagick (display) is the default program to use and it is read using stdin.</p>
+    setDisplayProgram :: String -> Bool -> IO ()</pre>
 
-<pre>
-*Main> setDisplayProgram "gimp" False
-*Main> setDisplayProgram "xv" False
-*Main> setDisplayProgram "display" True
-</pre>
+Sets the program to use when making a call to display and specifies if the program can accept an image via stdin. If it cannot, then a temporary file will be created and passed as an argument instead. By default, ImageMagick (display) is the default program to use and it is read using stdin.
 
-<pre>display :: DisplayFormat df => df -> IO (Handle, Handle, Handle, ProcessHandle)</pre>
-<p>Makes a call to the current display program to be displayed. If the program cannot read from standard in, a file named .tmp-img is created and used as an argument to the program.</p>
 
-<pre>makeImage :: Image i => Int -> Int -> PixelOp (Pixel i) -> i</pre>
+    *Main> setDisplayProgram "gimp" False
+    *Main> setDisplayProgram "xv" False
+    *Main> setDisplayProgram "display" True
 
-<p>Given an Int m, Int n, and a PixelOp f, <b>makeImage</b> 
+
+    display :: DisplayFormat df => df -> IO (Handle, Handle, Handle, ProcessHandle)
+
+Makes a call to the current display program to be displayed. If the program cannot read from standard in, a file named .tmp-img is created and used as an argument to the program.
+
+    makeImage :: Image i => Int -> Int -> PixelOp (Pixel i) -> i
+
+Given an Int m, Int n, and a PixelOp f, **makeImage**
 returns an Image with dimensions m x n and the Pixel value at 
-each (i, j) is (f i j)</p>
+each (i, j) is (f i j)
 
-<pre>
-*Main> let grad = makeImage 128 128 (\ r c -> fromIntegral (r + c)) :: GrayImage
-*Main> grad
-&lt; Image 128x128 &gt;
-*Main> display grad
-</pre>
-<p>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/gradient.jpg"/>
-</p>
 
-<pre>
-pii :: Complex Double
-pii = 0 :+ pi
+    *Main> let grad = makeImage 128 128 (\ r c -> fromIntegral (r + c)) :: GrayImage
+    *Main> grad
+    < Image 128x128 >
+    *Main> display grad
 
-harmonicSignal :: Double -> Double -> Int -> Int -> Complex Double
-harmonicSignal u v m n = exp ((2*pii) * ((u*(fromIntegral m) + v*(fromIntegral n)) :+ 0))
 
-*Main> let signal = makeImage 128 128 (harmonicSignal (3 / 128) (2 / 128)) :: ComplexImage
-*Main> signal
-*Main> signal
-&lt; Image 128x128 &gt;
-*Main> display signal
-</pre>
-<p>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/signal.jpg"/>
-</p>
-<pre>readImage :: FilePath -> IO GrayImage</pre>
+![gradient][] 
+
+
+
+    pii :: Complex Double
+    pii = 0 :+ pi
+    
+    harmonicSignal :: Double -> Double -> Int -> Int -> Complex Double
+    harmonicSignal u v m n = exp ((2*pii) * ((u*(fromIntegral m) + v*(fromIntegral n)) :+ 0))
+    
+    *Main> let signal = makeImage 128 128 (harmonicSignal (3 / 128) (2 / 128)) :: ComplexImage
+    *Main> signal
+    *Main> signal
+    < Image 128x128 >
+    *Main> display signal
+
+![signal][]
+
+    readImage :: FilePath -> IO GrayImage
+
 Given the file path to a file containing an image
-stored in ASCII <i>.pgm</i> format, <b>readImage</b> reads the file
-and returns the <i>Image</i>. For example,
+stored in ASCII *.pgm* format, **readImage** reads the file
+and returns the *Image*. For example,
 
-<pre>
-*Main> frog &lt;- readImage "images/frog.pgm"
-*Main> display frog
-</pre>
-<p>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/frog.jpg" />
-</p>
-<pre>writeImage :: DisplayFormat df => FilePath -> df -> IO ()</pre>
+
+    *Main> frog &lt;- readImage "images/frog.pgm"
+    *Main> display frog
+
+
+![frog][]
+
+    writeImage :: DisplayFormat df => FilePath -> df -> IO ()
 
 Given a filename and an Image, 
-<b>writeImage</b> creates a file representing the image in ASCII
-<i>.pgm</i> format for <i>GrayImage</i>s and <i>.ppm</i> for <i>ColorImage</i> and <i>ComplexImage</i>.
+**writeImage** creates a file representing the image in ASCII
+*.pgm* format for *GrayImage*s and *.ppm* for *ColorImage* and *ComplexImage*.
 Note: Images saved this way are normalized to integers in the range 0 to 255; 
 this may result in loss of detail.
 
-<pre>
-*Main> writeImage "frog.pgm" frog
-</pre>
-creates a file which looks like this:
-<pre>
-P2
-242 225
-255
-  151   151   151   151   151   150   150   149   148   147   146   145   145   142   142 
-  143   145   148   152   156   158   159   159   159   159   157   155   152   150   153 
-  152   151   149   149   149   149   150   149   149   149   149   149   149   149   149 
-  149   146   144   141   138   136   133   132   136   136   136   136   136   136   136 
-  136   139   138   138   138   137   136   136   136   135   135   136   136   137   137 
-  138   138   138   137   138   137   138   137   138   137   135   134   134   134   138 
-  141   147   150   149   147   143   138   134   132   131   130   129   129   130   132 
-  134   136   137   137   137   137   138   139   142   145   147   149   145   146   150 
-  153   156   159   161   163   156   158   161   163   167   170   174   175   181   183 
-.
-.
-.
-</pre>
 
-<pre>ref :: Image i => i -> Int -> Int -> Pixel i</pre>
+    *Main> writeImage "frog.pgm" frog
+
+creates a file which looks like this:
+
+    P2
+    242 225
+    255
+      151   151   151   151   151   150   150   149   148   147   146   145   145   142   142 
+      143   145   148   152   156   158   159   159   159   159   157   155   152   150   153 
+      152   151   149   149   149   149   150   149   149   149   149   149   149   149   149 
+      149   146   144   141   138   136   133   132   136   136   136   136   136   136   136 
+      136   139   138   138   138   137   136   136   136   135   135   136   136   137   137 
+      138   138   138   137   138   137   138   137   138   137   135   134   134   134   138 
+      141   147   150   149   147   143   138   134   132   131   130   129   129   130   132 
+      134   136   137   137   137   137   138   139   142   145   147   149   145   146   150 
+      153   156   159   161   163   156   158   161   163   167   170   174   175   181   183 
+    .
+    .
+    .
+
+    ref :: Image i => i -> Int -> Int -> Pixel i
 
 Given an image, a positive int i, and a positive  int j, 
-<b>ref</b> returns the pixel value at location <i>(i, j)</i>. 
+**ref** returns the pixel value at location *(i, j)*.
 
-<pre>
-*Main> ref frog 100 100
-56.0
-</pre>
 
-<pre>ref' :: ref' :: GrayImage -> Double -> Double -> Double</pre>
+    *Main> ref frog 100 100
+    56.0
+
+
+    ref' :: ref' :: GrayImage -> Double -> Double -> Double
 
 Given a GrayImage, a positive double i, and a positive double j, 
-<b>ref'</b> returns the bilinear interpolated 
-pixel value at location <i>(i, j)</i>. 
-
-<pre>
-*Main> ref' frog 100 100
-56.0
-</pre>
+**ref'** returns the bilinear interpolated 
+pixel value at location *(i, j)*. 
 
 
-<pre>rows :: Image i => i -> Int</pre>
-Given an image, <b>rows</b> returns the number of rows of in the image.
-For example,
-<pre>
-*Main> rows frog
-225
-</pre>
-<pre>cols :: Image i => i -> Int</pre>
+    *Main> ref' frog 100 100
+    56.0
 
-Given an image, <b>cols</b> returns the number of columns of in the image.
+
+
+    rows :: Image i => i -> Int
+
+Given an image, **rows** returns the number of rows of in the image.
 For example,
 
-<pre>
-*Main> cols frog
-242
-</pre>
-<pre>transpose :: Image img => img -> img</pre>
+    *Main> rows frog
+    225
 
-Given an Image img, <b>transpose</b> returns an image created by interchanging 
-the rows and columns of the image, i.e., the value at location <i>(i, j)</i>
-of the result image is the value of the img at location <i>(j, i)</i>.
+    cols :: Image i => i -> Int
+
+Given an image, **cols** returns the number of columns of in the image.
 For example,
 
-<pre>
-*Main> transpose frog
-&lt; Image 242x225 &gt;
-*Main> display . transpose $ frog
-</pre>
-<p>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/transposefrog.jpg" />
-</p>
-<pre>convolveRows :: (Num (Pixel img), Image img) => [Pixel img] -> img -> img</pre>
+
+    *Main> cols frog
+    242
+
+    transpose :: Image img => img -> img
+
+Given an Image img, **transpose** returns an image created by interchanging 
+the rows and columns of the image, i.e., the value at location *(i, j)*
+of the result image is the value of the img at location *(j, i)*.
+For example,
+
+
+    *Main> transpose frog
+    < Image 242x225 >
+    *Main> display . transpose $ frog
+
+
+![transposeFrog][]
+
+    convolveRows :: (Num (Pixel img), Image img) => [Pixel img] -> img -> img
 
 Given a list consisting solely of pixel values representing a 1D 
-convolution kernel and an image, <b>convolveRows</b> returns the 1D discrete 
+convolution kernel and an image, **convolveRows** returns the 1D discrete 
 periodic convolution of the rows of the image with the kernel.
 For example,
 
-<pre>
-*Main> convolveRows [1, -1] frog
-&lt; Image 225x242 &gt;
-*Main> display . convolveRows [1, -1] $ frog
-</pre>
-<p>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/convolverows.jpg"/>
-</p>
-<pre>convolveCols :: (Num (Pixel img), Image img) => [Pixel img] -> img -> img</pre>
+
+    *Main> convolveRows [1, -1] frog
+    < Image 225x242 >
+    *Main> display . convolveRows [1, -1] $ frog
+
+
+![convolverows][]
+
+    convolveCols :: (Num (Pixel img), Image img) => [Pixel img] -> img -> img
 
 Given a list consisting solely of pixel values representing a 1D 
-convolution kernel and an image, <b>convolveCols</b> returns the 1D discrete 
+convolution kernel and an image, **convolveCols** returns the 1D discrete 
 periodic convolution of the columns of the image with the kernel.
 For example,
 
-<pre>
-*Main> convolveCols [1, -1] frog
-&lt; Image 225x242 &gt;
-*Main> display . convolveCols [1, -1] $ frog
-</pre>
-<p>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/convolvecols.jpg"/>
-</p>
-<pre>
-*Main> let dx = convolveRows [1, -1] frog
-*Main> let dy = convolveCols [1, -1] frog
-*Main> let grad = imageMap sqrt ((dx * dx) + (dy * dy)) :: GrayImage
-*Main> grad
-&lt; Image 225x242 &gt;
-*Main> display grad
-</pre>
-<p>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/convolvedxdy.jpg" />
-</p>
-<pre>convolve :: (Num (Pixel img), Image img) => [[Pixel img]] -> img -> img</pre>
+
+    *Main> convolveCols [1, -1] frog
+    < Image 225x242 >
+    *Main> display . convolveCols [1, -1] $ frog
+
+
+![convolvecols][]
+
+
+    *Main> let dx = convolveRows [1, -1] frog
+    *Main> let dy = convolveCols [1, -1] frog
+    *Main> let grad = imageMap sqrt ((dx * dx) + (dy * dy)) :: GrayImage
+    *Main> grad
+    < Image 225x242 >
+    *Main> display grad
+
+
+![convolvedxdy][]
+
+    convolve :: (Num (Pixel img), Image img) => \[\[Pixel img\]\] -> img -> img
 
 Given a 2D list consisting solely of pixels representing a 2D 
-convolution kernel and an image, <b>convolve</b> returns the 2D discrete 
+convolution kernel and an image, **convolve** returns the 2D discrete 
 periodic convolution of the image with the kernel.
 For example,
 
-<pre>
-*Main> convolve [[1, 1, 1], [1, -8, 1], [1, 1, 1]] frog
-&lt; Image 225x242 &gt;
-*Main> display . convolve [[1, 1, 1], [1, -8, 1], [1, 1, 1]] $ frog>
-</pre>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/convolve.jpg"/>
-<p>
-<pre>downsampleCols :: Image img => img -> img</pre>
 
-Given img, <b>downsampleCols</b> returns the image created by discarding 
+    *Main> convolve [[1, 1, 1], [1, -8, 1], [1, 1, 1]] frog
+    < Image 225x242 >
+    *Main> display . convolve [[1, 1, 1], [1, -8, 1], [1, 1, 1]] $ frog
+
+![convolve][]
+
+    downsampleCols :: Image img => img -> img
+
+Given img, **downsampleCols** returns the image created by discarding 
 the odd numbered rows, i.e., the value at location (i, j) of the 
 result image is the value of img at location (2i, j).  
 
 For example,
 
-<pre>
-*Main> downsampleCols frog
-&lt; Image 112x242 &gt;
-*Main> display . downsampleCols $ frog
-</pre>
+
+    *Main> downsampleCols frog
+    < Image 112x242 >
+    *Main> display . downsampleCols $ frog
+
 <IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/downsamplecolsfrog.jpg"/>
 <p>
 
@@ -712,11 +714,11 @@ Given a Pixel p and an image img, return a Binary image where the
 Note: there is a variation of <i>(&lt;.)</i> named <i>(.&lt;)</i> where the arguments are flipped.
 
 <pre>
-*Main> let binaryStop = (r + g + b) .< 400
+*Main> let binaryStop = (r + g + b) .\< 400
 *Main> display binaryStop
 </pre>
 <p>
-<IMG SRC="https://raw.github.com/jcollard/unm-hip/master/examples/binarystop.jpg" />
+<img src="master/examples/invertbinarystop.jpg" />
 <p>
 
 <pre>(&lt;~) :: (Ord (Pixel img), Image img) => Pixel img -> img -> Bool</pre>
@@ -1131,3 +1133,12 @@ For example,
 *Main> boundingBoxes . label $ binaryStop
 [(10,8,73,41),(10,75,74,110),(11,42,72,73),(11,117,72,150)]
 </pre>
+
+[gradient]: https://raw.github.com/jcollard/unm-hip/master/examples/gradient.jpg "gradient"
+[signal]: https://raw.github.com/jcollard/unm-hip/master/examples/signal.jpg "signal"
+[frog]: https://raw.github.com/jcollard/unm-hip/master/examples/frog.jpg "frog"
+[transposeFrog]: https://raw.github.com/jcollard/unm-hip/master/examples/transposefrog.jpg "transposeFrog"
+[convolverows]: https://raw.github.com/jcollard/unm-hip/master/examples/convolverows.jpg "convolverows"
+[convolvecols]: https://raw.github.com/jcollard/unm-hip/master/examples/convolvecols.jpg "convolvecols"
+[convolvedxdy]: https://raw.github.com/jcollard/unm-hip/master/examples/convolvedxdy.jpg "convolvedxdy"
+[convolve]: https://raw.github.com/jcollard/unm-hip/master/examples/convolve.jpg "convolve"
