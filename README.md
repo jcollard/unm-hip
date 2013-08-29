@@ -779,7 +779,7 @@ Given a `Pixel` **p** and an `Image` **img**, return a `BinaryPixel` `Image` whe
 
 Given a `Pixel` value **p** and an `Image` **img**, return `True` if and only if all values in **img** are greater than **p**. Note: there is a variation of `(<~)` named`(~<)`where the arguments are flipped.
 
-``haskell
+```haskell
 (.==.) :: (Eq (Pixel img), Image img, BinaryPixel (Pixel img)) => img -> img -> img
 ```
 
