@@ -236,7 +236,7 @@ For example,
 downsampleRows :: Image img => img -> img
 ```
 
-Given **img**, `downsampleRows` returns the image created by discarding the odd numbered columns, i.e., the value at location **(i, j)** is the value of **img**at location **(i, 2j)**.
+Given **img**, `downsampleRows` returns the image created by discarding the odd numbered columns, i.e., the value at location **(i, j)** is the value of **img** at location **(i, 2j)**.
 
 For example,
 
