@@ -1205,7 +1205,7 @@ For example,
 [matrix2Image]: https://raw.github.com/jcollard/unm-hip/master/examples/matrix2image.gif "matrix2Image"
 [stop]: https://raw.github.com/jcollard/unm-hip/master/examples/stop.jpg "stop"
 [binaryStop]: https://raw.github.com/jcollard/unm-hip/master/examples/binarystop.jpg "binaryStop"
-[invertBinaryStop]: "master/examples/invertbinarystop.jpg" "invertBinaryStop"
+[invertBinaryStop]: "https://raw.github.com/jcollard/unm-hip/master/examples/invertbinarystop.jpg" "invertBinaryStop"
 [shiftBinaryStop]: https://raw.github.com/jcollard/unm-hip/master/examples/shiftBinaryStop.gif "shiftBinaryStop"
 [binaryEqual]: https://raw.github.com/jcollard/unm-hip/master/examples/binaryEqual.gif "binaryEqual"
 [medianFilter]: https://raw.github.com/jcollard/unm-hip/master/examples/medianfilter.jpg "medianFilter"
