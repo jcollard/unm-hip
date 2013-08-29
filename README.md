@@ -105,8 +105,9 @@ Given an image, a positive `Int` **i**, and a positive `Int` **j**, `ref` return
 ```haskell
 *Main> ref frog 100 100
 56.0
+```
 
-
+```haskell
 ref' :: ref' :: GrayImage -> Double -> Double -> Double
 ```
 
@@ -115,9 +116,9 @@ Given a `GrayImage`, a positive `Double` **i**, and a positive `Double` **j**, `
 ```haskell
 *Main> ref' frog 100 100
 56.0
+```
 
-
-
+```haskell
 rows :: Image i => i -> Int
 ```
 
