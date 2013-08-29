@@ -129,7 +129,9 @@ For example,
 ```haskell
 *Main> rows frog
 225
+```
 
+```haskell
 cols :: Image i => i -> Int
 ```
 
@@ -140,7 +142,9 @@ For example,
 ```haskell
 *Main> cols frog
 242
+```
 
+```haskell
 transpose :: Image img => img -> img
 ```
 
@@ -152,7 +156,7 @@ For example,
 *Main> transpose frog
 < Image 242x225 >
 *Main> display . transpose $ frog
-
+```
 
 
 ![transposeFrog][]
