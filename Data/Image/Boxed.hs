@@ -317,7 +317,7 @@ getRGB = getComponent toRGB
  
 {-| Given a ColorImage, returns a GrayImage representing the Red color component
     
-    >>>let red = colorImageRed cactii
+    >>>let red = colorImageRed cacti
 
     <https://raw.github.com/jcollard/unm-hip/master/examples/colorimagered.jpg>
  -}
@@ -326,7 +326,7 @@ colorImageRed = getRGB (\ (r, _, _) -> r)
 
 {-| Given a ColorImage, returns a GrayImage representing the Green color component
 
-    >>>let green = colorImageGreen cactii
+    >>>let green = colorImageGreen cacti
 
     <https://raw.github.com/jcollard/unm-hip/master/examples/colorimagegreen.jpg>
  -}
@@ -335,7 +335,7 @@ colorImageGreen = getRGB (\ (_,g,_) -> g)
 
 {-| Given a ColorImage, returns a GrayImage representing the Blue color component
    
-    >>>let blue = colorImageBlue cactii
+    >>>let blue = colorImageBlue cacti
 
     <https://raw.github.com/jcollard/unm-hip/master/examples/colorimageblue.jpg>
  -}
@@ -345,7 +345,7 @@ colorImageBlue = getRGB (\ (_,_,b) -> b)
 {-| Given a ColorImage, returns a triple containing three GrayImages each
     containing one of the color components (red, green, blue)
 
-    >>>leftToRight' . colorImageToRGB $ cactii
+    >>>leftToRight' . colorImageToRGB $ cacti
 
     <https://raw.github.com/jcollard/unm-hip/master/examples/colorimagetorgb.jpg>
  -}
@@ -357,7 +357,7 @@ colorImageToRGB img = (colorImageRed img, colorImageGreen img, colorImageBlue im
 
     >>>rgbToColorImage (red,green,blue)
 
-    <https://raw.github.com/jcollard/unm-hip/master/examples/cactii.jpg>
+    <https://raw.github.com/jcollard/unm-hip/master/examples/cacti.jpg>
  -}
 rgbToColorImage :: (GrayImage, GrayImage, GrayImage) -> ColorImage
 rgbToColorImage (red, green, blue) = createRGB <$> red <*> green <*> blue where
@@ -367,7 +367,7 @@ getHSI = getComponent toHSI
 
 {-| Given a ColorImage, returns a GrayImage representing the Hue component
 
-    >>>let h = colorImageHue cactii
+    >>>let h = colorImageHue cacti
 
     <https://raw.github.com/jcollard/unm-hip/master/examples/colorimagehue.jpg>
  -}
@@ -376,7 +376,7 @@ colorImageHue = getHSI (\ (h, _, _) -> h)
 
 {-| Given a ColorImage, returns a GrayImage representing the Saturation component
 
-    >>>let s = colorImageSaturation cactii
+    >>>let s = colorImageSaturation cacti
   
     <https://raw.github.com/jcollard/unm-hip/master/examples/colorimagesaturation.jpg>
  -}
@@ -385,7 +385,7 @@ colorImageSaturation = getHSI (\ (_,s,_) -> s)
 
 {-| Given a ColorImage, returns a GrayImage representing the Intensity component
 
-    >>>let i = colorImageIntensity cactii 
+    >>>let i = colorImageIntensity cacti
 
     <https://raw.github.com/jcollard/unm-hip/master/examples/colorimageintensity.jpg>
 
@@ -398,7 +398,7 @@ colorImageIntensity = getHSI (\ (_,_,i) -> i)
 
     >>> hsiToColorImage (h, s, i) 
 
-    <https://raw.github.com/jcollard/unm-hip/master/examples/cactii.jpg>
+    <https://raw.github.com/jcollard/unm-hip/master/examples/cacti.jpg>
  -}
 hsiToColorImage :: (GrayImage, GrayImage, GrayImage) -> ColorImage
 hsiToColorImage (h, s, i) = toHSI <$> h <*> s <*> i where
@@ -407,7 +407,7 @@ hsiToColorImage (h, s, i) = toHSI <$> h <*> s <*> i where
 {-| Given a ColorImage, returns a triple containing three GrayImages each
     containing one of the components (hue, saturation, intensity)
 
-    >>>let (h, s, i) = colorImageToHSI $ cactii
+    >>>let (h, s, i) = colorImageToHSI $ cacti
  -}
 colorImageToHSI :: ColorImage -> (GrayImage, GrayImage, GrayImage)
 colorImageToHSI img = (colorImageHue img, colorImageSaturation img, colorImageIntensity img) 
@@ -415,9 +415,9 @@ colorImageToHSI img = (colorImageHue img, colorImageSaturation img, colorImageIn
 
 {-| Reads in an ASCI PPM file as a ColorImage
     
-    >>>cactii <- readColorImage "images/cactii.ppm"
+    >>>cacti <- readColorImage "images/cacti.ppm"
 
-    <https://raw.github.com/jcollard/unm-hip/master/examples/cactii.jpg>
+    <https://raw.github.com/jcollard/unm-hip/master/examples/cacti.jpg>
  -}
 readColorImage :: FilePath -> IO ColorImage
 readColorImage fileName =
