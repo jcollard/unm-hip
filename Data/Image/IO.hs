@@ -92,12 +92,12 @@ comp seed f = compare' (seed,seed,seed) where
     
     <https://raw.github.com/jcollard/unm-hip/master/examples/transposefrog.jpg>
 
-    >>>cactii <- readColorImage "images/cactii.ppm"
-    >>>writeImage "inverseCactii.ppm" (imageMap (*(-1)) cactii)
+    >>>cacti <- readColorImage "images/cacti.ppm"
+    >>>writeImage "inverseCacti.ppm" (imageMap (*(-1)) cacti)
  
-    <https://raw.github.com/jcollard/unm-hip/master/examples/cactii.jpg>
+    <https://raw.github.com/jcollard/unm-hip/master/examples/cacti.jpg>
 
-    <https://raw.github.com/jcollard/unm-hip/master/examples/inversecactii.jpg>
+    <https://raw.github.com/jcollard/unm-hip/master/examples/inversecacti.jpg>
 
 -}
 writeImage :: (DisplayFormat df) => FilePath -> df -> IO ()

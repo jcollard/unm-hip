@@ -882,7 +882,7 @@ Given the file path to a file containing an image stored in ASCII *.ppm* format,
 For example,
 
 ```haskell
-*Main> cacti <- readColorImage "images/cactii.ppm"
+*Main> cacti <- readColorImage "images/cacti.ppm"
 *Main> display cacti
 ```
 

@@ -1,13 +1,17 @@
-CC=ghc
-flags=-O2
+HC=ghc
+HCFLAGS=-O2
+
+hsrc = Data/*.hs Data/Image/*.hs
 
 default: 
-	$(CC) $(flags) Data/Image.hs
+	$(HC) $(HCFLAGS) Data/Image.hs
 
-haddock: Data/*.hs Data/Image/*.hs
-	rm haddock -rf
-	mkdir haddock
-	haddock -h -o haddock/ Data/*.hs Data/Image/*.hs
+haddock: $(hsrc)
+	-rm -rf haddock
+	haddock -h -o haddock/ $(hsrc)
 
 clean:
-	rm Data/*.o Data/*.hi Data/Image/*.o Data/Image/*.hi
+	-rm -f $(hsrc:.hs=.o) $(hsrc:.hs=.hi)
+	-rm -rf haddock
+
+.PHONY: default clean

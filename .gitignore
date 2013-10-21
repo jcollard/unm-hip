@@ -1,7 +1,7 @@
 /dist/
+/haddock/
 *.hi
 *.o
-*.*~
 .tmp-img
 Test.hs
 images/
