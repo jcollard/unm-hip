@@ -477,7 +477,7 @@ makeHotImage img = fmap (toHot max min) img where
 ref' :: GrayImage -> Double -> Double -> Double
 ref' im x y = if inside im x y then interpolate im x y else 0
 
-inside im x y = x >= 0 && y >= 0 && y < r - 1 && x < c - 1
+inside im x y = x >= 0 && y >= 0 && x < r - 1 && y < c - 1
   where r = fromIntegral $ rows im
         c = fromIntegral $ cols im
 
