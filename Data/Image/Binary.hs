@@ -783,22 +783,20 @@ outline img = outline' off on img
     Pixel (i, j) is an edge pixel iff its value is different than the value 
     of either pixel (i, j+1) or pixel (i+1, j).
 
-    >>>outline' (RGB (255, 255, 255)) (RGB (0, 0, 255)) binaryStop
+    >>>outline' (RGB (255, 255, 255)) (RGB (0, 0, 255)) binaryStop :: ColorImage
     < Image 86x159 >
 
     <https://raw.github.com/jcollard/unm-hip/master/examples/outline2.jpg>
  -}
-outline' :: (Image img,
-            BinaryPixel (Pixel img),
-            Eq (Pixel img)) => Pixel img -> Pixel img -> img -> img
+outline' :: (Image i, Image i1, BinaryPixel (Pixel i), BinaryPixel (Pixel i1)) =>
+            Pixel i1 -> Pixel i1 -> i -> i1
 outline' nonEdge edge img@(dimensions -> (rows, cols)) = makeImage rows cols func
   where arr = getOutlineArray img edge nonEdge
         func r c = arr BV.! ((cols*r)+c)
 
 -- Outline support code
-getOutlineArray :: (Image img,
-                    BinaryPixel (Pixel img),
-                    Eq (Pixel img)) => img -> Pixel img -> Pixel img -> BV.Vector (Pixel img)
+getOutlineArray :: (Image i, BinaryPixel (Pixel i), BinaryPixel t) =>
+                   i -> t -> t -> BV.Vector t
 getOutlineArray img@(dimensions -> (rows, cols)) edge nonEdge = runST $ do
   let data1 = BV.fromList . map (boolToDouble . toBinary) . pixelList $ img :: BV.Vector Double
   data4 <- BVM.replicate (rows*cols) off -- :: ST s (BVM.STVector s (Pixel img))
