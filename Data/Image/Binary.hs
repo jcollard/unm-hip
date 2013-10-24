@@ -772,10 +772,8 @@ boolToDouble _ = 0.0
 
     <https://raw.github.com/jcollard/unm-hip/master/examples/outline.jpg>
  -}
-outline :: (Image img,
-            BinaryPixel (Pixel img),
-            Eq (Pixel img)) => img -> img
-outline img = outline' off on img
+outline :: (Image i, Pixel i ~ Double) => i -> GrayImage
+outline img = outline' off on img :: GrayImage
 
 {-| Given two doubles nonEdge and edge, and an image, outline' returns 
     an image where edge pixels are 
@@ -783,61 +781,58 @@ outline img = outline' off on img
     Pixel (i, j) is an edge pixel iff its value is different than the value 
     of either pixel (i, j+1) or pixel (i+1, j).
 
-    >>>outline' (RGB (255, 255, 255)) (RGB (0, 0, 255)) binaryStop
+    >>>outline' (RGB (255, 255, 255)) (RGB (0, 0, 255)) binaryStop :: ColorImage
     < Image 86x159 >
 
     <https://raw.github.com/jcollard/unm-hip/master/examples/outline2.jpg>
  -}
-outline' :: (Image img,
-            BinaryPixel (Pixel img),
-            Eq (Pixel img)) => Pixel img -> Pixel img -> img -> img
+
+outline' :: (Image i, Image i1, Pixel i ~ Double) => Pixel i1 -> Pixel i1 -> i -> i1
 outline' nonEdge edge img@(dimensions -> (rows, cols)) = makeImage rows cols func
-  where arr = getOutlineArray img edge nonEdge
-        func r c = arr BV.! ((cols*r)+c)
+  where arr = getOutlineArray img
+        func r c = if (arr BV.! ((cols*r)+c)) then edge else nonEdge
 
 -- Outline support code
-getOutlineArray :: (Image img,
-                    BinaryPixel (Pixel img),
-                    Eq (Pixel img)) => img -> Pixel img -> Pixel img -> BV.Vector (Pixel img)
-getOutlineArray img@(dimensions -> (rows, cols)) edge nonEdge = runST $ do
-  let data1 = BV.fromList . map (boolToDouble . toBinary) . pixelList $ img :: BV.Vector Double
-  data4 <- BVM.replicate (rows*cols) off -- :: ST s (BVM.STVector s (Pixel img))
+xor :: Bool -> Bool -> Bool
+xor True a = not a
+xor False a = a
+
+getOutlineArray :: (Eq (Pixel i), Num (Pixel i), Image i) => i -> BV.Vector Bool
+getOutlineArray img@(dimensions -> (rows, cols)) = runST $ do
+  let data1 = BV.fromList . (map ((/=) 0)) . pixelList $ img
+  data4 <- BVM.replicate (rows*cols) False
   
   forM [0..rows-1] $ \ i -> do
     let index0 = i*cols
     forM [0..cols-1] $ \ j -> do
-      BVM.write data4 (index0+j) nonEdge
+      BVM.write data4 (index0+j) False
 
   forM [0..rows-2] $ \ i -> do
     let index0 = i*cols
     let index1 = (i+1)*cols
     forM [0..cols-1] $ \ j -> do
-      let val = (data1 BV.! (index0+j)) + (data1 BV.! (index1+j))
-      if (val == 1) 
+      if xor (data1 BV.! (index0+j)) (data1 BV.! (index1+j))
         then 
-          BVM.write data4 (index0+j) edge
+          BVM.write data4 (index0+j) True
         else return ()
 
   let index0 = (rows-1)*cols
   forM [0..cols-1] $ \ j -> do
-    let val = (data1 BV.! (index0+j)) + (data1 BV.! j)
-    if (val == 1)
-      then BVM.write data4 (index0+j) edge
+    if xor (data1 BV.! (index0+j)) (data1 BV.! j)
+      then BVM.write data4 (index0+j) True
       else return ()
 
   forM [0..rows-1] $ \ i -> do
     let index0 = i*cols
     forM [1..cols-2] $ \ j -> do
-      let val = (data1 BV.! (index0+j)) + (data1 BV.! (index0 + j + 1))
-      if (val == 1)
-        then BVM.write data4 (index0+j) edge
+      if xor (data1 BV.! (index0+j)) (data1 BV.! (index0 + j + 1))
+        then BVM.write data4 (index0+j) True
         else return ()
    
   forM [0..rows-1] $ \ i -> do
     let index0 = i*cols
-    let val = (data1 BV.! (index0+cols-1)) + (data1 BV.! index0)
-    if (val == 1)
-      then BVM.write data4 (index0+cols-1) edge
+    if xor (data1 BV.! (index0+cols-1)) (data1 BV.! index0)
+      then BVM.write data4 (index0+cols-1) True
       else return ()  
    
   BV.freeze data4
