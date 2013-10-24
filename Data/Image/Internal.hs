@@ -168,7 +168,7 @@ dimensions i = (rows i, cols i)
 
     >>>maxIntensity gradient
     16129.0
-    >>>maxIntensity cactii
+    >>>maxIntensity cacti
     RGB (254.0, 254.0, 254.0)
  -}
 maxIntensity :: (Image img, MaxMin (Pixel img)) => img -> Pixel img
@@ -178,7 +178,7 @@ maxIntensity = maximal . pixelList
     
     >>>minIntensity gradient
     0.0
-    >>>minIntensity cactii
+    >>>minIntensity cacti
     RGB (18.0, 18.0, 18.0)
  -}
 minIntensity :: (Image img, MaxMin (Pixel img)) => img -> Pixel img

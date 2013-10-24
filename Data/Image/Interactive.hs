@@ -98,12 +98,12 @@ runCommandWithStdIn cmd stdin =
 
     <https://raw.github.com/jcollard/unm-hip/master/examples/frogplot.jpg>
 
-    >>>cactii <- readColorImage "images/cactii.ppm"
-    >>>plotHistograms . colorImageToRGB $ cactii
+    >>>cacti <- readColorImage "images/cacti.ppm"
+    >>>plotHistograms . colorImageToRGB $ cacti
 
-    <https://raw.github.com/jcollard/unm-hip/master/examples/cactii.jpg>
+    <https://raw.github.com/jcollard/unm-hip/master/examples/cacti.jpg>
 
-    <https://raw.github.com/jcollard/unm-hip/master/examples/cactiiplot.jpg>
+    <https://raw.github.com/jcollard/unm-hip/master/examples/cactiplot.jpg>
  -}
 plotHistograms images = runCommandWithStdIn "gnuplot -persist"  $ input
   where input = intercalate "\n" [plotCommand datas max, histogramList, "exit"]
