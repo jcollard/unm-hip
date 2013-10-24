@@ -12,6 +12,8 @@ Description:       The University of New Mexico's Haskell Image Processing libra
                    [Changes]
                    .
                     * Fixed typo in documentation
+                   .
+                    * Fixed bug where interpolation had rows / cols reversed
 Cabal-Version:     >= 1.6
 Build-Type:        Simple
 
