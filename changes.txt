@@ -5,6 +5,9 @@ Version #: 0.3.1.6
            | |------ Break in backwards compatibilty
            |-------- Change in stability
 
+unm-hip-0.3.1.7:
+  - Made outline' work between two pixel types
+
 unm-hip-0.3.1.6:
   - Fixed typo in documentation
   - Fixed bug where interpolation had rows / cols reversed

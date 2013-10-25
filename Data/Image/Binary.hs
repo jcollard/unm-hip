@@ -789,8 +789,9 @@ outline img = outline' off on img
     <https://raw.github.com/jcollard/unm-hip/master/examples/outline2.jpg>
  -}
 outline' :: (Image img,
-            BinaryPixel (Pixel img),
-            Eq (Pixel img)) => Pixel img -> Pixel img -> img -> img
+             Image img',
+             BinaryPixel (Pixel img),
+             BinaryPixel (Pixel img')) => Pixel img' -> Pixel img' -> img -> img'
 outline' nonEdge edge img@(dimensions -> (rows, cols)) = makeImage rows cols func
   where arr = getOutlineArray img edge nonEdge
         func r c = arr BV.! ((cols*r)+c)
@@ -798,10 +799,10 @@ outline' nonEdge edge img@(dimensions -> (rows, cols)) = makeImage rows cols fun
 -- Outline support code
 getOutlineArray :: (Image img,
                     BinaryPixel (Pixel img),
-                    Eq (Pixel img)) => img -> Pixel img -> Pixel img -> BV.Vector (Pixel img)
+                    BinaryPixel img') => img -> img' -> img' -> BV.Vector img'
 getOutlineArray img@(dimensions -> (rows, cols)) edge nonEdge = runST $ do
   let data1 = BV.fromList . map (boolToDouble . toBinary) . pixelList $ img :: BV.Vector Double
-  data4 <- BVM.replicate (rows*cols) off -- :: ST s (BVM.STVector s (Pixel img))
+  data4 <- BVM.replicate (rows*cols) off -- :: ST s (BVM.STVector s (Pixel img'))
   
   forM [0..rows-1] $ \ i -> do
     let index0 = i*cols

@@ -1,5 +1,5 @@
 Name:              unm-hip
-Version:       	   0.3.1.6
+Version:       	   0.3.1.7
 License:           GPL
 License-File:      LICENSE
 Author:	           Joseph Collard, Stephen Patel, Lance Williams
@@ -11,9 +11,7 @@ Description:       The University of New Mexico's Haskell Image Processing libra
                    .
                    [Changes]
                    .
-                    * Fixed typo in documentation
-                   .
-                    * Fixed bug where interpolation had rows / cols reversed
+                    * Made outline' work between two pixel types
 Cabal-Version:     >= 1.6
 Build-Type:        Simple
 
