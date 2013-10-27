@@ -97,13 +97,11 @@ instance Functor BoxedImage where
   fmap f (Image rows cols pixels) = Image rows cols (fmap f pixels)
 
 instance Applicative BoxedImage where
-  pure a = Image 1 1 (V.fromList [a])
+  pure a = Image 1 1 (V.singleton a)
   (<*>) (Image rows cols partial) (Image rows' cols' toApply)
     | rows /= rows' && cols /= cols' = error "Cannot apply images of unequal dimensions."
-    | otherwise = Image rows cols (V.fromList applied) where
-       indices = [ r*cols + c | r <- [0..rows-1], c <- [0..cols-1]]
-       applied = map func indices
-       func i = (partial V.! i) (toApply V.! i)
+    | otherwise = Image rows cols (V.imap func toApply) where
+       func i e = (partial V.! i) e
 
 instance Show (BoxedImage a) where
   show (Image rows cols _) = "< Image " ++ (show rows) ++ "x" ++ (show cols) ++ " >"
