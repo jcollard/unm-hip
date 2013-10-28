@@ -473,12 +473,13 @@ makeHotImage img = fmap (toHot max min) img where
 
 {-| Performs bilinear interpolation of a GrayImage at the coordinates provided. -}
 ref' :: GrayImage -> Double -> Double -> Double
-ref' im r c = if inside im then interpolate im c r else 
-                if (r' == rs-1 && c' < cs) || (r' < rs && c' == cs-1)
-                then ref im r' c' else 0
+ref' im r c = if inside then interpolate im c r else 
+                if onedge then ref im r' c' else 0
   where (r', c') = (floor r, floor c)
         (rs, cs) = (rows im, cols im)
-        inside im = r' >= 0 && c' >= 0 && r' < rs-1 && c' < cs-1
+        inside = r' >= 0 && c' >= 0 && r' < rs-1 && c' < cs-1
+        onedge = (r' == rs-1 && c'>=0 && c' < cs) ||
+                 (c' == cs-1 && r'>=0 && r' < rs)
 
 interpolate :: GrayImage -> Double -> Double -> Double
 interpolate im x y = fx1 + y'*(fx0-fx1)
