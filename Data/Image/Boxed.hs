@@ -97,13 +97,11 @@ instance Functor BoxedImage where
   fmap f (Image rows cols pixels) = Image rows cols (fmap f pixels)
 
 instance Applicative BoxedImage where
-  pure a = Image 1 1 (V.fromList [a])
+  pure a = Image 1 1 (V.singleton a)
   (<*>) (Image rows cols partial) (Image rows' cols' toApply)
     | rows /= rows' && cols /= cols' = error "Cannot apply images of unequal dimensions."
-    | otherwise = Image rows cols (V.fromList applied) where
-       indices = [ r*cols + c | r <- [0..rows-1], c <- [0..cols-1]]
-       applied = map func indices
-       func i = (partial V.! i) (toApply V.! i)
+    | otherwise = Image rows cols (V.imap func toApply) where
+       func i e = (partial V.! i) e
 
 instance Show (BoxedImage a) where
   show (Image rows cols _) = "< Image " ++ (show rows) ++ "x" ++ (show cols) ++ " >"
@@ -475,24 +473,26 @@ makeHotImage img = fmap (toHot max min) img where
 
 {-| Performs bilinear interpolation of a GrayImage at the coordinates provided. -}
 ref' :: GrayImage -> Double -> Double -> Double
-ref' im c r = if inside im c r then interpolate im c r else 0
-
-inside im c r = c >= 0 && r >= 0 && r < r' - 1 && c < c' - 1
-  where r' = fromIntegral $ rows im
-        c' = fromIntegral $ cols im
+ref' im r c = if inside then interpolate im c r else 
+                if onedge then ref im r' c' else 0
+  where (r', c') = (floor r, floor c)
+        (rs, cs) = (rows im, cols im)
+        inside = r' >= 0 && c' >= 0 && r' < rs-1 && c' < cs-1
+        onedge = (r' == rs-1 && c'>=0 && c' < cs) ||
+                 (c' == cs-1 && r'>=0 && r' < rs)
 
 interpolate :: GrayImage -> Double -> Double -> Double
-interpolate im x y = (f01 - f00)*x' + (f10 - f00)*y' + (f11 + f00 - f10 - f01)*x'*y' + f00
-  where x' = x - (fromIntegral i0);
-        y' = y - (fromIntegral j0);
-        f00 = ref im i0 j0
-        f01 = ref im i0 j1
-        f10 = ref im i1 j0
-        f11 = ref im i1 j1
-        i1 = i0 + 1
-        j1 = j0 + 1
-        i0 = floor x
-        j0 = floor y
+interpolate im x y = fx1 + y'*(fx0-fx1)
+  where (x0, y0) = (floor x, floor y)
+        (x1, y1) = (x0 + 1, y0 +1)
+        x' = x - (fromIntegral x0);
+        y' = y - (fromIntegral y0);
+        f00 = ref im y0 x0
+        f10 = ref im y0 x1
+        f01 = ref im y1 x0
+        f11 = ref im y1 x1
+        fx0 = f00 + x'*(f10-f00)
+        fx1 = f01 + x'*(f11-f01)
 
 
 {-| Given a complex image, returns a real image representing
