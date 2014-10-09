@@ -71,6 +71,9 @@ import qualified Data.ByteString.Char8 as B
 --vector>=0.10.0.1
 import qualified Data.Vector as V
 
+--deepseq>=1.3.0.2
+import Control.DeepSeq
+
 type Vector = V.Vector
 
 -- Error Messages
@@ -130,6 +133,9 @@ instance Eq a => Eq (BoxedImage a) where
     | (rows img0) /= (rows img1) = False
     | (cols img0) /= (cols img1) = False
     | otherwise = and . zipWith (==) (pixelList img0) $ pixelList img1
+
+instance NFData a => NFData (BoxedImage a) where
+  rnf (Image rows cols pixs) = (rnf rows) `seq` (rnf cols) `seq` (rnf pixs)
 
 -- GrayImage
 {-| A concrete instance of Image representing a gray scale image.
