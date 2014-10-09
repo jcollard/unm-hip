@@ -120,11 +120,16 @@ fft :: (Image img,
         ComplexPixel (Pixel img),
         Image img',
         Pixel img' ~ C.Complex (Value (Pixel img))) => img -> img'
-fft img@(dimensions -> (rows, cols)) = check where
-  check = if (isPowerOfTwo rows && isPowerOfTwo cols) then makeImage rows cols fftimg else error "Image is not a power of 2 in rows and cols"
-  fftimg r c = fft' V.! (r*cols + c)
+fft img@(dimensions -> (rows, cols)) = makeImage rows cols transformed where
   vector = V.map toComplex . V.fromList . pixelList $ img
-  fft' = fftv rows cols vector
+  transformed r c = helper vector V.! (r * cols + c)
+  helper ss = (V.zipWith (+) ys ts) V.++ (V.zipWith (-) ys ts) where
+    n = V.length ss
+    ys = helper evns
+    zs = helper ods
+    (evns, ods) = (V.ifilter (\i e -> even i) ss, V.ifilter (\i e -> odd i) ss)
+    ts = V.zipWith (\z k -> exp' k n * z) zs (V.enumFromN 0 (V.length zs))
+    exp' k n = C.cis $ -2 * pi * (fromIntegral k) / (fromIntegral n)
 
 {-| Given an image, ifft returns a complex image representing its 2D 
     inverse discrete Fourier transform (DFT). Because the inverse DFT is 
